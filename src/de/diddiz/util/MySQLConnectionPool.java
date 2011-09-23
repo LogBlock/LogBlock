@@ -21,6 +21,7 @@ import java.util.Enumeration;
 import java.util.Map;
 import java.util.Properties;
 import java.util.Vector;
+import java.util.concurrent.Executor;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
 
@@ -108,11 +109,15 @@ public class MySQLConnectionPool implements Closeable
 		private final Connection conn;
 		private boolean inuse;
 		private long timestamp;
+		private int networkTimeout;
+		private String schema;
 
 		JDCConnection(Connection conn) {
 			this.conn = conn;
 			inuse = false;
 			timestamp = 0;
+			networkTimeout = 30;
+			schema = "default";
 		}
 
 		@Override
@@ -365,6 +370,26 @@ public class MySQLConnectionPool implements Closeable
 		@Override
 		public <T> T unwrap(Class<T> iface) throws SQLException {
 			return conn.unwrap(iface);
+		}
+		
+		public int getNetworkTimeout() throws SQLException {
+			return networkTimeout;
+		}
+		
+		public void setNetworkTimeout(Executor exec, int timeout) throws SQLException {
+			networkTimeout = timeout;
+		}
+		
+		public void abort(Executor exec) throws SQLException {
+			//Not implemented really...
+		}
+		
+		public String getSchema() throws SQLException {
+			return schema;
+		}
+		
+		public void setSchema(String str) throws SQLException {
+			schema = str;
 		}
 
 		long getLastUse() {
