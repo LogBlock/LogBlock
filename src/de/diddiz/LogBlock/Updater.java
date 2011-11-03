@@ -77,6 +77,23 @@ class Updater
 			}
 			config.set("version", "1.32");
 		}
+		if (config.getString("version").compareTo("1.33") < 0) {
+			getLogger().info("[LogBlock] Updating tables to 1.33 ...");
+			final Connection conn = logblock.getConnection();
+			try {
+				conn.setAutoCommit(true);
+				for (final WorldConfig wcfg : logblock.getLBConfig().worlds.values()) {
+					final Statement st = conn.createStatement();
+					st.execute("ALTER TABLE `" + wcfg.table + "` CHANGE `x` `x` INT(10) NOT NULL, CHANGE `y` `y` INT(10) UNSIGNED NOT NULL, CHANGE `z` `z` INT(10) NOT NULL;");
+					st.close();
+				}
+				conn.close();
+			} catch (final SQLException ex) {
+				Bukkit.getLogger().log(Level.SEVERE, "[LogBlock Updater] Error: ", ex);
+				return false;
+			}
+			config.set("version", "1.33");
+		}
 		logblock.saveConfig();
 		return true;
 	}
@@ -92,7 +109,7 @@ class Updater
 		if (logblock.getLBConfig().logChat)
 			createTable(dbm, state, "lb-chat", "(id INT UNSIGNED NOT NULL AUTO_INCREMENT, date DATETIME NOT NULL, playerid SMALLINT UNSIGNED NOT NULL, message VARCHAR(255) NOT NULL, PRIMARY KEY (id), KEY playerid (playerid), FULLTEXT message (message)) ENGINE=MyISAM");
 		for (final WorldConfig wcfg : logblock.getLBConfig().worlds.values()) {
-			createTable(dbm, state, wcfg.table, "(id INT UNSIGNED NOT NULL AUTO_INCREMENT, date DATETIME NOT NULL, playerid SMALLINT UNSIGNED NOT NULL, replaced TINYINT UNSIGNED NOT NULL, type TINYINT UNSIGNED NOT NULL, data TINYINT UNSIGNED NOT NULL, x SMALLINT NOT NULL, y TINYINT UNSIGNED NOT NULL, z SMALLINT NOT NULL, PRIMARY KEY (id), KEY coords (x, z, y), KEY date (date), KEY playerid (playerid))");
+			createTable(dbm, state, wcfg.table, "(id INT UNSIGNED NOT NULL AUTO_INCREMENT, date DATETIME NOT NULL, playerid SMALLINT UNSIGNED NOT NULL, replaced TINYINT UNSIGNED NOT NULL, type TINYINT UNSIGNED NOT NULL, data TINYINT UNSIGNED NOT NULL, x INT NOT NULL, y TINYINT UNSIGNED NOT NULL, z INT NOT NULL, PRIMARY KEY (id), KEY coords (x, z, y), KEY date (date), KEY playerid (playerid))");
 			createTable(dbm, state, wcfg.table + "-sign", "(id INT UNSIGNED NOT NULL, signtext VARCHAR(255) NOT NULL, PRIMARY KEY (id))");
 			createTable(dbm, state, wcfg.table + "-chest", "(id INT UNSIGNED NOT NULL, itemtype SMALLINT UNSIGNED NOT NULL, itemamount SMALLINT NOT NULL, itemdata TINYINT UNSIGNED NOT NULL, PRIMARY KEY (id))");
 			if (wcfg.logKills)
