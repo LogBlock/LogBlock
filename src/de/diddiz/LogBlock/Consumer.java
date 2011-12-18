@@ -178,7 +178,7 @@ public class Consumer extends TimerTask
 		int weapon = 0;
 		if (killer instanceof Player && ((Player)killer).getItemInHand() != null)
 			weapon = ((Player)killer).getItemInHand().getTypeId();
-		queueKill(victim.getWorld(), entityName(killer), entityName(victim), weapon);
+		queueKill(victim.getLocation(), entityName(killer), entityName(victim), weapon);
 	}
 
 	/**
@@ -190,11 +190,32 @@ public class Consumer extends TimerTask
 	 * Name of the victim. Can't be null.
 	 * @param weapon
 	 * Item id of the weapon. 0 for no weapon.
+	 * @deprecated Use {@link #queueKill(Location,String,String,int)} instead
 	 */
+	@Deprecated
 	public void queueKill(World world, String killerName, String victimName, int weapon) {
-		if (victimName == null || !worlds.containsKey(world.getName().hashCode()))
+		queueKill(
+			new Location(world,0,0,0),
+			killerName,
+			victimName,
+			weapon
+			);
+	}
+
+	/**
+	 * @param location
+	 * Location of the victim.
+	 * @param killerName
+	 * Name of the killer. Can be null.
+	 * @param victimName
+	 * Name of the victim. Can't be null.
+	 * @param weapon
+	 * Item id of the weapon. 0 for no weapon.
+	 */
+	public void queueKill(Location location, String killerName, String victimName, int weapon) {
+		if (victimName == null || !worlds.containsKey(location.getWorld().getName().hashCode()))
 			return;
-		queue.add(new KillRow(world.getName().hashCode(), killerName.replaceAll("[^a-zA-Z0-9_]", ""), victimName.replaceAll("[^a-zA-Z0-9_]", ""), weapon));
+		queue.add(new KillRow(location, killerName == null ? null : killerName.replaceAll("[^a-zA-Z0-9_]", ""), victimName.replaceAll("[^a-zA-Z0-9_]", ""), weapon));
 	}
 
 	/**
@@ -394,11 +415,11 @@ public class Consumer extends TimerTask
 		final long date;
 		final String killer, victim;
 		final int weapon;
-		final int worldHash;
+		final Location loc;
 
-		KillRow(int worldHash, String attacker, String defender, int weapon) {
+		KillRow(Location loc, String attacker, String defender, int weapon) {
 			date = System.currentTimeMillis() / 1000;
-			this.worldHash = worldHash;
+			this.loc = loc;
 			killer = attacker;
 			victim = defender;
 			this.weapon = weapon;
@@ -406,7 +427,7 @@ public class Consumer extends TimerTask
 
 		@Override
 		public String[] getInserts() {
-			return new String[]{"INSERT INTO `" + worlds.get(worldHash).table + "-kills` (date, killer, victim, weapon) VALUES (FROM_UNIXTIME(" + date + "), " + playerID(killer) + ", " + playerID(victim) + ", " + weapon + ");"};
+			return new String[]{"INSERT INTO `" + worlds.get(loc.getWorld().getName().hashCode()).table + "-kills` (date, killer, victim, weapon, x, y, z) VALUES (FROM_UNIXTIME(" + date + "), " + playerID(killer) + ", " + playerID(victim) + ", " + weapon + ", " + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + ");"};
 		}
 
 		@Override
