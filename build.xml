@@ -3,8 +3,8 @@
 	<target name="logblock">
 		<mkdir dir="lib/"/>
 		<mkdir dir="bin/"/>
-		<get src="http://ci.bukkit.org/job/dev-Bukkit/Recommended/artifact/target/bukkit-1.1-R1.jar" dest="lib/bukkit.jar"/>
-		<get src="http://ci.bukkit.org/job/dev-CraftBukkit/Recommended/artifact/target/craftbukkit-1.1-R1.jar" dest="lib/craftbukkit.jar"/>
+		<get src="http://repo.bukkit.org/service/local/artifact/maven/redirect?g=org.bukkit&a=bukkit&v=LATEST&r=snapshots" dest="lib/bukkit.jar"/>
+		<get src="http://repo.bukkit.org/service/local/artifact/maven/redirect?g=org.bukkit&a=craftbukkit&v=RELEASE&r=releases" dest="lib/craftbukkit.jar"/>
 		<get src="http://www.theyeticave.net/downloads/permissions/3.1.6/Permissions.jar" dest="lib/Permissions.jar"/>
 		<get src="http://cloud.github.com/downloads/sk89q/worldedit/worldedit-4.6.zip" dest="WorldEdit.zip"/>
 		<unzip src="WorldEdit.zip" dest="lib/"><patternset><include name="WorldEdit.jar"/></patternset></unzip>
