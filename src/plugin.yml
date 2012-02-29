@@ -37,9 +37,6 @@ permissions:
     logblock.tp:
         description: 'Allows to use /lb tp'
         default: op
-    logblock.tp:
-        description: 'Allows to use /lb tp'
-        default: op
     logblock.me:
         description: 'Allows to see oneselfs stats with /lb me'
         default: true
@@ -49,3 +46,9 @@ permissions:
     logblock.spawnTools:
         description: 'Allows to spawn tools'
         default: true
+    logblock.tools.tool
+        description: 'Allows to spawn tool'
+        default: op
+    logblock.tools.toolblock
+        description: 'Allows to spawn toolblock'
+        default: op
