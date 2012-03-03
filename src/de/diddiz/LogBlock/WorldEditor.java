@@ -19,7 +19,7 @@ import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
-import org.bukkit.block.ContainerBlock;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.block.Sign;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.material.Bed;
@@ -159,8 +159,8 @@ public class WorldEditor implements Runnable
 			}
 			if (!(equalTypes(block.getTypeId(), type) || replaceAnyway.contains(block.getTypeId())))
 				return PerformResult.NO_ACTION;
-			if (state instanceof ContainerBlock) {
-				((ContainerBlock)state).getInventory().clear();
+			if (state instanceof InventoryHolder) {
+				((InventoryHolder)state).getInventory().clear();
 				state.update();
 			}
 			if (block.getTypeId() == replaced) {

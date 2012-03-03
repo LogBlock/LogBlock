@@ -30,7 +30,7 @@ import java.util.logging.Level;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
-import org.bukkit.block.ContainerBlock;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
@@ -133,7 +133,7 @@ public class Consumer extends TimerTask
 	 * The respective container. Must be an instance of Chest, Dispencer or Furnace.
 	 */
 	public void queueChestAccess(String playerName, BlockState container, short itemType, short itemAmount, byte itemData) {
-		if (!(container instanceof ContainerBlock))
+		if (!(container instanceof InventoryHolder))
 			return;
 		queueChestAccess(playerName, new Location(container.getWorld(), container.getX(), container.getY(), container.getZ()), container.getTypeId(), itemType, itemAmount, itemData);
 	}
@@ -150,12 +150,12 @@ public class Consumer extends TimerTask
 	 * Logs a container block break. The block type before is assumed to be o (air). All content is assumed to be taken.
 	 * 
 	 * @param container
-	 * Must be instanceof ContainerBlock
+	 * Must be instanceof InventoryHolder
 	 */
 	public void queueContainerBreak(String playerName, BlockState container) {
-		if (!(container instanceof ContainerBlock))
+		if (!(container instanceof InventoryHolder))
 			return;
-		queueContainerBreak(playerName, new Location(container.getWorld(), container.getX(), container.getY(), container.getZ()), container.getTypeId(), container.getRawData(), ((ContainerBlock)container).getInventory());
+		queueContainerBreak(playerName, new Location(container.getWorld(), container.getX(), container.getY(), container.getZ()), container.getTypeId(), container.getRawData(), ((InventoryHolder)container).getInventory());
 	}
 
 	/**

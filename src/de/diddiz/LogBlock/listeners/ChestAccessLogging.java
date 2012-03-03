@@ -9,7 +9,7 @@ import java.util.Map;
 import org.bukkit.Location;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
-import org.bukkit.block.ContainerBlock;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -36,9 +36,9 @@ public class ChestAccessLogging extends LoggingListener
 		if (cont != null) {
 			final ItemStack[] before = cont.items;
 			final BlockState state = cont.loc.getBlock().getState();
-			if (!(state instanceof ContainerBlock))
+			if (!(state instanceof InventoryHolder))
 				return;
-			final ItemStack[] after = compressInventory(((ContainerBlock)state).getInventory().getContents());
+			final ItemStack[] after = compressInventory(((InventoryHolder)state).getInventory().getContents());
 			final ItemStack[] diff = compareInventories(before, after);
 			for (final ItemStack item : diff)
 				consumer.queueChestAccess(player.getName(), cont.loc, state.getTypeId(), (short)item.getTypeId(), (short)item.getAmount(), rawData(item));
@@ -48,9 +48,9 @@ public class ChestAccessLogging extends LoggingListener
 
 	public void checkInventoryOpen(Player player, Block block) {
 		final BlockState state = block.getState();
-		if (!(state instanceof ContainerBlock))
+		if (!(state instanceof InventoryHolder))
 			return;
-		containers.put(player, new ContainerState(block.getLocation(), compressInventory(((ContainerBlock)state).getInventory().getContents())));
+		containers.put(player, new ContainerState(block.getLocation(), compressInventory(((InventoryHolder)state).getInventory().getContents())));
 	}
 
 	@EventHandler(priority = EventPriority.MONITOR)

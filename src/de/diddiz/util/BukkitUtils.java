@@ -13,7 +13,7 @@ import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
-import org.bukkit.block.ContainerBlock;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
@@ -156,8 +156,8 @@ public class BukkitUtils
 	}
 
 	public static int modifyContainer(BlockState b, ItemStack item) {
-		if (b instanceof ContainerBlock) {
-			final Inventory inv = ((ContainerBlock)b).getInventory();
+		if (b instanceof InventoryHolder) {
+			final Inventory inv = ((InventoryHolder)b).getInventory();
 			if (item.getAmount() < 0) {
 				item.setAmount(-item.getAmount());
 				final ItemStack tmp = inv.removeItem(item).get(0);
