@@ -64,6 +64,16 @@ public class CommandsHandler implements CommandExecutor
 	@Override
 	public boolean onCommand(CommandSender sender, Command cmd, String commandLabel, String[] args) {
 		try {
+			
+			if (!logblock.hasPermission(sender, "logblock.*") && !logblock.hasPermission(sender, "logblock.lookup")
+					&& !logblock.hasPermission(sender, "logblock.rollback") && !logblock.hasPermission(sender, "logblock.clearlog")
+					&& !logblock.hasPermission(sender, "logblock.hide") && !logblock.hasPermission(sender, "logblock.tp")
+					&& !logblock.hasPermission(sender, "logblock.me") && !logblock.hasPermission(sender, "logblock.ignoreRestrictions")
+					&& !logblock.hasPermission(sender, "logblock.spawnTools")){
+				sender.sendMessage("Unknown command. Type \"help\" for help.");
+				return true;
+			}
+			
 			if (args.length == 0) {
 				sender.sendMessage(ChatColor.LIGHT_PURPLE + "LogBlock v" + logblock.getDescription().getVersion() + " by DiddiZ");
 				if (checkVersion)
