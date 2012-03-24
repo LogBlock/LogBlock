@@ -13,6 +13,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.player.PlayerChangedWorldEvent;
+import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.inventory.ItemStack;
 import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
@@ -93,6 +94,23 @@ public class ToolListener implements Listener
 					toolData.enabled = false;
 					player.getInventory().removeItem(new ItemStack(tool.item, 1));
 					player.sendMessage(ChatColor.GREEN + "Tool disabled.");
+				}
+			}
+		}
+	}
+
+	@EventHandler
+	public void onPlayerDropItem(PlayerDropItemEvent event) {
+		final Player player = event.getPlayer();
+		if (hasSession(player)) {
+			final Session session = getSession(player);
+			for (final Entry<Tool, ToolData> entry : session.toolData.entrySet()) {
+				final Tool tool = entry.getKey();
+				final ToolData toolData = entry.getValue();
+				final int item = event.getItemDrop().getItemStack().getTypeId();
+				if (item == tool.item && toolData.enabled && !tool.canDrop) {
+					player.sendMessage(ChatColor.RED + "You cannot drop this tool.");
+					event.setCancelled(true);
 				}
 			}
 		}
