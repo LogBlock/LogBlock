@@ -1,6 +1,8 @@
-/.classpath
-/.project
-/.settings
+.DS_Store
+.project
+.classpath
+*.class
+*.jar
+/libraries
 /bin
-/release
-/agitar
+/lib
