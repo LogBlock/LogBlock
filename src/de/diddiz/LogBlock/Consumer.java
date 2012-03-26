@@ -120,7 +120,7 @@ public class Consumer extends TimerTask
 	}
 
 	public void queueBlockReplace(String playerName, Location loc, int typeBefore, byte dataBefore, int typeAfter, byte dataAfter) {
-		if (dataBefore == 0)
+		if (dataBefore == 0 && (typeBefore != typeAfter))
 			queueBlock(playerName, loc, typeBefore, typeAfter, dataAfter);
 		else {
 			queueBlockBreak(playerName, loc, typeBefore, dataBefore);
