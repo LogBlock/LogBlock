@@ -27,6 +27,8 @@ import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
 import com.sk89q.worldedit.bukkit.selections.Selection;
 
+import de.diddiz.util.Block;
+
 public class QueryParams implements Cloneable
 {
 	private static final Set<Integer> keywords = new HashSet<Integer>(Arrays.asList("player".hashCode(), "area".hashCode(), "selection".hashCode(), "sel".hashCode(), "block".hashCode(), "type".hashCode(), "sum".hashCode(), "destroyed".hashCode(), "created".hashCode(), "chestaccess".hashCode(), "all".hashCode(), "time".hashCode(), "since".hashCode(), "before".hashCode(), "limit".hashCode(), "world".hashCode(), "asc".hashCode(), "desc".hashCode(), "last".hashCode(), "coords".hashCode(), "silent".hashCode(), "chat".hashCode(), "search".hashCode(), "match".hashCode(), "loc".hashCode(), "location".hashCode()));
@@ -38,7 +40,7 @@ public class QueryParams implements Cloneable
 	public boolean excludePlayersMode = false, prepareToolQuery = false, silent = false;
 	public Selection sel = null;
 	public SummarizationMode sum = SummarizationMode.NONE;
-	public List<Integer> types = new ArrayList<Integer>();
+	public List<Block> types = new ArrayList<Block>();
 	public World world = null;
 	public String match = null;
 	public boolean needCount = false, needId = false, needDate = false, needType = false, needData = false, needPlayer = false, needCoords = false, needSignText = false, needChestAccess = false, needMessage = false;
@@ -134,7 +136,7 @@ public class QueryParams implements Cloneable
 			if (!types.isEmpty()) {
 				final String[] blocknames = new String[types.size()];
 				for (int i = 0; i < types.size(); i++)
-					blocknames[i] = materialName(types.get(i));
+					blocknames[i] = materialName(types.get(i).getBlock());
 				title.append(listing(blocknames, ", ", " and ") + " ");
 			} else
 				title.append("block ");
@@ -197,8 +199,15 @@ public class QueryParams implements Cloneable
 				case ALL:
 					if (!types.isEmpty()) {
 						where.append('(');
-						for (final int type : types)
-							where.append("type = " + type + " OR replaced = " + type + " OR ");
+						for (final Block block : types) {
+							where.append("((type = " + block.getBlock() + " OR replaced = " + block.getBlock());
+							if (block.getData() != -1) {
+								where.append(") AND data = " + block.getData());
+							} else {
+								where.append(")");
+							}
+							where.append(") OR ");
+						}
 						where.delete(where.length() - 4, where.length() - 1);
 						where.append(") AND ");
 					}
@@ -206,8 +215,15 @@ public class QueryParams implements Cloneable
 				case BOTH:
 					if (!types.isEmpty()) {
 						where.append('(');
-						for (final int type : types)
-							where.append("type = " + type + " OR replaced = " + type + " OR ");
+						for (final Block block : types) {
+							where.append("((type = " + block.getBlock() + " OR replaced = " + block.getBlock());
+							if (block.getData() != -1) {
+								where.append(") AND data = " + block.getData());
+							} else {
+								where.append(")");
+							}
+							where.append(") OR ");
+						}
 						where.delete(where.length() - 4, where.length());
 						where.append(") AND ");
 					}
@@ -216,8 +232,15 @@ public class QueryParams implements Cloneable
 				case CREATED:
 					if (!types.isEmpty()) {
 						where.append('(');
-						for (final int type : types)
-							where.append("type = " + type + " OR ");
+						for (final Block block : types) {
+							where.append("((type = " + block.getBlock());
+							if (block.getData() != -1) {
+								where.append(") AND data = " + block.getData());
+							} else {
+								where.append(")");
+							}
+							where.append(") OR ");
+						}
 						where.delete(where.length() - 4, where.length());
 						where.append(") AND ");
 					} else
@@ -227,8 +250,15 @@ public class QueryParams implements Cloneable
 				case DESTROYED:
 					if (!types.isEmpty()) {
 						where.append('(');
-						for (final int type : types)
-							where.append("replaced = " + type + " OR ");
+						for (final Block block : types) {
+							where.append("((replaced = " + block.getBlock());
+							if (block.getData() != -1) {
+								where.append(") AND data = " + block.getData());
+							} else {
+								where.append(")");
+							}
+							where.append(") OR ");
+						}
 						where.delete(where.length() - 4, where.length());
 						where.append(") AND ");
 					} else
@@ -239,8 +269,15 @@ public class QueryParams implements Cloneable
 					where.append("(type = 23 OR type = 54 OR type = 61 OR type = 62) AND type = replaced AND ");
 					if (!types.isEmpty()) {
 						where.append('(');
-						for (final int type : types)
-							where.append("itemtype = " + type + " OR ");
+						for (final Block block : types) {
+							where.append("((itemtype = " + block.getBlock());
+							if (block.getData() != -1) {
+								where.append(") AND itemdata = " + block.getData());
+							} else {
+								where.append(")");
+							}
+							where.append(") OR ");
+						}
 						where.delete(where.length() - 4, where.length());
 						where.append(") AND ");
 					}
@@ -309,10 +346,28 @@ public class QueryParams implements Cloneable
 				if (values.length < 1)
 					throw new IllegalArgumentException("No or wrong count of arguments for '" + param + "'");
 				for (final String blockName : values) {
-					final Material mat = Material.matchMaterial(blockName);
-					if (mat == null)
-						throw new IllegalArgumentException("No material matching: '" + blockName + "'");
-					types.add(mat.getId());
+					if (blockName.contains(":")) {
+						String[] blockNameSplit = blockName.split(":");
+						if (blockNameSplit.length > 2)
+							throw new IllegalArgumentException("No material matching: '" + blockName + "'");
+						final int data;
+						try {
+							data = Integer.parseInt(blockNameSplit[1]);
+						} catch (NumberFormatException e) {
+							throw new IllegalArgumentException("Data type not a valid number: '" + blockNameSplit[1] + "'");
+						}
+						if (data > 255 || data < 0)
+							throw new IllegalArgumentException("Data type out of range (0-255): '" + data + "'");
+						final Material mat = Material.matchMaterial(blockNameSplit[0]);
+						if (mat == null)
+							throw new IllegalArgumentException("No material matching: '" + blockName + "'");
+						types.add(new Block(mat.getId(), data));
+					} else {
+						final Material mat = Material.matchMaterial(blockName);
+						if (mat == null)
+							throw new IllegalArgumentException("No material matching: '" + blockName + "'");
+						types.add(new Block(mat.getId(), -1));
+					}
 				}
 			} else if (param.equals("area")) {
 				if (player == null && !prepareToolQuery)
@@ -410,15 +465,15 @@ public class QueryParams implements Cloneable
 		if (types.size() > 0)
 			for (final Set<Integer> equivalent : getBlockEquivalents()) {
 				boolean found = false;
-				for (final Integer type : types)
-					if (equivalent.contains(type)) {
+				for (final Block block : types)
+					if (equivalent.contains(block.getBlock())) {
 						found = true;
 						break;
 					}
 				if (found)
 					for (final Integer type : equivalent)
-						if (!types.contains(type))
-							types.add(type);
+						if (!Block.inList(types, type))
+							types.add(new Block(type, -1));
 			}
 		if (!prepareToolQuery && bct != BlockChangeType.CHAT) {
 			if (world == null)
@@ -450,7 +505,7 @@ public class QueryParams implements Cloneable
 		try {
 			final QueryParams params = (QueryParams)super.clone();
 			params.players = new ArrayList<String>(players);
-			params.types = new ArrayList<Integer>(types);
+			params.types = new ArrayList<Block>(types);
 			return params;
 		} catch (final CloneNotSupportedException ex) {
 		}

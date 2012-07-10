@@ -48,6 +48,7 @@ import de.diddiz.LogBlock.QueryParams.SummarizationMode;
 import de.diddiz.LogBlock.config.Config;
 import de.diddiz.LogBlock.config.WorldConfig;
 import de.diddiz.LogBlockQuestioner.LogBlockQuestioner;
+import de.diddiz.util.Block;
 
 public class CommandsHandler implements CommandExecutor
 {
@@ -408,9 +409,9 @@ public class CommandsHandler implements CommandExecutor
 					params.needType = true;
 					params.needData = true;
 					params.needPlayer = true;
-					if (params.types.size() == 0 || params.types.contains(63) || params.types.contains(68))
+					if (params.types.size() == 0 || Block.inList(params.types, 63) || Block.inList(params.types, 68))
 						params.needSignText = true;
-					if (params.bct == BlockChangeType.CHESTACCESS || params.types.size() == 0 || params.types.contains(23) || params.types.contains(54) || params.types.contains(61) || params.types.contains(62))
+					if (params.bct == BlockChangeType.CHESTACCESS || params.types.size() == 0 || Block.inList(params.types, 23) || Block.inList(params.types, 54) || Block.inList(params.types, 61) || Block.inList(params.types, 62))
 						params.needChestAccess = true;
 				}
 				conn = logblock.getConnection();
@@ -465,9 +466,9 @@ public class CommandsHandler implements CommandExecutor
 					params.needType = true;
 					params.needData = true;
 					params.needPlayer = true;
-					if (params.types.size() == 0 || params.types.contains(63) || params.types.contains(68))
+					if (params.types.size() == 0 || Block.inList(params.types, 63) || Block.inList(params.types, 68))
 						params.needSignText = true;
-					if (params.types.size() == 0 || params.types.contains(23) || params.types.contains(54) || params.types.contains(61) || params.types.contains(62))
+					if (params.types.size() == 0 || Block.inList(params.types, 23) || Block.inList(params.types, 54) || Block.inList(params.types, 61) || Block.inList(params.types, 62))
 						params.needChestAccess = true;
 				}
 				conn = logblock.getConnection();
