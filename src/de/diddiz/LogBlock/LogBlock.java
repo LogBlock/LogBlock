@@ -52,6 +52,7 @@ import de.diddiz.LogBlock.listeners.SnowFadeLogging;
 import de.diddiz.LogBlock.listeners.SnowFormLogging;
 import de.diddiz.LogBlock.listeners.StructureGrowLogging;
 import de.diddiz.LogBlock.listeners.ToolListener;
+import de.diddiz.LogBlock.listeners.ChannelChatLogging;
 import de.diddiz.util.MySQLConnectionPool;
 
 public class LogBlock extends JavaPlugin
@@ -185,6 +186,8 @@ public class LogBlock extends JavaPlugin
 			pm.registerEvents(new KillLogging(this), this);
 		if (isLogging(Logging.CHAT))
 			pm.registerEvents(new ChatLogging(this), this);
+                if ((isLogging(Logging.CHAT)) && (pm.getPlugin("HeroChat") != null))
+                        pm.registerEvents(new ChannelChatLogging(this), this);
 		if (isLogging(Logging.ENDERMEN))
 			pm.registerEvents(new EndermenLogging(this), this);
 		if (isLogging(Logging.NATURALSTRUCTUREGROW) || isLogging(Logging.BONEMEALSTRUCTUREGROW))
