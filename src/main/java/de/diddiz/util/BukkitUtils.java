@@ -7,11 +7,13 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
 import org.bukkit.World;
+import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.entity.Entity;
@@ -24,6 +26,7 @@ import org.bukkit.inventory.ItemStack;
 public class BukkitUtils
 {
 	private static final Set<Set<Integer>> blockEquivalents;
+	private static final Set<Integer> relativeBreakable;
 
 	static {
 		blockEquivalents = new HashSet<Set<Integer>>(7);
@@ -34,6 +37,34 @@ public class BukkitUtils
 		blockEquivalents.add(new HashSet<Integer>(Arrays.asList(73, 74)));
 		blockEquivalents.add(new HashSet<Integer>(Arrays.asList(75, 76)));
 		blockEquivalents.add(new HashSet<Integer>(Arrays.asList(93, 94)));
+		
+		relativeBreakable = new HashSet<Integer>(2);
+		relativeBreakable.add(63); // Sign
+		relativeBreakable.add(68); // Sign
+		relativeBreakable.add(65); // Ladder
+		relativeBreakable.add(77); // Button
+	}
+	
+	/**
+	 * Returns a list of block locations around the block that are of the type specified by the integer list parameter
+	 * 
+	 * @param block
+	 * @param type
+	 * @return List of block locations around the block that are of the type specified by the integer list parameter
+	 */
+	public static List<Location> getBlocksNearby(org.bukkit.block.Block block, Set<Integer> type) {
+		ArrayList<Location> blocks = new ArrayList<Location>();
+		if(type.contains(block.getRelative(BlockFace.EAST).getTypeId()))
+			blocks.add(block.getRelative(BlockFace.EAST).getLocation());
+		if(type.contains(block.getRelative(BlockFace.WEST).getTypeId()))
+			blocks.add(block.getRelative(BlockFace.WEST).getLocation());
+		if(type.contains(block.getRelative(BlockFace.NORTH).getTypeId()))
+			blocks.add(block.getRelative(BlockFace.NORTH).getLocation());
+		if(type.contains(block.getRelative(BlockFace.SOUTH).getTypeId()))
+			blocks.add(block.getRelative(BlockFace.SOUTH).getLocation());
+		if(type.contains(block.getRelative(BlockFace.UP).getTypeId()))
+			blocks.add(block.getRelative(BlockFace.UP).getLocation());
+		return blocks;
 	}
 
 	public static int getInventoryHolderType(InventoryHolder holder) {
@@ -129,6 +160,10 @@ public class BukkitUtils
 
 	public static Set<Set<Integer>> getBlockEquivalents() {
 		return blockEquivalents;
+	}
+	
+	public static Set<Integer> getRelativeBreakables() {
+		return relativeBreakable;
 	}
 
 	public static String entityName(Entity entity) {
