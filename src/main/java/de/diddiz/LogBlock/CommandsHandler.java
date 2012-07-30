@@ -705,7 +705,7 @@ public class CommandsHandler implements CommandExecutor
 				final String time = new SimpleDateFormat("yyMMddHHmmss").format(System.currentTimeMillis());
 				int deleted;
 				final String table = params.getTable();
-				final String join = params.players.size() > 0 ? "INNER JOIN `lb-players` USING (playerid) " : "";
+				final String join = params.players.size() > 0 ? "INNER JOIN `lb_players` USING (playerid) " : "";
 				rs = state.executeQuery("SELECT count(*) FROM `" + table + "` " + join + params.getWhere());
 				rs.next();
 				if ((deleted = rs.getInt(1)) > 0) {
@@ -728,21 +728,21 @@ public class CommandsHandler implements CommandExecutor
 					state.execute("DELETE `" + table + "` FROM `" + table + "` " + join + params.getWhere());
 					sender.sendMessage(ChatColor.GREEN + "Cleared out table " + table + ". Deleted " + deleted + " entries.");
 				}
-				rs = state.executeQuery("SELECT COUNT(*) FROM `" + table + "-sign` LEFT JOIN `" + table + "` USING (id) WHERE `" + table + "`.id IS NULL");
+				rs = state.executeQuery("SELECT COUNT(*) FROM `" + table + "_sign` LEFT JOIN `" + table + "` USING (id) WHERE `" + table + "`.id IS NULL");
 				rs.next();
 				if ((deleted = rs.getInt(1)) > 0) {
 					if (dumpDeletedLog)
-						state.execute("SELECT id, signtext FROM `" + table + "-sign` LEFT JOIN `" + table + "` USING (id) WHERE `" + table + "`.id IS NULL INTO OUTFILE '" + new File(dumpFolder, time + " " + table + "-sign " + params.getTitle() + ".csv").getAbsolutePath().replace("\\", "\\\\") + "' FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"'  LINES TERMINATED BY '\n'");
-					state.execute("DELETE `" + table + "-sign` FROM `" + table + "-sign` LEFT JOIN `" + table + "` USING (id) WHERE `" + table + "`.id IS NULL;");
-					sender.sendMessage(ChatColor.GREEN + "Cleared out table " + table + "-sign. Deleted " + deleted + " entries.");
+						state.execute("SELECT id, signtext FROM `" + table + "_sign` LEFT JOIN `" + table + "` USING (id) WHERE `" + table + "`.id IS NULL INTO OUTFILE '" + new File(dumpFolder, time + " " + table + "_sign " + params.getTitle() + ".csv").getAbsolutePath().replace("\\", "\\\\") + "' FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"'  LINES TERMINATED BY '\n'");
+					state.execute("DELETE `" + table + "_sign` FROM `" + table + "_sign` LEFT JOIN `" + table + "` USING (id) WHERE `" + table + "`.id IS NULL;");
+					sender.sendMessage(ChatColor.GREEN + "Cleared out table " + table + "_sign. Deleted " + deleted + " entries.");
 				}
-				rs = state.executeQuery("SELECT COUNT(*) FROM `" + table + "-chest` LEFT JOIN `" + table + "` USING (id) WHERE `" + table + "`.id IS NULL");
+				rs = state.executeQuery("SELECT COUNT(*) FROM `" + table + "_chest` LEFT JOIN `" + table + "` USING (id) WHERE `" + table + "`.id IS NULL");
 				rs.next();
 				if ((deleted = rs.getInt(1)) > 0) {
 					if (dumpDeletedLog)
-						state.execute("SELECT id, itemtype, itemamount, itemdata FROM `" + table + "-chest` LEFT JOIN `" + table + "` USING (id) WHERE `" + table + "`.id IS NULL INTO OUTFILE '" + new File(dumpFolder, time + " " + table + "-chest " + params.getTitle() + ".csv").getAbsolutePath().replace("\\", "\\\\") + "' FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"'  LINES TERMINATED BY '\n'");
-					state.execute("DELETE `" + table + "-chest` FROM `" + table + "-chest` LEFT JOIN `" + table + "` USING (id) WHERE `" + table + "`.id IS NULL;");
-					sender.sendMessage(ChatColor.GREEN + "Cleared out table " + table + "-chest. Deleted " + deleted + " entries.");
+						state.execute("SELECT id, itemtype, itemamount, itemdata FROM `" + table + "_chest` LEFT JOIN `" + table + "` USING (id) WHERE `" + table + "`.id IS NULL INTO OUTFILE '" + new File(dumpFolder, time + " " + table + "_chest " + params.getTitle() + ".csv").getAbsolutePath().replace("\\", "\\\\") + "' FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"'  LINES TERMINATED BY '\n'");
+					state.execute("DELETE `" + table + "_chest` FROM `" + table + "_chest` LEFT JOIN `" + table + "` USING (id) WHERE `" + table + "`.id IS NULL;");
+					sender.sendMessage(ChatColor.GREEN + "Cleared out table " + table + "_chest. Deleted " + deleted + " entries.");
 				}
 			} catch (final Exception ex) {
 				sender.sendMessage(ChatColor.RED + "Exception, check error log");

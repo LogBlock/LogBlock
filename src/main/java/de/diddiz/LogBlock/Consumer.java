@@ -326,7 +326,7 @@ public class Consumer extends TimerTask
 				continue;
 			for (final String player : r.getPlayers())
 				if (!playerIds.containsKey(player) && !insertedPlayers.contains(player)) {
-					writer.println("INSERT IGNORE INTO `lb-players` (playername) VALUES ('" + player + "');");
+					writer.println("INSERT IGNORE INTO `lb_players` (playername) VALUES ('" + player + "');");
 					insertedPlayers.add(player);
 				}
 			for (final String insert : r.getInserts())
@@ -355,8 +355,8 @@ public class Consumer extends TimerTask
 	}
 
 	private boolean addPlayer(Statement state, String playerName) throws SQLException {
-		state.execute("INSERT IGNORE INTO `lb-players` (playername) VALUES ('" + playerName + "')");
-		final ResultSet rs = state.executeQuery("SELECT playerid FROM `lb-players` WHERE playername = '" + playerName + "'");
+		state.execute("INSERT IGNORE INTO `lb_players` (playername) VALUES ('" + playerName + "')");
+		final ResultSet rs = state.executeQuery("SELECT playerid FROM `lb_players` WHERE playername = '" + playerName + "'");
 		if (rs.next())
 			playerIds.put(playerName, rs.getInt(1));
 		rs.close();
@@ -375,7 +375,7 @@ public class Consumer extends TimerTask
 		final Integer id = playerIds.get(playerName);
 		if (id != null)
 			return id.toString();
-		return "(SELECT playerid FROM `lb-players` WHERE playername = '" + playerName + "')";
+		return "(SELECT playerid FROM `lb_players` WHERE playername = '" + playerName + "')";
 	}
 
 	private static interface Row
@@ -397,9 +397,9 @@ public class Consumer extends TimerTask
 			final String[] inserts = new String[ca != null || signtext != null ? 2 : 1];
 			inserts[0] = "INSERT INTO `" + table + "` (date, playerid, replaced, type, data, x, y, z) VALUES (FROM_UNIXTIME(" + date + "), " + playerID(playerName) + ", " + replaced + ", " + type + ", " + data + ", '" + loc.getBlockX() + "', " + loc.getBlockY() + ", '" + loc.getBlockZ() + "');";
 			if (signtext != null)
-				inserts[1] = "INSERT INTO `" + table + "-sign` (id, signtext) values (LAST_INSERT_ID(), '" + signtext + "');";
+				inserts[1] = "INSERT INTO `" + table + "_sign` (id, signtext) values (LAST_INSERT_ID(), '" + signtext + "');";
 			else if (ca != null)
-				inserts[1] = "INSERT INTO `" + table + "-chest` (id, itemtype, itemamount, itemdata) values (LAST_INSERT_ID(), " + ca.itemType + ", " + ca.itemAmount + ", " + ca.itemData + ");";
+				inserts[1] = "INSERT INTO `" + table + "_chest` (id, itemtype, itemamount, itemdata) values (LAST_INSERT_ID(), " + ca.itemType + ", " + ca.itemAmount + ", " + ca.itemData + ");";
 			return inserts;
 		}
 
@@ -426,7 +426,7 @@ public class Consumer extends TimerTask
 
 		@Override
 		public String[] getInserts() {
-			return new String[]{"INSERT INTO `" + getWorldConfig(loc.getWorld()).table + "-kills` (date, killer, victim, weapon, x, y, z) VALUES (FROM_UNIXTIME(" + date + "), " + playerID(killer) + ", " + playerID(victim) + ", " + weapon + ", " + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + ");"};
+			return new String[]{"INSERT INTO `" + getWorldConfig(loc.getWorld()).table + "_kills` (date, killer, victim, weapon, x, y, z) VALUES (FROM_UNIXTIME(" + date + "), " + playerID(killer) + ", " + playerID(victim) + ", " + weapon + ", " + loc.getBlockX() + ", " + loc.getBlockY() + ", " + loc.getBlockZ() + ");"};
 		}
 
 		@Override
@@ -443,7 +443,7 @@ public class Consumer extends TimerTask
 
 		@Override
 		public String[] getInserts() {
-			return new String[]{"INSERT INTO `lb-chat` (date, playerid, message) VALUES (FROM_UNIXTIME(" + date + "), " + playerID(playerName) + ", '" + message + "');"};
+			return new String[]{"INSERT INTO `lb_chat` (date, playerid, message) VALUES (FROM_UNIXTIME(" + date + "), " + playerID(playerName) + ", '" + message + "');"};
 		}
 
 		@Override
@@ -466,7 +466,7 @@ public class Consumer extends TimerTask
 
 		@Override
 		public String[] getInserts() {
-			return new String[]{"UPDATE `lb-players` SET lastlogin = FROM_UNIXTIME(" + lastLogin + "), firstlogin = IF(firstlogin = 0, FROM_UNIXTIME(" + lastLogin + "), firstlogin), ip = '" + ip + "' WHERE " + (playerIds.containsKey(playerName) ? "playerid = " + playerIds.get(playerName) : "playerName = '" + playerName + "'") + ";"};
+			return new String[]{"UPDATE `lb_players` SET lastlogin = FROM_UNIXTIME(" + lastLogin + "), firstlogin = IF(firstlogin = 0, FROM_UNIXTIME(" + lastLogin + "), firstlogin), ip = '" + ip + "' WHERE " + (playerIds.containsKey(playerName) ? "playerid = " + playerIds.get(playerName) : "playerName = '" + playerName + "'") + ";"};
 		}
 
 		@Override
@@ -487,7 +487,7 @@ public class Consumer extends TimerTask
 
 		@Override
 		public String[] getInserts() {
-			return new String[]{"UPDATE `lb-players` SET onlinetime = onlinetime + TIMESTAMPDIFF(SECOND, lastlogin, FROM_UNIXTIME('" + leaveTime + "')) WHERE lastlogin > 0 && " + (playerIds.containsKey(playerName) ? "playerid = " + playerIds.get(playerName) : "playerName = '" + playerName + "'") + ";"};
+			return new String[]{"UPDATE `lb_players` SET onlinetime = onlinetime + TIMESTAMPDIFF(SECOND, lastlogin, FROM_UNIXTIME('" + leaveTime + "')) WHERE lastlogin > 0 && " + (playerIds.containsKey(playerName) ? "playerid = " + playerIds.get(playerName) : "playerName = '" + playerName + "'") + ";"};
 		}
 
 		@Override

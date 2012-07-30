@@ -14,7 +14,7 @@ public class WorldConfig extends LoggingEnabledMapping
 
 	public WorldConfig(File file) throws IOException {
 		final Map<String, Object> def = new HashMap<String, Object>();
-		def.put("table", "lb-" + file.getName().substring(0, file.getName().length() - 4).replace(' ', '_'));
+		def.put("table", "lb_" + file.getName().substring(0, file.getName().length() - 4).replace(' ', '_'));
 		for (final Logging l : Logging.values())
 			def.put("logging." + l.toString(), l.isDefaultEnabled());
 		final YamlConfiguration config = YamlConfiguration.loadConfiguration(file);

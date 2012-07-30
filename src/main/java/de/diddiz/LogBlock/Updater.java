@@ -36,7 +36,7 @@ class Updater
 				try {
 					conn.setAutoCommit(true);
 					final Statement st = conn.createStatement();
-					st.execute("ALTER TABLE `lb-chat` ENGINE = MyISAM, ADD FULLTEXT message (message)");
+					st.execute("ALTER TABLE `lb_chat` ENGINE = MyISAM, ADD FULLTEXT message (message)");
 					st.close();
 					conn.close();
 				} catch (final SQLException ex) {
@@ -59,7 +59,7 @@ class Updater
 			try {
 				conn.setAutoCommit(true);
 				final Statement st = conn.createStatement();
-				st.execute("ALTER TABLE `lb-players` ADD COLUMN lastlogin DATETIME NOT NULL, ADD COLUMN onlinetime TIME NOT NULL, ADD COLUMN ip VARCHAR(255) NOT NULL");
+				st.execute("ALTER TABLE `lb_players` ADD COLUMN lastlogin DATETIME NOT NULL, ADD COLUMN onlinetime TIME NOT NULL, ADD COLUMN ip VARCHAR(255) NOT NULL");
 				st.close();
 				conn.close();
 			} catch (final SQLException ex) {
@@ -74,7 +74,7 @@ class Updater
 			try {
 				conn.setAutoCommit(true);
 				final Statement st = conn.createStatement();
-				st.execute("ALTER TABLE `lb-players` ADD COLUMN firstlogin DATETIME NOT NULL AFTER playername");
+				st.execute("ALTER TABLE `lb_players` ADD COLUMN firstlogin DATETIME NOT NULL AFTER playername");
 				st.close();
 				conn.close();
 			} catch (final SQLException ex) {
@@ -166,7 +166,7 @@ class Updater
 				final Statement st = conn.createStatement();
 				for (final WorldConfig wcfg : getLoggedWorlds())
 					if (wcfg.isLogging(Logging.KILL))
-						st.execute("ALTER TABLE `" + wcfg.table + "-kills` ADD (x SMALLINT NOT NULL DEFAULT 0, y TINYINT UNSIGNED NOT NULL DEFAULT 0, z SMALLINT NOT NULL DEFAULT 0)");
+						st.execute("ALTER TABLE `" + wcfg.table + "_kills` ADD (x SMALLINT NOT NULL DEFAULT 0, y TINYINT UNSIGNED NOT NULL DEFAULT 0, z SMALLINT NOT NULL DEFAULT 0)");
 				st.close();
 				conn.close();
 			} catch (final SQLException ex) {
@@ -181,14 +181,14 @@ class Updater
 			try {
 				conn.setAutoCommit(true);
 				final Statement st = conn.createStatement();
-				final ResultSet rs = st.executeQuery("SHOW COLUMNS FROM `lb-players` WHERE field = 'onlinetime'");
+				final ResultSet rs = st.executeQuery("SHOW COLUMNS FROM `lb_players` WHERE field = 'onlinetime'");
 				if (rs.next() && rs.getString("Type").equalsIgnoreCase("time")) {
-					st.execute("ALTER TABLE `lb-players` ADD onlinetime2 INT UNSIGNED NOT NULL");
-					st.execute("UPDATE `lb-players` SET onlinetime2 = HOUR(onlinetime) * 3600 + MINUTE(onlinetime) * 60 + SECOND(onlinetime)");
-					st.execute("ALTER TABLE `lb-players` DROP onlinetime");
-					st.execute("ALTER TABLE `lb-players` CHANGE onlinetime2 onlinetime INT UNSIGNED NOT NULL");
+					st.execute("ALTER TABLE `lb_players` ADD onlinetime2 INT UNSIGNED NOT NULL");
+					st.execute("UPDATE `lb_players` SET onlinetime2 = HOUR(onlinetime) * 3600 + MINUTE(onlinetime) * 60 + SECOND(onlinetime)");
+					st.execute("ALTER TABLE `lb_players` DROP onlinetime");
+					st.execute("ALTER TABLE `lb_players` CHANGE onlinetime2 onlinetime INT UNSIGNED NOT NULL");
 				} else
-					getLogger().info("[LogBlock] Column lb-players was alredy modified, skipping it.");
+					getLogger().info("[LogBlock] Column lb_players was alredy modified, skipping it.");
 				st.close();
 				conn.close();
 			} catch (final SQLException ex) {
@@ -208,15 +208,15 @@ class Updater
 		final Statement state = conn.createStatement();
 		final DatabaseMetaData dbm = conn.getMetaData();
 		conn.setAutoCommit(true);
-		createTable(dbm, state, "lb-players", "(playerid SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT, playername varchar(32) NOT NULL, firstlogin DATETIME NOT NULL, lastlogin DATETIME NOT NULL, onlinetime INT UNSIGNED NOT NULL, ip varchar(255) NOT NULL, PRIMARY KEY (playerid), UNIQUE (playername))");
+		createTable(dbm, state, "lb_players", "(playerid SMALLINT UNSIGNED NOT NULL AUTO_INCREMENT, playername varchar(32) NOT NULL, firstlogin DATETIME NOT NULL, lastlogin DATETIME NOT NULL, onlinetime INT UNSIGNED NOT NULL, ip varchar(255) NOT NULL, PRIMARY KEY (playerid), UNIQUE (playername))");
 		if (isLogging(Logging.CHAT))
-			createTable(dbm, state, "lb-chat", "(id INT UNSIGNED NOT NULL AUTO_INCREMENT, date DATETIME NOT NULL, playerid SMALLINT UNSIGNED NOT NULL, message VARCHAR(255) NOT NULL, PRIMARY KEY (id), KEY playerid (playerid), FULLTEXT message (message)) ENGINE=MyISAM");
+			createTable(dbm, state, "lb_chat", "(id INT UNSIGNED NOT NULL AUTO_INCREMENT, date DATETIME NOT NULL, playerid SMALLINT UNSIGNED NOT NULL, message VARCHAR(255) NOT NULL, PRIMARY KEY (id), KEY playerid (playerid), FULLTEXT message (message)) ENGINE=MyISAM");
 		for (final WorldConfig wcfg : getLoggedWorlds()) {
 			createTable(dbm, state, wcfg.table, "(id INT UNSIGNED NOT NULL AUTO_INCREMENT, date DATETIME NOT NULL, playerid SMALLINT UNSIGNED NOT NULL, replaced TINYINT UNSIGNED NOT NULL, type TINYINT UNSIGNED NOT NULL, data TINYINT UNSIGNED NOT NULL, x SMALLINT NOT NULL, y TINYINT UNSIGNED NOT NULL, z SMALLINT NOT NULL, PRIMARY KEY (id), KEY coords (x, z, y), KEY date (date), KEY playerid (playerid))");
-			createTable(dbm, state, wcfg.table + "-sign", "(id INT UNSIGNED NOT NULL, signtext VARCHAR(255) NOT NULL, PRIMARY KEY (id))");
-			createTable(dbm, state, wcfg.table + "-chest", "(id INT UNSIGNED NOT NULL, itemtype SMALLINT UNSIGNED NOT NULL, itemamount SMALLINT NOT NULL, itemdata TINYINT UNSIGNED NOT NULL, PRIMARY KEY (id))");
+			createTable(dbm, state, wcfg.table + "_sign", "(id INT UNSIGNED NOT NULL, signtext VARCHAR(255) NOT NULL, PRIMARY KEY (id))");
+			createTable(dbm, state, wcfg.table + "_chest", "(id INT UNSIGNED NOT NULL, itemtype SMALLINT UNSIGNED NOT NULL, itemamount SMALLINT NOT NULL, itemdata TINYINT UNSIGNED NOT NULL, PRIMARY KEY (id))");
 			if (wcfg.isLogging(Logging.KILL))
-				createTable(dbm, state, wcfg.table + "-kills", "(id INT UNSIGNED NOT NULL AUTO_INCREMENT, date DATETIME NOT NULL, killer SMALLINT UNSIGNED, victim SMALLINT UNSIGNED NOT NULL, weapon SMALLINT UNSIGNED NOT NULL, x SMALLINT NOT NULL, y TINYINT UNSIGNED NOT NULL, z SMALLINT NOT NULL, PRIMARY KEY (id))");
+				createTable(dbm, state, wcfg.table + "_kills", "(id INT UNSIGNED NOT NULL AUTO_INCREMENT, date DATETIME NOT NULL, killer SMALLINT UNSIGNED, victim SMALLINT UNSIGNED NOT NULL, weapon SMALLINT UNSIGNED NOT NULL, x SMALLINT NOT NULL, y TINYINT UNSIGNED NOT NULL, z SMALLINT NOT NULL, PRIMARY KEY (id))");
 		}
 		state.close();
 		conn.close();
