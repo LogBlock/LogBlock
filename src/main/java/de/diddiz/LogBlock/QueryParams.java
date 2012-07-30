@@ -78,10 +78,10 @@ public final class QueryParams implements Cloneable
 					select += "message, ";
 				select = select.substring(0, select.length() - 2);
 			}
-			String from = "FROM `lb-chat` ";
+			String from = "FROM `lb_chat` ";
 
 			if (needPlayer || players.size() > 0)
-				from += "INNER JOIN `lb-players` USING (playerid) ";
+				from += "INNER JOIN `lb_players` USING (playerid) ";
 			return select + " " + from + getWhere() + "ORDER BY date " + order + ", id " + order + " " + getLimit();
 		}
 		if (sum == SummarizationMode.NONE) {
@@ -109,16 +109,16 @@ public final class QueryParams implements Cloneable
 			}
 			String from = "FROM `" + getTable() + "` ";
 			if (needPlayer || players.size() > 0)
-				from += "INNER JOIN `lb-players` USING (playerid) ";
+				from += "INNER JOIN `lb_players` USING (playerid) ";
 			if (needSignText)
-				from += "LEFT JOIN `" + getTable() + "-sign` USING (id) ";
+				from += "LEFT JOIN `" + getTable() + "_sign` USING (id) ";
 			if (needChestAccess)
-				from += "LEFT JOIN `" + getTable() + "-chest` USING (id) ";
+				from += "LEFT JOIN `" + getTable() + "_chest` USING (id) ";
 			return select + " " + from + getWhere() + "ORDER BY date " + order + ", id " + order + " " + getLimit();
 		} else if (sum == SummarizationMode.TYPES)
-			return "SELECT type, SUM(created) AS created, SUM(destroyed) AS destroyed FROM ((SELECT type, count(*) AS created, 0 AS destroyed FROM `" + getTable() + "` INNER JOIN `lb-players` USING (playerid) " + getWhere(BlockChangeType.CREATED) + "GROUP BY type) UNION (SELECT replaced AS type, 0 AS created, count(*) AS destroyed FROM `" + getTable() + "` INNER JOIN `lb-players` USING (playerid) " + getWhere(BlockChangeType.DESTROYED) + "GROUP BY replaced)) AS t GROUP BY type ORDER BY SUM(created) + SUM(destroyed) " + order + " " + getLimit();
+			return "SELECT type, SUM(created) AS created, SUM(destroyed) AS destroyed FROM ((SELECT type, count(*) AS created, 0 AS destroyed FROM `" + getTable() + "` INNER JOIN `lb_players` USING (playerid) " + getWhere(BlockChangeType.CREATED) + "GROUP BY type) UNION (SELECT replaced AS type, 0 AS created, count(*) AS destroyed FROM `" + getTable() + "` INNER JOIN `lb_players` USING (playerid) " + getWhere(BlockChangeType.DESTROYED) + "GROUP BY replaced)) AS t GROUP BY type ORDER BY SUM(created) + SUM(destroyed) " + order + " " + getLimit();
 		else
-			return "SELECT playername, SUM(created) AS created, SUM(destroyed) AS destroyed FROM ((SELECT playerid, count(*) AS created, 0 AS destroyed FROM `" + getTable() + "` " + getWhere(BlockChangeType.CREATED) + "GROUP BY playerid) UNION (SELECT playerid, 0 AS created, count(*) AS destroyed FROM `" + getTable() + "` " + getWhere(BlockChangeType.DESTROYED) + "GROUP BY playerid)) AS t INNER JOIN `lb-players` USING (playerid) GROUP BY playerid ORDER BY SUM(created) + SUM(destroyed) " + order + " " + getLimit();
+			return "SELECT playername, SUM(created) AS created, SUM(destroyed) AS destroyed FROM ((SELECT playerid, count(*) AS created, 0 AS destroyed FROM `" + getTable() + "` " + getWhere(BlockChangeType.CREATED) + "GROUP BY playerid) UNION (SELECT playerid, 0 AS created, count(*) AS destroyed FROM `" + getTable() + "` " + getWhere(BlockChangeType.DESTROYED) + "GROUP BY playerid)) AS t INNER JOIN `lb_players` USING (playerid) GROUP BY playerid ORDER BY SUM(created) + SUM(destroyed) " + order + " " + getLimit();
 	}
 
 	public String getTable() {
