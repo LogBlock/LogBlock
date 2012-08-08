@@ -2,6 +2,10 @@ package de.diddiz.LogBlock.listeners;
 
 import static de.diddiz.LogBlock.config.Config.getWorldConfig;
 import static de.diddiz.LogBlock.config.Config.isLogging;
+
+import java.util.List;
+
+import org.bukkit.Location;
 import org.bukkit.block.Sign;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -10,6 +14,7 @@ import org.bukkit.event.player.PlayerBucketFillEvent;
 import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.LogBlock.Logging;
 import de.diddiz.LogBlock.config.WorldConfig;
+import de.diddiz.util.BukkitUtils;
 
 public class BlockBreakLogging extends LoggingListener
 {
@@ -28,8 +33,18 @@ public class BlockBreakLogging extends LoggingListener
 				consumer.queueContainerBreak(event.getPlayer().getName(), event.getBlock().getState());
 			else if (type == 79)
 				consumer.queueBlockReplace(event.getPlayer().getName(), event.getBlock().getState(), 9, (byte)0);
-			else
+			else {
 				consumer.queueBlockBreak(event.getPlayer().getName(), event.getBlock().getState());
+				List<Location> nearbySigns = BukkitUtils.getBlocksNearby(event.getBlock(), BukkitUtils.getRelativeBreakables());
+				if(nearbySigns.size() != 0) {
+					for(Location location : nearbySigns) {
+						int blockType = location.getBlock().getTypeId();
+						if (wcfg.isLogging(Logging.SIGNTEXT) && (blockType == 63 || type == 68))
+							consumer.queueSignBreak(event.getPlayer().getName(), (Sign) location.getBlock().getState());
+						consumer.queueBlockBreak(event.getPlayer().getName(), location.getBlock().getState());
+					}
+				}
+			}
 		}
 	}
 
