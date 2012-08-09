@@ -12,9 +12,6 @@ import static de.diddiz.util.Utils.isInt;
 import static de.diddiz.util.Utils.join;
 import static de.diddiz.util.Utils.listing;
 import static de.diddiz.util.Utils.parseTimeSpec;
-import com.sk89q.worldedit.bukkit.WorldEditPlugin;
-import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
-import com.sk89q.worldedit.bukkit.selections.Selection;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -25,10 +22,9 @@ import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
-import org.bukkit.plugin.Plugin;
 import de.diddiz.util.Block;
 
-public final class QueryParams implements Cloneable
+public class QueryParams implements Cloneable
 {
 	private static final Set<Integer> keywords = new HashSet<Integer>(Arrays.asList("player".hashCode(), "area".hashCode(), "selection".hashCode(), "sel".hashCode(), "block".hashCode(), "type".hashCode(), "sum".hashCode(), "destroyed".hashCode(), "created".hashCode(), "chestaccess".hashCode(), "all".hashCode(), "time".hashCode(), "since".hashCode(), "before".hashCode(), "limit".hashCode(), "world".hashCode(), "asc".hashCode(), "desc".hashCode(), "last".hashCode(), "coords".hashCode(), "silent".hashCode(), "chat".hashCode(), "search".hashCode(), "match".hashCode(), "loc".hashCode(), "location".hashCode()));
 	public BlockChangeType bct = BlockChangeType.BOTH;
@@ -37,13 +33,12 @@ public final class QueryParams implements Cloneable
 	public Order order = Order.DESC;
 	public List<String> players = new ArrayList<String>();
 	public boolean excludePlayersMode = false, prepareToolQuery = false, silent = false;
-	public Selection sel = null;
 	public SummarizationMode sum = SummarizationMode.NONE;
 	public List<Block> types = new ArrayList<Block>();
 	public World world = null;
 	public String match = null;
 	public boolean needCount = false, needId = false, needDate = false, needType = false, needData = false, needPlayer = false, needCoords = false, needSignText = false, needChestAccess = false, needMessage = false;
-	private final LogBlock logblock;
+	protected final LogBlock logblock;
 
 	public QueryParams(LogBlock logblock) {
 		this.logblock = logblock;
@@ -163,14 +158,13 @@ public final class QueryParams implements Cloneable
 				title.append("within ").append(radius).append(" blocks of ").append(prepareToolQuery ? "clicked block" : "you").append(" ");
 			else if (radius == 0)
 				title.append("at ").append(loc.getBlockX()).append(":").append(loc.getBlockY()).append(":").append(loc.getBlockZ()).append(" ");
-		} else if (sel != null)
-			title.append(prepareToolQuery ? "at double chest " : "inside selection ");
+		}
 		else if (prepareToolQuery)
 			if (radius > 0)
 				title.append("within ").append(radius).append(" blocks of clicked block ");
 			else if (radius == 0)
 				title.append("at clicked block ");
-		if (world != null && !(sel != null && prepareToolQuery))
+		if (world != null && !(prepareToolQuery))
 			title.append("in ").append(friendlyWorldname(world.getName())).append(" ");
 		if (sum != SummarizationMode.NONE)
 			title.append("summed up by ").append(sum == SummarizationMode.TYPES ? "blocks" : "players").append(" ");
@@ -287,8 +281,7 @@ public final class QueryParams implements Cloneable
 					where.append("x = '").append(loc.getBlockX()).append("' AND y = '").append(loc.getBlockY()).append("' AND z = '").append(loc.getBlockZ()).append("' AND ");
 				else if (radius > 0)
 					where.append("x > '").append(loc.getBlockX() - radius).append("' AND x < '").append(loc.getBlockX() + radius).append("' AND z > '").append(loc.getBlockZ() - radius).append("' AND z < '").append(loc.getBlockZ() + radius).append("' AND ");
-			} else if (sel != null)
-				where.append("x >= '").append(sel.getMinimumPoint().getBlockX()).append("' AND x <= '").append(sel.getMaximumPoint().getBlockX()).append("' AND y >= '").append(sel.getMinimumPoint().getBlockY()).append("' AND y <= '").append(sel.getMaximumPoint().getBlockY()).append("' AND z >= '").append(sel.getMinimumPoint().getBlockZ()).append("' AND z <= '").append(sel.getMaximumPoint().getBlockZ()).append("' AND ");
+			} 
 		}
 		if (!players.isEmpty() && sum != SummarizationMode.PLAYERS)
 			if (!excludePlayersMode) {
@@ -382,18 +375,6 @@ public final class QueryParams implements Cloneable
 					if (!prepareToolQuery)
 						loc = player.getLocation();
 				}
-			} else if (param.equals("selection") || param.equals("sel")) {
-				if (player == null)
-					throw new IllegalArgumentException("You have to ba a player to use selection");
-				final Plugin we = player.getServer().getPluginManager().getPlugin("WorldEdit");
-				if (we == null)
-					throw new IllegalArgumentException("WorldEdit plugin not found");
-				final Selection selection = ((WorldEditPlugin)we).getSelection(player);
-				if (selection == null)
-					throw new IllegalArgumentException("No selection defined");
-				if (!(selection instanceof CuboidSelection))
-					throw new IllegalArgumentException("You have to define a cuboid selection");
-				setSelection(selection);
 			} else if (param.equals("time") || param.equals("since")) {
 				since = values.length > 0 ? parseTimeSpec(values) : defaultTime;
 				if (since == -1)
@@ -489,11 +470,6 @@ public final class QueryParams implements Cloneable
 		world = loc.getWorld();
 	}
 
-	public void setSelection(Selection sel) {
-		this.sel = sel;
-		world = sel.getWorld();
-	}
-
 	public void setPlayer(String playerName) {
 		players.clear();
 		players.add(playerName);
@@ -511,7 +487,7 @@ public final class QueryParams implements Cloneable
 		return null;
 	}
 
-	private static String[] getValues(List<String> args, int offset) {
+	protected static String[] getValues(List<String> args, int offset) {
 		int i;
 		for (i = offset; i < args.size(); i++)
 			if (isKeyWord(args.get(i)))
@@ -530,7 +506,6 @@ public final class QueryParams implements Cloneable
 		types = p.types;
 		loc = p.loc;
 		radius = p.radius;
-		sel = p.sel;
 		if (p.since != 0 || since != defaultTime)
 			since = p.since;
 		before = p.before;

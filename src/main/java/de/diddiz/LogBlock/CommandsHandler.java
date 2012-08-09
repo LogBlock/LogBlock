@@ -228,11 +228,19 @@ public class CommandsHandler implements CommandExecutor
 						sender.sendMessage(ChatColor.RED + "You aren't allowed to do this.");
 				} else if (command.equals("rollback") || command.equals("undo") || command.equals("rb")) {
 					if (logblock.hasPermission(sender, "logblock.rollback")) {
-						final QueryParams params = new QueryParams(logblock);
-						params.since = defaultTime;
-						params.bct = BlockChangeType.ALL;
-						params.parseArgs(sender, argsToList(args, 1));
-						new CommandRollback(sender, params, true);
+						if(logblock.worldEditEnabled) {
+							final WorldEditQueryParams params = new WorldEditQueryParams(logblock);
+							params.since = defaultTime;
+							params.bct = BlockChangeType.ALL;
+							params.parseArgs(sender, argsToList(args, 1));
+							new CommandRollback(sender, params, true);
+						} else {
+							final QueryParams params = new QueryParams(logblock);
+							params.since = defaultTime;
+							params.bct = BlockChangeType.ALL;
+							params.parseArgs(sender, argsToList(args, 1));
+							new CommandRollback(sender, params, true);
+						}
 					} else
 						sender.sendMessage(ChatColor.RED + "You aren't allowed to do this.");
 				} else if (command.equals("redo")) {
@@ -308,7 +316,11 @@ public class CommandsHandler implements CommandExecutor
 						final List<String> argsList = new ArrayList<String>(Arrays.asList(args));
 						if (command.equals("lookup"))
 							argsList.remove(0);
-						new CommandLookup(sender, new QueryParams(logblock, sender, argsList), true);
+						if(logblock.worldEditEnabled) {
+							new CommandLookup(sender, new WorldEditQueryParams(logblock, sender, argsList), true);
+						} else {
+							new CommandLookup(sender, new QueryParams(logblock, sender, argsList), true);
+						}
 					} else
 						sender.sendMessage(ChatColor.RED + "You aren't allowed to do this");
 				} else
@@ -348,7 +360,15 @@ public class CommandsHandler implements CommandExecutor
 			sender.sendMessage(ChatColor.RED + "You are not allowed to rollback more than " + rollbackMaxTime + " minutes");
 			return false;
 		}
-		if (rollbackMaxArea > 0 && (params.sel == null && params.loc == null || params.radius > rollbackMaxArea || params.sel != null && (params.sel.getLength() > rollbackMaxArea || params.sel.getWidth() > rollbackMaxArea))) {
+		boolean worldEditEnabled = this.logblock.getServer().getPluginManager().getPlugin("WorldEdit") != null;
+		if (worldEditEnabled) {
+			WorldEditQueryParams WEparams = (WorldEditQueryParams) params;
+			if (rollbackMaxArea > 0 && (WEparams.sel == null && WEparams.loc == null || WEparams.radius > rollbackMaxArea || WEparams.sel != null && (WEparams.sel.getLength() > rollbackMaxArea || WEparams.sel.getWidth() > rollbackMaxArea))) {
+				sender.sendMessage(ChatColor.RED + "You are not allowed to rollback an area larger than " + rollbackMaxArea + " blocks");
+				return false;
+			}
+		}
+		if (rollbackMaxArea > 0 && (params.loc == null || params.radius > rollbackMaxArea)) {
 			sender.sendMessage(ChatColor.RED + "You are not allowed to rollback an area larger than " + rollbackMaxArea + " blocks");
 			return false;
 		}

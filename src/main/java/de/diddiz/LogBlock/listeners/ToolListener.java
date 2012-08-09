@@ -4,7 +4,6 @@ import static de.diddiz.LogBlock.Session.getSession;
 import static de.diddiz.LogBlock.Session.hasSession;
 import static de.diddiz.LogBlock.config.Config.isLogged;
 import static de.diddiz.LogBlock.config.Config.toolsByType;
-import com.sk89q.worldedit.bukkit.selections.CuboidSelection;
 import java.util.Map.Entry;
 import org.bukkit.ChatColor;
 import org.bukkit.block.Block;
@@ -25,6 +24,7 @@ import de.diddiz.LogBlock.Tool;
 import de.diddiz.LogBlock.ToolBehavior;
 import de.diddiz.LogBlock.ToolData;
 import de.diddiz.LogBlock.ToolMode;
+import de.diddiz.LogBlock.WorldEditQueryParams;
 
 public class ToolListener implements Listener
 {
@@ -49,18 +49,22 @@ public class ToolListener implements Listener
 				if (behavior != ToolBehavior.NONE && toolData.enabled) {
 					final Block block = event.getClickedBlock();
 					final QueryParams params = toolData.params;
+					boolean paramsWorldEdit = logblock.worldEditEnabled && (params instanceof WorldEditQueryParams);
 					params.loc = null;
-					params.sel = null;
+					if (paramsWorldEdit)
+						((WorldEditQueryParams) params).sel = null;
 					if (behavior == ToolBehavior.BLOCK)
 						params.setLocation(block.getRelative(event.getBlockFace()).getLocation());
 					else if (block.getTypeId() != 54 || tool.params.radius != 0)
 						params.setLocation(block.getLocation());
 					else {
-						for (final BlockFace face : new BlockFace[]{BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST})
-							if (block.getRelative(face).getTypeId() == 54)
-								params.setSelection(new CuboidSelection(event.getPlayer().getWorld(), block.getLocation(), block.getRelative(face).getLocation()));
-						if (params.sel == null)
-							params.setLocation(block.getLocation());
+						if (paramsWorldEdit) {
+							for (final BlockFace face : new BlockFace[]{BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST})
+								if (block.getRelative(face).getTypeId() == 54)
+									((WorldEditQueryParams) params).setSelection(event.getPlayer().getWorld(), block.getLocation(), block.getRelative(face).getLocation());
+							if (((WorldEditQueryParams) params).sel == null)
+								params.setLocation(block.getLocation());
+						}
 					}
 					try {
 						if (toolData.mode == ToolMode.ROLLBACK)

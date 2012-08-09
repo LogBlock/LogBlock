@@ -28,6 +28,7 @@ import de.diddiz.LogBlock.QueryParams;
 import de.diddiz.LogBlock.Tool;
 import de.diddiz.LogBlock.ToolBehavior;
 import de.diddiz.LogBlock.ToolMode;
+import de.diddiz.LogBlock.WorldEditQueryParams;
 
 public class Config
 {
@@ -185,7 +186,12 @@ public class Config
 				final boolean defaultEnabled = tSec.getBoolean("defaultEnabled", false);
 				final int item = tSec.getInt("item", 0);
 				final boolean canDrop = tSec.getBoolean("canDrop", false);
-				final QueryParams params = new QueryParams(logblock);
+				final QueryParams params;
+				if (logblock.worldEditEnabled) {
+					params = new WorldEditQueryParams(logblock);
+				} else {
+					params = new QueryParams(logblock);
+				}
 				params.prepareToolQuery = true;
 				params.parseArgs(getConsoleSender(), Arrays.asList(tSec.getString("params").split(" ")));
 				final ToolMode mode = ToolMode.valueOf(tSec.getString("mode").toUpperCase());

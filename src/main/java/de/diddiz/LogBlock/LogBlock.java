@@ -13,7 +13,6 @@ import static de.diddiz.LogBlock.config.Config.url;
 import static de.diddiz.LogBlock.config.Config.useBukkitScheduler;
 import static de.diddiz.LogBlock.config.Config.user;
 import static org.bukkit.Bukkit.getPluginManager;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
@@ -61,6 +60,7 @@ public class LogBlock extends JavaPlugin
 	private Updater updater = null;
 	private Timer timer = null;
 	private boolean errorAtLoading = false, noDb = false, connected = true;
+	public boolean worldEditEnabled = false;
 
 	public static LogBlock getInstance() {
 		return logblock;
@@ -115,9 +115,9 @@ public class LogBlock extends JavaPlugin
 		if (noDb)
 			return;
 		if (pm.getPlugin("WorldEdit") == null) {
-			new Exception("WorldEdit is not installed please download and install").printStackTrace();
-			pm.disablePlugin(this);
-			return;
+			this.worldEditEnabled = false;
+		} else {
+			this.worldEditEnabled = true;
 		}
 		commandsHandler = new CommandsHandler(this);
 		getCommand("lb").setExecutor(commandsHandler);
