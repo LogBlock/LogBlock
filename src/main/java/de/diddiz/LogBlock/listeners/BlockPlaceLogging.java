@@ -33,26 +33,20 @@ public class BlockPlaceLogging extends LoggingListener
 				after.setTypeId(event.getItemInHand().getTypeId());
 				after.setData(new MaterialData(event.getItemInHand().getTypeId()));
 			}
-			// Delay queuing of stairs and blocks by 1 tick to allow the raw data to update 
-			if (type == 53 || type == 67 || type == 108 || type == 109 || type == 114 || type == 128 || type == 134 || type == 135 || type == 136 || type == 26) {
-				LogBlock.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(LogBlock.getInstance(), new Runnable()
-				{
-					@Override
-					public void run() {
-						if (before.getTypeId() == 0)
-							consumer.queueBlockPlace(playerName, after);
-						else
-							consumer.queueBlockReplace(playerName, before, after);
-					}
-				}, 1L);
-				return;
-			}
+			
 			if (wcfg.isLogging(Logging.SIGNTEXT) && (type == 63 || type == 68))
 				return;
-			if (before.getTypeId() == 0)
-				consumer.queueBlockPlace(event.getPlayer().getName(), after);
-			else
-				consumer.queueBlockReplace(event.getPlayer().getName(), before, after);
+			//Delay queuing by one tick to allow data to be updated
+			LogBlock.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(LogBlock.getInstance(), new Runnable()
+			{
+				@Override
+				public void run() {
+					if (before.getTypeId() == 0)
+						consumer.queueBlockPlace(playerName, after);
+					else
+						consumer.queueBlockReplace(playerName, before, after);
+				}
+			}, 1L);
 		}
 	}
 
