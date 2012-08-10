@@ -202,11 +202,13 @@ class Updater
 			final Connection conn = logblock.getConnection();
 			try {
 				conn.setAutoCommit(true);
-				final Statement st = conn.createStatement();
-				st.execute("ALTER TABLE `lb-world` MODIFY x MEDIUMINT NOT NULL");
-				st.execute("ALTER TABLE `lb-world` MODIFY y SMALLINT NOT NULL");
-				st.execute("ALTER TABLE `lb-world` MODIFY z MEDIUMINT NOT NULL");
-				st.close();
+				for (final WorldConfig wcfg : getLoggedWorlds()) {
+					final Statement st = conn.createStatement();
+					st.execute("ALTER TABLE `" + wcfg.table + "` MODIFY x MEDIUMINT NOT NULL");
+					st.execute("ALTER TABLE `" + wcfg.table + "` MODIFY y SMALLINT NOT NULL");
+					st.execute("ALTER TABLE `" + wcfg.table + "` MODIFY z MEDIUMINT NOT NULL");
+					st.close();
+				}
 				conn.close();
 			} catch (final SQLException ex) {
 				Bukkit.getLogger().log(Level.SEVERE, "[LogBlock Updater] Error: ", ex);
