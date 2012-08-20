@@ -27,6 +27,7 @@ public class BukkitUtils
 {
 	private static final Set<Set<Integer>> blockEquivalents;
 	private static final Set<Integer> relativeBreakable;
+	private static final Set<Integer> relativeTopBreakable;
 
 	static {
 		blockEquivalents = new HashSet<Set<Integer>>(7);
@@ -43,6 +44,27 @@ public class BukkitUtils
 		relativeBreakable.add(68); // Sign
 		relativeBreakable.add(65); // Ladder
 		relativeBreakable.add(77); // Button
+		
+		relativeTopBreakable = new HashSet<Integer>(19);
+		relativeTopBreakable.add(6);   ////Vegetation start////
+		relativeTopBreakable.add(31);  //                  
+		relativeTopBreakable.add(32);  //                  
+		relativeTopBreakable.add(37);  //                  
+		relativeTopBreakable.add(38);  //                 
+		relativeTopBreakable.add(39);  //                 
+		relativeTopBreakable.add(40);  //                 
+		relativeTopBreakable.add(59);  //                
+		relativeTopBreakable.add(81);  //                
+		relativeTopBreakable.add(83);  ////Vegetation end////
+		relativeTopBreakable.add(27);  // Powered rail
+		relativeTopBreakable.add(28);  // Detector rail
+		relativeTopBreakable.add(66);  // Rails
+		relativeTopBreakable.add(55);  // Redstone
+		relativeTopBreakable.add(70);  // Stone pressure plate
+		relativeTopBreakable.add(72);  // Wood pressure plate
+		relativeTopBreakable.add(78);  // Snow
+		relativeTopBreakable.add(93);  // Redstone repeater
+		relativeTopBreakable.add(94);  // Redstone repeater
 	}
 	
 	/**
@@ -164,6 +186,10 @@ public class BukkitUtils
 	
 	public static Set<Integer> getRelativeBreakables() {
 		return relativeBreakable;
+	}
+	
+	public static Set<Integer> getRelativeTopBreakabls() {
+		return relativeTopBreakable;
 	}
 
 	public static String entityName(Entity entity) {
