@@ -405,7 +405,7 @@ public class Consumer extends TimerTask
 			if (signtext != null)
 				inserts[1] = "INSERT INTO `" + table + "-sign` (id, signtext) values (NULL, '" + signtext + "');";
 			else if (ca != null)
-				inserts[1] = "INSERT INTO `" + table + "-chest` (id, itemtype, itemamount, itemdata) values (Null, " + ca.itemType + ", " + ca.itemAmount + ", " + ca.itemData + ");";
+				inserts[1] = "INSERT INTO `" + table + "-chest` (id, itemtype, itemamount, itemdata) values (NULL, " + ca.itemType + ", " + ca.itemAmount + ", " + ca.itemData + ");";
 			return inserts;
 		}
 
