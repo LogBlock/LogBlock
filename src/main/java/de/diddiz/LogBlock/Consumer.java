@@ -403,9 +403,9 @@ public class Consumer extends TimerTask
 			final String[] inserts = new String[ca != null || signtext != null ? 2 : 1];
 			inserts[0] = "INSERT INTO `" + table + "` (date, playerid, replaced, type, data, x, y, z) VALUES (FROM_UNIXTIME(" + date + "), " + playerID(playerName) + ", " + replaced + ", " + type + ", " + data + ", '" + loc.getBlockX() + "', " + loc.getBlockY() + ", '" + loc.getBlockZ() + "');";
 			if (signtext != null)
-				inserts[1] = "INSERT INTO `" + table + "-sign` (id, signtext) values (LAST_INSERT_ID(), '" + signtext + "');";
+				inserts[1] = "INSERT INTO `" + table + "-sign` (id, signtext) values (NULL, '" + signtext + "');";
 			else if (ca != null)
-				inserts[1] = "INSERT INTO `" + table + "-chest` (id, itemtype, itemamount, itemdata) values (LAST_INSERT_ID(), " + ca.itemType + ", " + ca.itemAmount + ", " + ca.itemData + ");";
+				inserts[1] = "INSERT INTO `" + table + "-chest` (id, itemtype, itemamount, itemdata) values (Null, " + ca.itemType + ", " + ca.itemAmount + ", " + ca.itemData + ");";
 			return inserts;
 		}
 
