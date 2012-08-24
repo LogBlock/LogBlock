@@ -403,7 +403,7 @@ public class Consumer extends TimerTask
 			final String[] inserts = new String[ca != null || signtext != null ? 2 : 1];
 			inserts[0] = "INSERT INTO `" + table + "` (date, playerid, replaced, type, data, x, y, z) VALUES (FROM_UNIXTIME(" + date + "), " + playerID(playerName) + ", " + replaced + ", " + type + ", " + data + ", '" + loc.getBlockX() + "', " + loc.getBlockY() + ", '" + loc.getBlockZ() + "');";
 			if (signtext != null)
-				inserts[1] = "INSERT INTO `" + table + "-sign` (id, signtext, x, y, z) values (NULL, '" + signtext + "', '" + loc.getBlockX() + "', " + loc.getBlockY() + ", '" + loc.getBlockZ() + "');";
+				inserts[1] = "INSERT INTO `" + table + "-sign` (id, signtext, s_x, s_y, s_z) values (NULL, '" + signtext + "', '" + loc.getBlockX() + "', " + loc.getBlockY() + ", '" + loc.getBlockZ() + "');";
 			else if (ca != null)
 				inserts[1] = "INSERT INTO `" + table + "-chest` (id, itemtype, itemamount, itemdata) values (NULL, " + ca.itemType + ", " + ca.itemAmount + ", " + ca.itemData + ");";
 			return inserts;
