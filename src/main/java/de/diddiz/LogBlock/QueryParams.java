@@ -286,7 +286,7 @@ public final class QueryParams implements Cloneable
 				if (radius == 0)
 					where.append("x = '").append(loc.getBlockX()).append("' AND y = '").append(loc.getBlockY()).append("' AND z = '").append(loc.getBlockZ()).append("' AND ");
 				else if (radius > 0)
-					where.append("x > '").append(loc.getBlockX() - radius).append("' AND x < '").append(loc.getBlockX() + radius).append("' AND z > '").append(loc.getBlockZ() - radius).append("' AND z < '").append(loc.getBlockZ() + radius).append("' AND ");
+					where.append("x > '").append(loc.getBlockX() - radius).append("' AND x < '").append(loc.getBlockX() + radius).append("' AND y > '").append(loc.getBlockY() - radius).append("' AND y < '").append(loc.getBlockY() + radius).append("' AND z > '").append(loc.getBlockZ() - radius).append("' AND z < '").append(loc.getBlockZ() + radius).append("' AND ");
 			} else if (sel != null)
 				where.append("x >= '").append(sel.getMinimumPoint().getBlockX()).append("' AND x <= '").append(sel.getMaximumPoint().getBlockX()).append("' AND y >= '").append(sel.getMinimumPoint().getBlockY()).append("' AND y <= '").append(sel.getMaximumPoint().getBlockY()).append("' AND z >= '").append(sel.getMinimumPoint().getBlockZ()).append("' AND z <= '").append(sel.getMaximumPoint().getBlockZ()).append("' AND ");
 		}
