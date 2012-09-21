@@ -512,16 +512,61 @@ public final class QueryParams implements Cloneable
 	}
 
 	private static String[] getValues(List<String> args, int offset) {
+		// The variable i will store the last value's index
 		int i;
-		for (i = offset; i < args.size(); i++)
-			if (isKeyWord(args.get(i)))
+		// Iterate over the all the values from the offset up till the end
+		for (i = offset; i < args.size(); i++) {
+			// We found a keyword, break here since anything after this isn't a value.
+			if (isKeyWord(args.get(i))) {
 				break;
-		if (i == offset)
+			}
+		}
+		// If the offset equals to the last value index, return an empty string array
+		if (i == offset) {
 			return new String[0];
-		final String[] values = new String[i - offset];
-		for (int j = offset; j < i; j++)
-			values[j - offset] = args.get(j);
-		return values;
+		}
+		// Instantiate a new string array with the total indexes required
+		final List<String> values = new ArrayList<String>();
+		// Buffer for the value
+		String value = "";
+		// Iterate over the offset up till the last index value
+		for (int j = offset; j < i; j++) {
+			// If the value starts with a double quote or we're already dealing with a quoted value
+			if (args.get(j).startsWith("\"") || !value.equals("")) {
+				// If the value doesn't end with a double quote
+				if (!args.get(j).endsWith("\"")) {
+					// Add the argument to the value buffer after stripping out the initial quote
+					
+					// If the argument starts with a quote we wanna strip that out otherwise add it normally
+					if (args.get(j).startsWith("\"")) {
+						value += args.get(j).substring(1) + " ";
+					} else {
+						value += args.get(j) + " ";
+					}
+					
+					continue;
+				} else {
+					// The value ends with a double quote
+					
+					// If the argument starts with a double quote we wanna strip that out too along with the end quote
+					if (args.get(j).startsWith("\"")) {
+						value += args.get(j).substring(0, args.get(j).length() - 1).substring(1);
+					} else {
+					// Looks like its just the end quote here, just need to strip that out
+						value += args.get(j).substring(0, args.get(j).length() - 1);
+					}
+					// Add the value to the main values list
+					values.add(value);
+					// Reset the buffer
+					value = "";
+				}
+			} else {
+				// Set the value in the array to be returned to the one from the main arguments list
+				values.add(args.get(j));
+			}
+		}
+		// Return the values array
+		return values.toArray(new String[values.size()]);
 	}
 
 	public void merge(QueryParams p) {
