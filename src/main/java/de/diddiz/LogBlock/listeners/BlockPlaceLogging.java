@@ -8,7 +8,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.player.PlayerBucketEmptyEvent;
-import org.bukkit.material.MaterialData;
 import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.LogBlock.Logging;
 import de.diddiz.LogBlock.config.WorldConfig;
@@ -27,13 +26,6 @@ public class BlockPlaceLogging extends LoggingListener
 			final BlockState before = event.getBlockReplacedState();
 			final BlockState after = event.getBlockPlaced().getState();
 			final String playerName = event.getPlayer().getName();
-			if (type == 0 && event.getItemInHand() != null) {
-				if (event.getItemInHand().getTypeId() == 51)
-					return;
-				after.setTypeId(event.getItemInHand().getTypeId());
-				after.setData(new MaterialData(event.getItemInHand().getTypeId()));
-			}
-			
 			if (wcfg.isLogging(Logging.SIGNTEXT) && (type == 63 || type == 68))
 				return;
 			//Delay queuing by one tick to allow data to be updated

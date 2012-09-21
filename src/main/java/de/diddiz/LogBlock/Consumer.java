@@ -85,7 +85,7 @@ public class Consumer extends TimerTask
 	 * Blockstate of the block after actually being placed.
 	 */
 	public void queueBlockPlace(String playerName, BlockState after) {
-		queueBlockPlace(playerName, new Location(after.getWorld(), after.getX(), after.getY(), after.getZ()), after.getTypeId(), after.getRawData());
+		queueBlockPlace(playerName, new Location(after.getWorld(), after.getX(), after.getY(), after.getZ()), after.getBlock().getTypeId(), after.getBlock().getData());
 	}
 
 	/**
