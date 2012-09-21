@@ -13,7 +13,6 @@ import static de.diddiz.LogBlock.config.Config.url;
 import static de.diddiz.LogBlock.config.Config.useBukkitScheduler;
 import static de.diddiz.LogBlock.config.Config.user;
 import static org.bukkit.Bukkit.getPluginManager;
-import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;

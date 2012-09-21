@@ -552,7 +552,17 @@ public class CommandsHandler implements CommandExecutor
 					final Location loc = new Location(params.world, rs.getInt(1) + 0.5, y, rs.getInt(3) + 0.5, player.getLocation().getYaw(), 90);
 					final int y2 = saveSpawnHeight(loc);
 					loc.setY(y2);
-					player.teleport(loc);
+					
+					// Teleport the player sync because omg thread safety
+					logblock.getServer().getScheduler().scheduleSyncDelayedTask(logblock, new Runnable() {
+						
+						@Override
+						public void run() {
+							player.teleport(loc);
+							
+						}
+					});
+					
 					sender.sendMessage(ChatColor.GREEN + "You were teleported " + Math.abs(y2 - y) + " blocks " + (y2 - y > 0 ? "above" : "below"));
 				} else
 					sender.sendMessage(ChatColor.RED + "No block change found to teleport to");
