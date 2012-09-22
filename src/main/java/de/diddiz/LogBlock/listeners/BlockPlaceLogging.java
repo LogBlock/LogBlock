@@ -2,6 +2,8 @@ package de.diddiz.LogBlock.listeners;
 
 import static de.diddiz.LogBlock.config.Config.getWorldConfig;
 import static de.diddiz.LogBlock.config.Config.isLogging;
+
+import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.event.EventHandler;
@@ -11,6 +13,7 @@ import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.LogBlock.Logging;
 import de.diddiz.LogBlock.config.WorldConfig;
+import de.diddiz.util.BukkitUtils;
 
 public class BlockPlaceLogging extends LoggingListener
 {
@@ -26,8 +29,32 @@ public class BlockPlaceLogging extends LoggingListener
 			final BlockState before = event.getBlockReplacedState();
 			final BlockState after = event.getBlockPlaced().getState();
 			final String playerName = event.getPlayer().getName();
+			
+			//Handle falling blocks
+			if (event.getBlock().getType() == Material.SAND || event.getBlock().getType() == Material.GRAVEL) {
+				Location loc = event.getBlock().getLocation();
+				int x = loc.getBlockX();
+				int y = loc.getBlockY();
+				int z = loc.getBlockZ();
+				while (y > 0 && BukkitUtils.canFall(loc.getWorld(), x, (y - 1), z)) {
+					y--;
+				}
+				// If y is 0 then the sand block fell out of the world :(
+				if (y != 0) {
+					Location finalLoc = new Location(loc.getWorld(), x, y, z);
+					if (finalLoc.getBlock().getType() == Material.AIR) {
+						consumer.queueBlockPlace(playerName, finalLoc, type, event.getBlock().getData());
+					} else {
+						consumer.queueBlockReplace(playerName, finalLoc, finalLoc.getBlock().getTypeId(), finalLoc.getBlock().getData(), type, event.getBlock().getData());
+					}
+				}
+				return;
+			}  
+			
+			//Sign logging is handled elsewhere
 			if (wcfg.isLogging(Logging.SIGNTEXT) && (type == 63 || type == 68))
 				return;
+			
 			//Delay queuing by one tick to allow data to be updated
 			LogBlock.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(LogBlock.getInstance(), new Runnable()
 			{

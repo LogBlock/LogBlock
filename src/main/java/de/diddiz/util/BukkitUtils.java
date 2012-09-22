@@ -12,6 +12,7 @@ import java.util.Set;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
@@ -250,6 +251,20 @@ public class BukkitUtils
 			}
 		}
 		return 0;
+	}
+	
+	public static boolean canFall (World world, int x, int y, int z) {
+		Material mat = world.getBlockAt(x, y, z).getType();
+
+		// Air
+		if (mat == Material.AIR) {
+			return true;
+		} else if (mat == Material.WATER || mat == Material.STATIONARY_WATER || mat == Material.LAVA || mat == Material.STATIONARY_LAVA){ // Fluids
+			return true;
+		} else if (mat == Material.SIGN || mat == Material.FIRE) { // Misc.
+			return true;
+		}
+		return false;
 	}
 
 	public static class ItemStackComparator implements Comparator<ItemStack>
