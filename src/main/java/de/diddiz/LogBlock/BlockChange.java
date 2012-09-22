@@ -3,12 +3,12 @@ package de.diddiz.LogBlock;
 import static de.diddiz.util.MaterialName.materialName;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.text.SimpleDateFormat;
 import org.bukkit.Location;
+
+import de.diddiz.LogBlock.config.Config;
 
 public class BlockChange implements LookupCacheElement
 {
-	private final static SimpleDateFormat formatter = new SimpleDateFormat("MM-dd HH:mm:ss");
 	public final long id, date;
 	public final Location loc;
 	public final String playerName;
@@ -45,7 +45,7 @@ public class BlockChange implements LookupCacheElement
 	public String toString() {
 		final StringBuilder msg = new StringBuilder();
 		if (date > 0)
-			msg.append(formatter.format(date)).append(" ");
+			msg.append(Config.formatter.format(date)).append(" ");
 		if (playerName != null)
 			msg.append(playerName).append(" ");
 		if (signtext != null) {

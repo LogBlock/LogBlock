@@ -7,6 +7,7 @@ import static org.bukkit.Bukkit.getLogger;
 import static org.bukkit.Bukkit.getWorlds;
 import java.io.File;
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -53,6 +54,7 @@ public class Config
 	public static Set<Integer> hiddenBlocks;
 	public static Set<String> hiddenPlayers;
 	public static Set<String> ignoredChat;
+	public static SimpleDateFormat formatter;
 
 	public static enum LogKillsLevel
 	{
@@ -99,6 +101,12 @@ public class Config
 		def.put("lookup.defaultTime", "30 minutes");
 		def.put("lookup.linesPerPage", 15);
 		def.put("lookup.linesLimit", 1500);
+		try {
+			formatter = new SimpleDateFormat(config.getString("lookup.dateFormat", "MM-dd HH:mm:ss"));
+		} catch (IllegalArgumentException e) {
+			throw new DataFormatException("Invalid specification for  date format, please see http://docs.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html : " + e.getMessage());
+		}
+		def.put("lookup.dateFormat", "MM-dd HH:mm:ss");
 		def.put("questioner.askRollbacks", true);
 		def.put("questioner.askRedos", true);
 		def.put("questioner.askClearLogs", true);
