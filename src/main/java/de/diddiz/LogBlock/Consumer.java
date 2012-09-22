@@ -273,7 +273,7 @@ public class Consumer extends TimerTask
 		final Connection conn = logblock.getConnection();
 		Statement state = null;
 		if (getQueueSize() > 1000)
-			getLogger().info("[LogBlock Consumer] Queue overloaded. Size: " + getQueueSize());
+			getLogger().info("[Consumer] Queue overloaded. Size: " + getQueueSize());
 		try {
 			if (conn == null)
 				return;
@@ -291,7 +291,7 @@ public class Consumer extends TimerTask
 						if (!addPlayer(state, player)) {
 							if (!failedPlayers.contains(player)) {
 								failedPlayers.add(player);
-								getLogger().warning("[LogBlock Consumer] Failed to add player " + player);
+								getLogger().warning("[Consumer] Failed to add player " + player);
 							}
 							continue process;
 						}
@@ -299,14 +299,14 @@ public class Consumer extends TimerTask
 					try {
 						state.execute(insert);
 					} catch (final SQLException ex) {
-						getLogger().log(Level.SEVERE, "[LogBlock Consumer] SQL exception on " + insert + ": ", ex);
+						getLogger().log(Level.SEVERE, "[Consumer] SQL exception on " + insert + ": ", ex);
 						break process;
 					}
 				count++;
 			}
 			conn.commit();
 		} catch (final SQLException ex) {
-			getLogger().log(Level.SEVERE, "[LogBlock Consumer] SQL exception", ex);
+			getLogger().log(Level.SEVERE, "[Consumer] SQL exception", ex);
 		} finally {
 			try {
 				if (state != null)
@@ -314,7 +314,7 @@ public class Consumer extends TimerTask
 				if (conn != null)
 					conn.close();
 			} catch (final SQLException ex) {
-				getLogger().log(Level.SEVERE, "[LogBlock Consumer] SQL exception on close", ex);
+				getLogger().log(Level.SEVERE, "[Consumer] SQL exception on close", ex);
 			}
 			lock.unlock();
 		}

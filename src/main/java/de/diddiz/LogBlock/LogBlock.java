@@ -83,7 +83,7 @@ public class LogBlock extends JavaPlugin
 		try {
 			updater = new Updater(this);
 			Config.load(this);
-			getLogger().info("[LogBlock] Connecting to " + user + "@" + url + "...");
+			getLogger().info("Connecting to " + user + "@" + url + "...");
 			pool = new MySQLConnectionPool(url, user, password);
 			final Connection conn = getConnection();
 			if (conn == null) {
@@ -95,9 +95,9 @@ public class LogBlock extends JavaPlugin
 				load(this);
 			updater.checkTables();
 		} catch (final NullPointerException ex) {
-			getLogger().log(Level.SEVERE, "[LogBlock] Error while loading: ", ex);
+			getLogger().log(Level.SEVERE, "Error while loading: ", ex);
 		} catch (final Exception ex) {
-			getLogger().severe("[LogBlock] Error while loading: " + ex.getMessage());
+			getLogger().severe("Error while loading: " + ex.getMessage());
 			errorAtLoading = true;
 			return;
 		}
@@ -126,16 +126,16 @@ public class LogBlock extends JavaPlugin
 		registerEvents();
 		if (useBukkitScheduler) {
 			if (getServer().getScheduler().scheduleAsyncRepeatingTask(this, consumer, delayBetweenRuns * 20, delayBetweenRuns * 20) > 0)
-				getLogger().info("[LogBlock] Scheduled consumer with bukkit scheduler.");
+				getLogger().info("Scheduled consumer with bukkit scheduler.");
 			else {
-				getLogger().warning("[LogBlock] Failed to schedule consumer with bukkit scheduler. Now trying schedule with timer.");
+				getLogger().warning("Failed to schedule consumer with bukkit scheduler. Now trying schedule with timer.");
 				timer = new Timer();
 				timer.scheduleAtFixedRate(consumer, delayBetweenRuns * 1000, delayBetweenRuns * 1000);
 			}
 		} else {
 			timer = new Timer();
 			timer.scheduleAtFixedRate(consumer, delayBetweenRuns * 1000, delayBetweenRuns * 1000);
-			getLogger().info("[LogBlock] Scheduled consumer with timer.");
+			getLogger().info("Scheduled consumer with timer.");
 		}
 		for (final Tool tool : toolsByType.values())
 			if (pm.getPermission("logblock.tools." + tool.name) == null) {
@@ -200,12 +200,12 @@ public class LogBlock extends JavaPlugin
 				for (final Player player : getServer().getOnlinePlayers())
 					consumer.queueLeave(player);
 			if (consumer.getQueueSize() > 0) {
-				getLogger().info("[LogBlock] Waiting for consumer ...");
+				getLogger().info("Waiting for consumer ...");
 				int tries = 10;
 				while (consumer.getQueueSize() > 0) {
-					getLogger().info("[LogBlock] Remaining queue size: " + consumer.getQueueSize());
+					getLogger().info("Remaining queue size: " + consumer.getQueueSize());
 					if (tries > 0)
-						getLogger().info("[LogBlock] Remaining tries: " + tries);
+						getLogger().info("Remaining tries: " + tries);
 					else {
 						getLogger().info("Unable to save queue to database. Trying to write to a local file.");
 						try {
@@ -223,7 +223,6 @@ public class LogBlock extends JavaPlugin
 		}
 		if (pool != null)
 			pool.close();
-		getLogger().info("LogBlock disabled.");
 	}
 
 	@Override
@@ -241,16 +240,16 @@ public class LogBlock extends JavaPlugin
 		try {
 			final Connection conn = pool.getConnection();
 			if (!connected) {
-				getLogger().info("[LogBlock] MySQL connection rebuild");
+				getLogger().info("MySQL connection rebuild");
 				connected = true;
 			}
 			return conn;
 		} catch (final Exception ex) {
 			if (connected) {
-				getLogger().log(Level.SEVERE, "[LogBlock] Error while fetching connection: ", ex);
+				getLogger().log(Level.SEVERE, "Error while fetching connection: ", ex);
 				connected = false;
 			} else
-				getLogger().severe("[LogBlock] MySQL connection lost");
+				getLogger().severe("MySQL connection lost");
 			return null;
 		}
 	}

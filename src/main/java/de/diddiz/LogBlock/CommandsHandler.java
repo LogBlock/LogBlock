@@ -318,7 +318,7 @@ public class CommandsHandler implements CommandExecutor
 			sender.sendMessage(ChatColor.RED + ex.getMessage());
 		} catch (final Exception ex) {
 			sender.sendMessage(ChatColor.RED + "Error, check server.log");
-			getLogger().log(Level.WARNING, "[LogBlock] Exception in commands handler: ", ex);
+			getLogger().log(Level.WARNING, "Exception in commands handler: ", ex);
 		}
 		return true;
 	}
@@ -383,7 +383,7 @@ public class CommandsHandler implements CommandExecutor
 				if (rs != null)
 					rs.close();
 			} catch (final SQLException ex) {
-				getLogger().log(Level.SEVERE, "[LogBlock CommandsHandler] SQL exception on close", ex);
+				getLogger().log(Level.SEVERE, "[CommandsHandler] SQL exception on close", ex);
 			}
 		}
 	}
@@ -437,7 +437,7 @@ public class CommandsHandler implements CommandExecutor
 				}
 			} catch (final Exception ex) {
 				sender.sendMessage(ChatColor.RED + "Exception, check error log");
-				getLogger().log(Level.SEVERE, "[LogBlock Lookup] " + params.getQuery() + ": ", ex);
+				getLogger().log(Level.SEVERE, "[Lookup] " + params.getQuery() + ": ", ex);
 			} finally {
 				close();
 			}
@@ -494,7 +494,7 @@ public class CommandsHandler implements CommandExecutor
 				sender.sendMessage(ChatColor.GREEN + "Wrote " + counter + " lines.");
 			} catch (final Exception ex) {
 				sender.sendMessage(ChatColor.RED + "Exception, check error log");
-				getLogger().log(Level.SEVERE, "[LogBlock WriteLogFile] " + params.getQuery() + " (file was " + file.getAbsolutePath() + "): ", ex);
+				getLogger().log(Level.SEVERE, "[WriteLogFile] " + params.getQuery() + " (file was " + file.getAbsolutePath() + "): ", ex);
 			} finally {
 				close();
 			}
@@ -568,7 +568,7 @@ public class CommandsHandler implements CommandExecutor
 					sender.sendMessage(ChatColor.RED + "No block change found to teleport to");
 			} catch (final Exception ex) {
 				sender.sendMessage(ChatColor.RED + "Exception, check error log");
-				getLogger().log(Level.SEVERE, "[LogBlock Teleport] " + params.getQuery() + ": ", ex);
+				getLogger().log(Level.SEVERE, "[Teleport] " + params.getQuery() + ": ", ex);
 			} finally {
 				close();
 			}
@@ -632,7 +632,7 @@ public class CommandsHandler implements CommandExecutor
 				}
 			} catch (final Exception ex) {
 				sender.sendMessage(ChatColor.RED + "Exception, check error log");
-				getLogger().log(Level.SEVERE, "[LogBlock Rollback] " + params.getQuery() + ": ", ex);
+				getLogger().log(Level.SEVERE, "[Rollback] " + params.getQuery() + ": ", ex);
 			} finally {
 				close();
 			}
@@ -685,7 +685,7 @@ public class CommandsHandler implements CommandExecutor
 				sender.sendMessage(ChatColor.GREEN + "Redo finished successfully (" + editor.getElapsedTime() + " ms, " + editor.getSuccesses() + "/" + changes + " blocks" + (editor.getErrors() > 0 ? ", " + ChatColor.RED + editor.getErrors() + " errors" + ChatColor.GREEN : "") + (editor.getBlacklistCollisions() > 0 ? ", " + editor.getBlacklistCollisions() + " blacklist collisions" : "") + ")");
 			} catch (final Exception ex) {
 				sender.sendMessage(ChatColor.RED + "Exception, check error log");
-				getLogger().log(Level.SEVERE, "[LogBlock Redo] " + params.getQuery() + ": ", ex);
+				getLogger().log(Level.SEVERE, "[Redo] " + params.getQuery() + ": ", ex);
 			} finally {
 				close();
 			}
@@ -732,7 +732,7 @@ public class CommandsHandler implements CommandExecutor
 							state.execute("SELECT * FROM `" + table + "` " + join + params.getWhere() + "INTO OUTFILE '" + new File(dumpFolder, time + " " + table + " " + params.getTitle().replace(":", ".") + ".csv").getAbsolutePath().replace("\\", "\\\\") + "' FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"'  LINES TERMINATED BY '\n'");
 						} catch (final SQLException ex) {
 							sender.sendMessage(ChatColor.RED + "Error while dumping log. Make sure your MySQL user has access to the LogBlock folder, or disable clearlog.dumpDeletedLog");
-							getLogger().log(Level.SEVERE, "[LogBlock ClearLog] Exception while dumping log: ", ex);
+							getLogger().log(Level.SEVERE, "[ClearLog] Exception while dumping log: ", ex);
 							return;
 						}
 					state.execute("DELETE `" + table + "` FROM `" + table + "` " + join + params.getWhere());
@@ -756,7 +756,7 @@ public class CommandsHandler implements CommandExecutor
 				}
 			} catch (final Exception ex) {
 				sender.sendMessage(ChatColor.RED + "Exception, check error log");
-				getLogger().log(Level.SEVERE, "[LogBlock ClearLog] Exception: ", ex);
+				getLogger().log(Level.SEVERE, "[ClearLog] Exception: ", ex);
 			} finally {
 				close();
 			}

@@ -95,7 +95,7 @@ public class WorldEditor implements Runnable
 			} catch (final WorldEditorException ex) {
 				errorList.add(ex);
 			} catch (final Exception ex) {
-				getLogger().log(Level.WARNING, "[LogBlock WorldEditor] Exeption: ", ex);
+				getLogger().log(Level.WARNING, "[WorldEditor] Exeption: ", ex);
 			}
 			counter++;
 		}

@@ -30,7 +30,7 @@ class Updater
 		if (config.getString("version").compareTo(logblock.getDescription().getVersion()) >= 0)
 			return false;
 		if (config.getString("version").compareTo("1.27") < 0) {
-			getLogger().info("[LogBlock] Updating tables to 1.27 ...");
+			getLogger().info("Updating tables to 1.27 ...");
 			if (isLogging(Logging.CHAT)) {
 				final Connection conn = logblock.getConnection();
 				try {
@@ -40,21 +40,21 @@ class Updater
 					st.close();
 					conn.close();
 				} catch (final SQLException ex) {
-					Bukkit.getLogger().log(Level.SEVERE, "[LogBlock Updater] Error: ", ex);
+					Bukkit.getLogger().log(Level.SEVERE, "[Updater] Error: ", ex);
 					return false;
 				}
 			}
 			config.set("version", "1.27");
 		}
 		if (config.getString("version").compareTo("1.30") < 0) {
-			getLogger().info("[LogBlock] Updating config to 1.30 ...");
+			getLogger().info("Updating config to 1.30 ...");
 			for (final String tool : config.getConfigurationSection("tools").getKeys(false))
 				if (config.get("tools." + tool + ".permissionDefault") == null)
 					config.set("tools." + tool + ".permissionDefault", "OP");
 			config.set("version", "1.30");
 		}
 		if (config.getString("version").compareTo("1.31") < 0) {
-			getLogger().info("[LogBlock] Updating tables to 1.31 ...");
+			getLogger().info("Updating tables to 1.31 ...");
 			final Connection conn = logblock.getConnection();
 			try {
 				conn.setAutoCommit(true);
@@ -63,13 +63,13 @@ class Updater
 				st.close();
 				conn.close();
 			} catch (final SQLException ex) {
-				Bukkit.getLogger().log(Level.SEVERE, "[LogBlock Updater] Error: ", ex);
+				Bukkit.getLogger().log(Level.SEVERE, "[Updater] Error: ", ex);
 				return false;
 			}
 			config.set("version", "1.31");
 		}
 		if (config.getString("version").compareTo("1.32") < 0) {
-			getLogger().info("[LogBlock] Updating tables to 1.32 ...");
+			getLogger().info("Updating tables to 1.32 ...");
 			final Connection conn = logblock.getConnection();
 			try {
 				conn.setAutoCommit(true);
@@ -78,18 +78,18 @@ class Updater
 				st.close();
 				conn.close();
 			} catch (final SQLException ex) {
-				Bukkit.getLogger().log(Level.SEVERE, "[LogBlock Updater] Error: ", ex);
+				Bukkit.getLogger().log(Level.SEVERE, "[Updater] Error: ", ex);
 				return false;
 			}
 			config.set("version", "1.32");
 		}
 		if (config.getString("version").compareTo("1.40") < 0) {
-			getLogger().info("[LogBlock] Updating config to 1.40 ...");
+			getLogger().info("Updating config to 1.40 ...");
 			config.set("clearlog.keepLogDays", null);
 			config.set("version", "1.40");
 		}
 		if (config.getString("version").compareTo("1.42") < 0) {
-			getLogger().info("[LogBlock] Updating config to 1.42 ...");
+			getLogger().info("Updating config to 1.42 ...");
 			for (final String world : config.getStringList("loggedWorlds")) {
 				final File file = new File(logblock.getDataFolder(), friendlyWorldname(world) + ".yml");
 				final YamlConfiguration wcfg = YamlConfiguration.loadConfiguration(file);
@@ -152,14 +152,14 @@ class Updater
 				try {
 					wcfg.save(file);
 				} catch (final IOException ex) {
-					Bukkit.getLogger().log(Level.SEVERE, "[LogBlock Updater] Error: ", ex);
+					Bukkit.getLogger().log(Level.SEVERE, "[Updater] Error: ", ex);
 				}
 			}
 			config.set("clearlog.keepLogDays", null);
 			config.set("version", "1.42");
 		}
 		if (config.getString("version").compareTo("1.51") < 0) {
-			getLogger().info("[LogBlock] Updating tables to 1.51 ...");
+			getLogger().info("Updating tables to 1.51 ...");
 			final Connection conn = logblock.getConnection();
 			try {
 				conn.setAutoCommit(true);
@@ -170,13 +170,13 @@ class Updater
 				st.close();
 				conn.close();
 			} catch (final SQLException ex) {
-				Bukkit.getLogger().log(Level.SEVERE, "[LogBlock Updater] Error: ", ex);
+				Bukkit.getLogger().log(Level.SEVERE, "[Updater] Error: ", ex);
 				return false;
 			}
 			config.set("version", "1.51");
 		}
 		if (config.getString("version").compareTo("1.52") < 0) {
-			getLogger().info("[LogBlock] Updating tables to 1.52 ...");
+			getLogger().info("Updating tables to 1.52 ...");
 			final Connection conn = logblock.getConnection();
 			try {
 				conn.setAutoCommit(true);
@@ -188,11 +188,11 @@ class Updater
 					st.execute("ALTER TABLE `lb-players` DROP onlinetime");
 					st.execute("ALTER TABLE `lb-players` CHANGE onlinetime2 onlinetime INT UNSIGNED NOT NULL");
 				} else
-					getLogger().info("[LogBlock] Column lb-players was alredy modified, skipping it.");
+					getLogger().info("Column lb-players was already modified, skipping it.");
 				st.close();
 				conn.close();
 			} catch (final SQLException ex) {
-				Bukkit.getLogger().log(Level.SEVERE, "[LogBlock Updater] Error: ", ex);
+				Bukkit.getLogger().log(Level.SEVERE, "[Updater] Error: ", ex);
 				return false;
 			}
 			config.set("version", "1.52");
@@ -224,7 +224,7 @@ class Updater
 
 	private static void createTable(DatabaseMetaData dbm, Statement state, String table, String query) throws SQLException {
 		if (!dbm.getTables(null, null, table, null).next()) {
-			getLogger().log(Level.INFO, "[LogBlock] Creating table " + table + ".");
+			getLogger().log(Level.INFO, "Creating table " + table + ".");
 			state.execute("CREATE TABLE `" + table + "` " + query);
 			if (!dbm.getTables(null, null, table, null).next())
 				throw new SQLException("Table " + table + " not found and failed to create");
