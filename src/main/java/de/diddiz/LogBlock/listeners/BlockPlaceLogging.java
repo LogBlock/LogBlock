@@ -31,7 +31,7 @@ public class BlockPlaceLogging extends LoggingListener
 			final String playerName = event.getPlayer().getName();
 
 			//Handle falling blocks
-			if (event.getBlock().getType() == Material.SAND || event.getBlock().getType() == Material.GRAVEL) {
+			if (event.getBlock().getType() == Material.SAND || event.getBlock().getType() == Material.GRAVEL || event.getBlock().getType() == Material.DRAGON_EGG) {
 				Location loc = event.getBlock().getLocation();
 				int x = loc.getBlockX();
 				int y = loc.getBlockY();
