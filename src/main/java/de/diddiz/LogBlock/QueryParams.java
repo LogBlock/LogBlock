@@ -327,7 +327,7 @@ public final class QueryParams implements Cloneable
 				merge(session.lastQuery);
 			} else if (param.equals("player")) {
 				if (values.length < 1)
-					throw new IllegalArgumentException("No or wrong count of arguments for '" + param + "'");
+					throw new IllegalArgumentException("Invalid amount of arguments for '" + param + "'");
 				for (final String playerName : values)
 					if (playerName.length() > 0) {
 						if (playerName.contains("!"))
@@ -337,13 +337,13 @@ public final class QueryParams implements Cloneable
 						else {
 							final List<Player> matches = logblock.getServer().matchPlayer(playerName);
 							if (matches.size() > 1)
-								throw new IllegalArgumentException("Ambiguous playername '" + param + "'");
+								throw new IllegalArgumentException("You need to be more specific than '" + param + "'.");
 							players.add(matches.size() == 1 ? matches.get(0).getName() : playerName.replaceAll("[^a-zA-Z0-9_]", ""));
 						}
 					}
 			} else if (param.equals("block") || param.equals("type")) {
 				if (values.length < 1)
-					throw new IllegalArgumentException("No or wrong count of arguments for '" + param + "'");
+					throw new IllegalArgumentException("Invalid amount of arguments for '" + param + "'!");
 				for (final String blockName : values) {
 					if (blockName.contains(":")) {
 						String[] blockNameSplit = blockName.split(":");
@@ -370,7 +370,7 @@ public final class QueryParams implements Cloneable
 				}
 			} else if (param.equals("area")) {
 				if (player == null && !prepareToolQuery)
-					throw new IllegalArgumentException("You have to ba a player to use area");
+					throw new IllegalArgumentException("You have to ba a player to use the area parameter.");
 				if (values.length == 0) {
 					radius = defaultDist;
 					if (!prepareToolQuery)
@@ -384,27 +384,27 @@ public final class QueryParams implements Cloneable
 				}
 			} else if (param.equals("selection") || param.equals("sel")) {
 				if (player == null)
-					throw new IllegalArgumentException("You have to ba a player to use selection");
+					throw new IllegalArgumentException("You have to ba a player to use the selection parameter.");
 				final Plugin we = player.getServer().getPluginManager().getPlugin("WorldEdit");
 				if (we == null)
-					throw new IllegalArgumentException("WorldEdit plugin not found");
+					throw new IllegalArgumentException("Couldn't find the WorldEdit plugin. Is it installed?");
 				final Selection selection = ((WorldEditPlugin)we).getSelection(player);
 				if (selection == null)
-					throw new IllegalArgumentException("No selection defined");
+					throw new IllegalArgumentException("No selection defined!");
 				if (!(selection instanceof CuboidSelection))
-					throw new IllegalArgumentException("You have to define a cuboid selection");
+					throw new IllegalArgumentException("You have to define a cuboid selection.");
 				setSelection(selection);
 			} else if (param.equals("time") || param.equals("since")) {
 				since = values.length > 0 ? parseTimeSpec(values) : defaultTime;
 				if (since == -1)
-					throw new IllegalArgumentException("Failed to parse time spec for '" + param + "'");
+					throw new IllegalArgumentException("Failed to parse time spec for '" + param + "'!");
 			} else if (param.equals("before")) {
 				before = values.length > 0 ? parseTimeSpec(values) : defaultTime;
 				if (before == -1)
-					throw new IllegalArgumentException("Faile to parse time spec for '" + param + "'");
+					throw new IllegalArgumentException("Faile to parse time spec for '" + param + "'.");
 			} else if (param.equals("sum")) {
 				if (values.length != 1)
-					throw new IllegalArgumentException("No or wrong count of arguments for '" + param + "'");
+					throw new IllegalArgumentException("Invalid amount of arguments for '" + param + "'!");
 				if (values[0].startsWith("p"))
 					sum = SummarizationMode.PLAYERS;
 				else if (values[0].startsWith("b"))
@@ -412,7 +412,7 @@ public final class QueryParams implements Cloneable
 				else if (values[0].startsWith("n"))
 					sum = SummarizationMode.NONE;
 				else
-					throw new IllegalArgumentException("Wrong summarization mode");
+					throw new IllegalArgumentException("Wrong summarization mode!");
 			} else if (param.equals("created"))
 				bct = BlockChangeType.CREATED;
 			else if (param.equals("destroyed"))
@@ -425,16 +425,16 @@ public final class QueryParams implements Cloneable
 				bct = BlockChangeType.ALL;
 			else if (param.equals("limit")) {
 				if (values.length != 1)
-					throw new IllegalArgumentException("Wrong count of arguments for '" + param + "'");
+					throw new IllegalArgumentException("Invalid amount of arguments for '" + param + "'!");
 				if (!isInt(values[0]))
 					throw new IllegalArgumentException("Not a number: '" + values[0] + "'");
 				limit = Integer.parseInt(values[0]);
 			} else if (param.equals("world")) {
 				if (values.length != 1)
-					throw new IllegalArgumentException("Wrong count of arguments for '" + param + "'");
+					throw new IllegalArgumentException("Invalid amount of arguments for '" + param + "'!");
 				final World w = sender.getServer().getWorld(values[0].replace("\"", ""));
 				if (w == null)
-					throw new IllegalArgumentException("There is no world called '" + values[0] + "'");
+					throw new IllegalArgumentException("There is no world called '" + values[0] + "'!");
 				world = w;
 			} else if (param.equals("asc"))
 				order = Order.ASC;
@@ -446,12 +446,12 @@ public final class QueryParams implements Cloneable
 				silent = true;
 			else if (param.equals("search") || param.equals("match")) {
 				if (values.length == 0)
-					throw new IllegalArgumentException("No arguments for '" + param + "'");
+					throw new IllegalArgumentException("No arguments for '" + param + "'!");
 				match = join(values, " ").replace("\\", "\\\\").replace("'", "\\'");
 			} else if (param.equals("loc") || param.equals("location")) {
 				final String[] vectors = values.length == 1 ? values[0].split(":") : values;
 				if (vectors.length != 3)
-					throw new IllegalArgumentException("Wrong count arguments for '" + param + "'");
+					throw new IllegalArgumentException("Invalid amount of arguments for '" + param + "'!");
 				for (final String vec : vectors)
 					if (!isInt(vec))
 						throw new IllegalArgumentException("Not a number: '" + vec + "'");
@@ -478,7 +478,7 @@ public final class QueryParams implements Cloneable
 			if (world == null)
 				throw new IllegalArgumentException("No world specified");
 			if (!isLogged(world))
-				throw new IllegalArgumentException("This world ('" + world.getName() + "') isn't logged");
+				throw new IllegalArgumentException("This world ('" + world.getName() + "') isn't logged.");
 		}
 		if (session != null)
 			session.lastQuery = clone();
