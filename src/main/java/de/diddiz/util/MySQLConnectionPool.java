@@ -74,7 +74,7 @@ public class MySQLConnectionPool implements Closeable
 			conn.lease();
 			if (!conn.isValid()) {
 				conn.terminate();
-				throw new SQLException("Failed to validate a brand new connection");
+				throw new SQLException("Failed to validate a new connection.");
 			}
 			connections.add(conn);
 			return conn;
