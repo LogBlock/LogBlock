@@ -73,7 +73,7 @@ public class CommandsHandler implements CommandExecutor
 					sender.sendMessage(ChatColor.DARK_AQUA + "LogBlock Help:");
 					sender.sendMessage(ChatColor.GOLD + "For the commands list type '/lb commands'");
 					sender.sendMessage(ChatColor.GOLD + "For the parameters list type '/lb params'");
-					sender.sendMessage(ChatColor.GOLD + "For the list of permissions you got type '/lb permissions'");
+					sender.sendMessage(ChatColor.GOLD + "For the list of permissions you have type '/lb permissions'");
 				} else if (command.equals("commands")) {
 					sender.sendMessage(ChatColor.DARK_AQUA + "LogBlock Commands:");
 					sender.sendMessage(ChatColor.GOLD + "/lb tool -- Gives you the lb tool");
@@ -108,9 +108,9 @@ public class CommandsHandler implements CommandExecutor
 					sender.sendMessage(ChatColor.GOLD + "sum [none|blocks|players] -- Sums the result");
 					sender.sendMessage(ChatColor.GOLD + "asc, desc -- Changes the order of the displayed log");
 					sender.sendMessage(ChatColor.GOLD + "coords -- Shows coordinates for each block");
-					sender.sendMessage(ChatColor.GOLD + "silent -- Displays lesser messages");
+					sender.sendMessage(ChatColor.GOLD + "silent -- Displays fewer messages");
 				} else if (command.equals("permissions")) {
-					sender.sendMessage(ChatColor.DARK_AQUA + "You've got the following permissions:");
+					sender.sendMessage(ChatColor.DARK_AQUA + "You have the following permissions:");
 					for (final String permission : new String[]{"me", "lookup", "tp", "rollback", "clearlog", "hide", "ignoreRestrictions", "spawnTools"})
 						if (logblock.hasPermission(sender, "logblock." + permission))
 							sender.sendMessage(ChatColor.GOLD + "logblock." + permission);
@@ -167,16 +167,16 @@ public class CommandsHandler implements CommandExecutor
 									try {
 										mode = ToolMode.valueOf(args[2].toUpperCase());
 									} catch (final IllegalArgumentException ex) {
-										sender.sendMessage(ChatColor.RED + "Can't find mode " + args[2]);
+										sender.sendMessage(ChatColor.RED + "Can't find mode " + args[2] + "!");
 										return true;
 									}
 									if (logblock.hasPermission(player, mode.getPermission())) {
 										toolData.mode = mode;
-										sender.sendMessage(ChatColor.GREEN + "Tool mode set to " + args[2]);
+										sender.sendMessage(ChatColor.GREEN + "Tool mode set to " + args[2] + "!");
 									} else
-										sender.sendMessage(ChatColor.RED + "You aren't allowed to use mode " + args[2]);
+										sender.sendMessage(ChatColor.RED + "You aren't allowed to use mode " + args[2] + "!");
 								} else
-									player.sendMessage(ChatColor.RED + "No mode specified");
+									player.sendMessage(ChatColor.RED + "No mode specified!");
 							} else if (args[1].equalsIgnoreCase("default")) {
 								toolData.params = tool.params.clone();
 								toolData.mode = tool.mode;
@@ -200,9 +200,9 @@ public class CommandsHandler implements CommandExecutor
 					if (sender instanceof Player) {
 						if (logblock.hasPermission(sender, "logblock.hide")) {
 							if (Consumer.hide((Player)sender))
-								sender.sendMessage(ChatColor.GREEN + "You are now hidden and aren't logged. Type '/lb hide' again to unhide");
+								sender.sendMessage(ChatColor.GREEN + "You are now hidden and aren't logged. Type '/lb hide' again to unhide.");
 							else
-								sender.sendMessage(ChatColor.GREEN + "You aren't hidden anylonger.");
+								sender.sendMessage(ChatColor.GREEN + "You aren't hidden any longer.");
 						} else
 							sender.sendMessage(ChatColor.RED + "You aren't allowed to do this.");
 					} else
@@ -211,7 +211,7 @@ public class CommandsHandler implements CommandExecutor
 					if (args.length == 2 && isInt(args[1]))
 						showPage(sender, Integer.valueOf(args[1]));
 					else
-						sender.sendMessage(ChatColor.RED + "You have to specify a page");
+						sender.sendMessage(ChatColor.RED + "You have to specify a page.");
 				} else if (command.equals("next") || command.equals("+"))
 					showPage(sender, getSession(sender).page + 1);
 				else if (command.equals("prev") || command.equals("-"))
@@ -256,7 +256,7 @@ public class CommandsHandler implements CommandExecutor
 								params.sum = SummarizationMode.TYPES;
 								new CommandLookup(sender, params, true);
 							} else
-								sender.sendMessage(ChatColor.RED + "This world isn't logged");
+								sender.sendMessage(ChatColor.RED + "This world isn't logged.");
 						} else
 							sender.sendMessage(ChatColor.RED + "You aren't allowed to do this.");
 					} else
@@ -269,7 +269,7 @@ public class CommandsHandler implements CommandExecutor
 						params.parseArgs(sender, argsToList(args, 1));
 						new CommandWriteLogFile(sender, params, true);
 					} else
-						sender.sendMessage(ChatColor.RED + "You aren't allowed to do this");
+						sender.sendMessage(ChatColor.RED + "You aren't allowed to do this.");
 				} else if (command.equals("clearlog")) {
 					if (logblock.hasPermission(sender, "logblock.clearlog")) {
 						final QueryParams params = new QueryParams(logblock, sender, argsToList(args, 1));
@@ -277,7 +277,7 @@ public class CommandsHandler implements CommandExecutor
 						params.limit = -1;
 						new CommandClearLog(sender, params, true);
 					} else
-						sender.sendMessage(ChatColor.RED + "You aren't allowed to do this");
+						sender.sendMessage(ChatColor.RED + "You aren't allowed to do this.");
 				} else if (command.equals("tp")) {
 					if (sender instanceof Player) {
 						if (logblock.hasPermission(sender, "logblock.tp"))
@@ -290,17 +290,17 @@ public class CommandsHandler implements CommandExecutor
 										final Location loc = session.lookupCache[pos].getLocation();
 										if (loc != null) {
 											player.teleport(new Location(loc.getWorld(), loc.getX() + 0.5, saveSpawnHeight(loc), loc.getZ() + 0.5, player.getLocation().getYaw(), 90));
-											player.sendMessage(ChatColor.LIGHT_PURPLE + "Teleported to " + loc.getBlockX() + ":" + loc.getBlockY() + ":" + loc.getBlockZ());
+											player.sendMessage(ChatColor.LIGHT_PURPLE + "Teleported to " + loc.getBlockX() + ":" + loc.getBlockY() + ":" + loc.getBlockZ() + ".");
 										} else
-											sender.sendMessage(ChatColor.RED + "There is no location associated with that. Did you forget coords parameter?");
+											sender.sendMessage(ChatColor.RED + "There is no location associated with that! Did you forget the coords parameter?");
 									} else
-										sender.sendMessage(ChatColor.RED + "'" + args[1] + " is out of range");
+										sender.sendMessage(ChatColor.RED + "'" + args[1] + " is out of range.");
 								else
-									sender.sendMessage(ChatColor.RED + "You havn't done a lookup yet");
+									sender.sendMessage(ChatColor.RED + "You haven't performed a lookup yet.");
 							} else
 								new CommandTeleport(sender, new QueryParams(logblock, sender, argsToList(args, 1)), true);
 						else
-							sender.sendMessage(ChatColor.RED + "You aren't allowed to do this");
+							sender.sendMessage(ChatColor.RED + "You aren't allowed to do this.");
 					} else
 						sender.sendMessage(ChatColor.RED + "You have to be a player.");
 				} else if (command.equals("lookup") || QueryParams.isKeyWord(args[0])) {
@@ -310,14 +310,14 @@ public class CommandsHandler implements CommandExecutor
 							argsList.remove(0);
 						new CommandLookup(sender, new QueryParams(logblock, sender, argsList), true);
 					} else
-						sender.sendMessage(ChatColor.RED + "You aren't allowed to do this");
+						sender.sendMessage(ChatColor.RED + "You aren't allowed to do this.");
 				} else
 					sender.sendMessage(ChatColor.RED + "Unknown command '" + args[0] + "'");
 			}
 		} catch (final IllegalArgumentException ex) {
 			sender.sendMessage(ChatColor.RED + ex.getMessage());
 		} catch (final Exception ex) {
-			sender.sendMessage(ChatColor.RED + "Error, check server.log");
+			sender.sendMessage(ChatColor.RED + "Error, check server.log.");
 			getLogger().log(Level.WARNING, "Exception in commands handler: ", ex);
 		}
 		return true;
@@ -336,20 +336,20 @@ public class CommandsHandler implements CommandExecutor
 					sender.sendMessage(ChatColor.GOLD + (session.lookupCache[i].getLocation() != null ? "(" + (i + 1) + ") " : "") + session.lookupCache[i].getMessage());
 				session.page = page;
 			} else
-				sender.sendMessage(ChatColor.RED + "There isn't a page '" + page + "'");
+				sender.sendMessage(ChatColor.RED + "There isn't a page '" + page + "'".);
 		} else
-			sender.sendMessage(ChatColor.RED + "No blocks in lookup cache");
+			sender.sendMessage(ChatColor.RED + "No blocks in lookup cache.");
 	}
 
 	private boolean checkRestrictions(CommandSender sender, QueryParams params) {
 		if (sender.isOp() || logblock.hasPermission(sender, "logblock.ignoreRestrictions"))
 			return true;
 		if (rollbackMaxTime > 0 && (params.before > 0 || params.since > rollbackMaxTime)) {
-			sender.sendMessage(ChatColor.RED + "You are not allowed to rollback more than " + rollbackMaxTime + " minutes");
+			sender.sendMessage(ChatColor.RED + "You are not allowed to rollback anything more than " + rollbackMaxTime + " minutes ago.");
 			return false;
 		}
 		if (rollbackMaxArea > 0 && (params.sel == null && params.loc == null || params.radius > rollbackMaxArea || params.sel != null && (params.sel.getLength() > rollbackMaxArea || params.sel.getWidth() > rollbackMaxArea))) {
-			sender.sendMessage(ChatColor.RED + "You are not allowed to rollback an area larger than " + rollbackMaxArea + " blocks");
+			sender.sendMessage(ChatColor.RED + "You are not allowed to rollback an area larger than " + rollbackMaxArea + " blocks.");
 			return false;
 		}
 		return true;
@@ -368,7 +368,7 @@ public class CommandsHandler implements CommandExecutor
 			this.params = params;
 			if (async) {
 				if (scheduler.scheduleAsyncDelayedTask(logblock, this) == -1)
-					throw new Exception("Failed to schedule the command");
+					throw new Exception("Failed to schedule the command.");
 			} else
 				run();
 		}
@@ -413,7 +413,7 @@ public class CommandsHandler implements CommandExecutor
 				}
 				conn = logblock.getConnection();
 				if (conn == null) {
-					sender.sendMessage(ChatColor.RED + "MySQL connection lost");
+					sender.sendMessage(ChatColor.RED + "MySQL connection lost!");
 					return;
 				}
 				state = conn.createStatement();
@@ -436,7 +436,7 @@ public class CommandsHandler implements CommandExecutor
 					getSession(sender).lookupCache = null;
 				}
 			} catch (final Exception ex) {
-				sender.sendMessage(ChatColor.RED + "Exception, check error log");
+				sender.sendMessage(ChatColor.RED + "Exception, check error log.");
 				getLogger().log(Level.SEVERE, "[Lookup] " + params.getQuery() + ": ", ex);
 			} finally {
 				close();
@@ -470,7 +470,7 @@ public class CommandsHandler implements CommandExecutor
 				}
 				conn = logblock.getConnection();
 				if (conn == null) {
-					sender.sendMessage(ChatColor.RED + "MySQL connection lost");
+					sender.sendMessage(ChatColor.RED + "MySQL connection lost!");
 					return;
 				}
 				state = conn.createStatement();
@@ -516,13 +516,13 @@ public class CommandsHandler implements CommandExecutor
 				while (consumer.getQueueSize() > 0) {
 					fails = lastSize == consumer.getQueueSize() ? fails + 1 : 0;
 					if (fails > 10) {
-						sender.sendMessage(ChatColor.RED + "Unable to save queue");
+						sender.sendMessage(ChatColor.RED + "Unable to save queue!");
 						return;
 					}
 					lastSize = consumer.getQueueSize();
 					consumer.run();
 				}
-				sender.sendMessage(ChatColor.GREEN + "Queue saved successfully");
+				sender.sendMessage(ChatColor.GREEN + "Queue saved successfully.");
 			}
 		}
 	}
@@ -544,7 +544,7 @@ public class CommandsHandler implements CommandExecutor
 				params.sum = SummarizationMode.NONE;
 				conn = logblock.getConnection();
 				if (conn == null) {
-					sender.sendMessage(ChatColor.RED + "MySQL connection lost");
+					sender.sendMessage(ChatColor.RED + "MySQL connection lost!");
 					return;
 				}
 				state = conn.createStatement();
@@ -566,11 +566,11 @@ public class CommandsHandler implements CommandExecutor
 						}
 					});
 					
-					sender.sendMessage(ChatColor.GREEN + "You were teleported " + Math.abs(y2 - y) + " blocks " + (y2 - y > 0 ? "above" : "below"));
+					sender.sendMessage(ChatColor.GREEN + "You were teleported " + Math.abs(y2 - y) + " blocks " + (y2 - y > 0 ? "above." : "below."));
 				} else
-					sender.sendMessage(ChatColor.RED + "No block change found to teleport to");
+					sender.sendMessage(ChatColor.RED + "No block change found to teleport to.");
 			} catch (final Exception ex) {
-				sender.sendMessage(ChatColor.RED + "Exception, check error log");
+				sender.sendMessage(ChatColor.RED + "Exception, check error log.");
 				getLogger().log(Level.SEVERE, "[Teleport] " + params.getQuery() + ": ", ex);
 			} finally {
 				close();
@@ -596,7 +596,7 @@ public class CommandsHandler implements CommandExecutor
 				params.sum = SummarizationMode.NONE;
 				conn = logblock.getConnection();
 				if (conn == null) {
-					sender.sendMessage(ChatColor.RED + "MySQL connection lost");
+					sender.sendMessage(ChatColor.RED + "MySQL connection lost!");
 					return;
 				}
 				state = conn.createStatement();
@@ -615,11 +615,11 @@ public class CommandsHandler implements CommandExecutor
 					sender.sendMessage(ChatColor.GREEN.toString() + changes + " blocks found.");
 				if (changes == 0) {
 					if (!params.silent)
-						sender.sendMessage(ChatColor.RED + "Rollback aborted");
+						sender.sendMessage(ChatColor.RED + "Rollback aborted!");
 					return;
 				}
 				if (!params.silent && askRollbacks && questioner != null && sender instanceof Player && !questioner.ask((Player)sender, "Are you sure you want to continue?", "yes", "no").equals("yes")) {
-					sender.sendMessage(ChatColor.RED + "Rollback aborted");
+					sender.sendMessage(ChatColor.RED + "Rollback aborted!");
 					return;
 				}
 				editor.start();
@@ -631,7 +631,7 @@ public class CommandsHandler implements CommandExecutor
 						params.silent = true;
 						new CommandClearLog(sender, params, false);
 					} else
-						sender.sendMessage(ChatColor.LIGHT_PURPLE + "Clearlog cancelled");
+						sender.sendMessage(ChatColor.LIGHT_PURPLE + "ClearLog cancelled!");
 				}
 			} catch (final Exception ex) {
 				sender.sendMessage(ChatColor.RED + "Exception, check error log");
@@ -660,7 +660,7 @@ public class CommandsHandler implements CommandExecutor
 				params.sum = SummarizationMode.NONE;
 				conn = logblock.getConnection();
 				if (conn == null) {
-					sender.sendMessage(ChatColor.RED + "MySQL connection lost");
+					sender.sendMessage(ChatColor.RED + "MySQL connection lost!");
 					return;
 				}
 				state = conn.createStatement();
@@ -677,11 +677,11 @@ public class CommandsHandler implements CommandExecutor
 					sender.sendMessage(ChatColor.GREEN.toString() + changes + " blocks found.");
 				if (changes == 0) {
 					if (!params.silent)
-						sender.sendMessage(ChatColor.RED + "Redo aborted");
+						sender.sendMessage(ChatColor.RED + "Redo aborted!");
 					return;
 				}
 				if (!params.silent && askRedos && questioner != null && sender instanceof Player && !questioner.ask((Player)sender, "Are you sure you want to continue?", "yes", "no").equals("yes")) {
-					sender.sendMessage(ChatColor.RED + "Redo aborted");
+					sender.sendMessage(ChatColor.RED + "Redo aborted!");
 					return;
 				}
 				editor.start();
@@ -707,7 +707,7 @@ public class CommandsHandler implements CommandExecutor
 				conn = logblock.getConnection();
 				state = conn.createStatement();
 				if (conn == null) {
-					sender.sendMessage(ChatColor.RED + "MySQL connection lost");
+					sender.sendMessage(ChatColor.RED + "MySQL connection lost!");
 					return;
 				}
 				if (!checkRestrictions(sender, params))
@@ -726,7 +726,7 @@ public class CommandsHandler implements CommandExecutor
 						sender.sendMessage(ChatColor.DARK_AQUA + "Searching " + params.getTitle() + ":");
 						sender.sendMessage(ChatColor.GREEN.toString() + deleted + " blocks found.");
 						if (!questioner.ask((Player)sender, "Are you sure you want to continue?", "yes", "no").equals("yes")) {
-							sender.sendMessage(ChatColor.RED + "ClearLog aborted");
+							sender.sendMessage(ChatColor.RED + "ClearLog aborted!");
 							return;
 						}
 					}
