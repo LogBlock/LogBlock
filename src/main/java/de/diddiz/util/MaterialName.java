@@ -34,10 +34,10 @@ public class MaterialName
 			cfg.set("11", "lava");
 			cfg.set("17.1", "spruce log");
 			cfg.set("17.2", "birch log");
-                        cfg.set("17.3", "jungle log);
+                        cfg.set("17.3", "jungle log");
 			cfg.set("18.1", "spruce leaves");
 			cfg.set("18.2", "birch leaves");
-                        cfg.set("18.3", "jungle leaves);
+                        cfg.set("18.3", "jungle leaves");
 			cfg.set("31.0", "dead long grass");
 			cfg.set("31.2", "fern");
 			for (byte i = 0; i < 7; i++) {
