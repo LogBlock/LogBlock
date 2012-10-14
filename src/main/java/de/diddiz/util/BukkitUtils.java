@@ -204,16 +204,16 @@ public class BukkitUtils
 	public static void giveTool(Player player, int type) {
 		final Inventory inv = player.getInventory();
 		if (inv.contains(type))
-			player.sendMessage(ChatColor.RED + "You have already a " + materialName(type));
+			player.sendMessage(ChatColor.RED + "You already have the " + materialName(type) "!");
 		else {
 			final int free = inv.firstEmpty();
 			if (free >= 0) {
 				if (player.getItemInHand() != null && player.getItemInHand().getTypeId() != 0)
 					inv.setItem(free, player.getItemInHand());
 				player.setItemInHand(new ItemStack(type, 1));
-				player.sendMessage(ChatColor.GREEN + "Here's your " + materialName(type));
+				player.sendMessage(ChatColor.GREEN + "Here's your " + materialName(type) + ".");
 			} else
-				player.sendMessage(ChatColor.RED + "You have no empty slot in your inventory");
+				player.sendMessage(ChatColor.RED + "You have no empty slot in your inventory!");
 		}
 	}
 
