@@ -114,7 +114,7 @@ public class LogBlock extends JavaPlugin
 		if (noDb)
 			return;
 		if (pm.getPlugin("WorldEdit") == null) {
-			new Exception("WorldEdit is not installed please download and install").printStackTrace();
+			new Exception("WorldEdit is not installed; please download and install it.").printStackTrace();
 			pm.disablePlugin(this);
 			return;
 		}
@@ -128,7 +128,7 @@ public class LogBlock extends JavaPlugin
 			if (getServer().getScheduler().scheduleAsyncRepeatingTask(this, consumer, delayBetweenRuns * 20, delayBetweenRuns * 20) > 0)
 				getLogger().info("Scheduled consumer with bukkit scheduler.");
 			else {
-				getLogger().warning("Failed to schedule consumer with bukkit scheduler. Now trying schedule with timer.");
+				getLogger().warning("Failed to schedule consumer with Bukkit scheduler. Now trying schedule with timer.");
 				timer = new Timer();
 				timer.scheduleAtFixedRate(consumer, delayBetweenRuns * 1000, delayBetweenRuns * 1000);
 			}
@@ -212,7 +212,7 @@ public class LogBlock extends JavaPlugin
 							consumer.writeToFile();
 							getLogger().info("Successfully dumped queue.");
 						} catch (final FileNotFoundException ex) {
-							getLogger().info("Failed to write. Given up.");
+							getLogger().info("Failed to write. LogBlock has given up.");
 							break;
 						}
 					}
@@ -240,7 +240,7 @@ public class LogBlock extends JavaPlugin
 		try {
 			final Connection conn = pool.getConnection();
 			if (!connected) {
-				getLogger().info("MySQL connection rebuild");
+				getLogger().info("MySQL connection rebuilt.");
 				connected = true;
 			}
 			return conn;
@@ -249,7 +249,7 @@ public class LogBlock extends JavaPlugin
 				getLogger().log(Level.SEVERE, "Error while fetching connection: ", ex);
 				connected = false;
 			} else
-				getLogger().severe("MySQL connection lost");
+				getLogger().severe("MySQL connection lost!");
 			return null;
 		}
 	}
