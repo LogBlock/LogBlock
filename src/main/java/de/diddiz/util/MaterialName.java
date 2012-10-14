@@ -28,14 +28,16 @@ public class MaterialName
 		if (cfg.getKeys(false).isEmpty()) {
 			// Generate defaults
 			cfg.options().header("Add block or item names you want to be overridden or also names for custom blocks");
-			cfg.set("6.1", "redwood sapling");
+			cfg.set("6.1", "spruce sapling");
 			cfg.set("6.2", "birch sapling");
 			cfg.set("9", "water");
 			cfg.set("11", "lava");
-			cfg.set("17.1", "redwood log");
+			cfg.set("17.1", "spruce log");
 			cfg.set("17.2", "birch log");
-			cfg.set("18.1", "redwood leaves");
+                        cfg.set("17.3", "jungle log);
+			cfg.set("18.1", "spruce leaves");
 			cfg.set("18.2", "birch leaves");
+                        cfg.set("18.3", "jungle leaves);
 			cfg.set("31.0", "dead long grass");
 			cfg.set("31.2", "fern");
 			for (byte i = 0; i < 7; i++) {
