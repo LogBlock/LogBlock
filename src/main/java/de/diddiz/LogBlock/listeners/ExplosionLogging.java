@@ -10,6 +10,8 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
+import org.bukkit.entity.Wither;
+import org.bukkit.entity.WitherSkull;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityExplodeEvent;
@@ -52,6 +54,14 @@ public class ExplosionLogging extends LoggingListener
 				if (!wcfg.isLogging(Logging.ENDERDRAGON))
 					return;
 				name = "EnderDragon";
+			} else if (event.getEntity() instanceof Wither) {
+				if(!wcfg.isLogging(Logging.WITHER))
+					return;
+				name = "Wither";
+			} else if (event.getEntity() instanceof WitherSkull) {
+				if(!wcfg.isLogging(Logging.WITHER_SKULL))
+					return;
+				name = "WitherSkull";
 			} else {
 				if (!wcfg.isLogging(Logging.MISCEXPLOSION))
 					return;
