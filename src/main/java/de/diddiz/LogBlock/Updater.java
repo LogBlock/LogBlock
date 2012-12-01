@@ -227,7 +227,7 @@ class Updater
 			getLogger().log(Level.INFO, "Creating table " + table + ".");
 			state.execute("CREATE TABLE `" + table + "` " + query);
 			if (!dbm.getTables(null, null, table, null).next())
-				throw new SQLException("Table " + table + " not found and failed to create");
+				throw new SQLException("Table '" + table + "' was not found and could not be created!");
 		}
 	}
 }

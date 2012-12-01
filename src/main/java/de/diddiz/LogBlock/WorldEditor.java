@@ -69,11 +69,11 @@ public class WorldEditor implements Runnable
 		final long start = System.currentTimeMillis();
 		taskID = logblock.getServer().getScheduler().scheduleSyncRepeatingTask(logblock, this, 0, 1);
 		if (taskID == -1)
-			throw new Exception("Failed to schedule task");
+			throw new Exception("Failed to schedule task!");
 		try {
 			this.wait();
 		} catch (final InterruptedException ex) {
-			throw new Exception("Interrupted");
+			throw new Exception("Task interrupted!");
 		}
 		elapsedTime = System.currentTimeMillis() - start;
 	}
@@ -95,7 +95,7 @@ public class WorldEditor implements Runnable
 			} catch (final WorldEditorException ex) {
 				errorList.add(ex);
 			} catch (final Exception ex) {
-				getLogger().log(Level.WARNING, "[WorldEditor] Exeption: ", ex);
+				getLogger().log(Level.WARNING, "[WorldEditor] Exception: ", ex);
 			}
 			counter++;
 		}
@@ -181,7 +181,7 @@ public class WorldEditor implements Runnable
 				for (int i = 0; i < 4; i++)
 					sign.setLine(i, lines[i]);
 				if (!sign.update())
-					throw new WorldEditorException("Failed to update signtext of " + materialName(block.getTypeId()), block.getLocation());
+					throw new WorldEditorException("Failed to update sign text of " + materialName(block.getTypeId()), block.getLocation());
 			} else if (curtype == 26) {
 				final Bed bed = (Bed)block.getState().getData();
 				final Block secBlock = bed.isHeadOfBed() ? block.getRelative(bed.getFacing().getOppositeFace()) : block.getRelative(bed.getFacing());
