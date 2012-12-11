@@ -18,6 +18,11 @@ public class LookupCacheElementFactory
 	public LookupCacheElement getLookupCacheElement(ResultSet rs) throws SQLException {
 		if (params.bct == BlockChangeType.CHAT)
 			return new ChatMessage(rs, params);
+		if (params.bct == BlockChangeType.KILLS)
+			if (params.sum == SummarizationMode.NONE)
+				return new Kill(rs, params);
+			else if (params.sum == SummarizationMode.PLAYERS)
+				return new SummedKills(rs, params, spaceFactor);
 		if (params.sum == SummarizationMode.NONE)
 			return new BlockChange(rs, params);
 		return new SummedBlockChanges(rs, params, spaceFactor);

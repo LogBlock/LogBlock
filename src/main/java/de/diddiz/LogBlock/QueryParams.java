@@ -5,6 +5,7 @@ import static de.diddiz.LogBlock.config.Config.defaultDist;
 import static de.diddiz.LogBlock.config.Config.defaultTime;
 import static de.diddiz.LogBlock.config.Config.getWorldConfig;
 import static de.diddiz.LogBlock.config.Config.isLogged;
+import static de.diddiz.LogBlock.config.Config.isLogging;
 import static de.diddiz.util.BukkitUtils.friendlyWorldname;
 import static de.diddiz.util.BukkitUtils.getBlockEquivalents;
 import static de.diddiz.util.MaterialName.materialName;
@@ -26,23 +27,27 @@ import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
+
+import de.diddiz.LogBlock.config.Config;
 import de.diddiz.util.Block;
 
 public final class QueryParams implements Cloneable
 {
-	private static final Set<Integer> keywords = new HashSet<Integer>(Arrays.asList("player".hashCode(), "area".hashCode(), "selection".hashCode(), "sel".hashCode(), "block".hashCode(), "type".hashCode(), "sum".hashCode(), "destroyed".hashCode(), "created".hashCode(), "chestaccess".hashCode(), "all".hashCode(), "time".hashCode(), "since".hashCode(), "before".hashCode(), "limit".hashCode(), "world".hashCode(), "asc".hashCode(), "desc".hashCode(), "last".hashCode(), "coords".hashCode(), "silent".hashCode(), "chat".hashCode(), "search".hashCode(), "match".hashCode(), "loc".hashCode(), "location".hashCode()));
+	private static final Set<Integer> keywords = new HashSet<Integer>(Arrays.asList("player".hashCode(), "area".hashCode(), "selection".hashCode(), "sel".hashCode(), "block".hashCode(), "type".hashCode(), "sum".hashCode(), "destroyed".hashCode(), "created".hashCode(), "chestaccess".hashCode(), "all".hashCode(), "time".hashCode(), "since".hashCode(), "before".hashCode(), "limit".hashCode(), "world".hashCode(), "asc".hashCode(), "desc".hashCode(), "last".hashCode(), "coords".hashCode(), "silent".hashCode(), "chat".hashCode(), "search".hashCode(), "match".hashCode(), "loc".hashCode(), "location".hashCode(), "kills".hashCode(), "killer".hashCode(), "victim".hashCode()));
 	public BlockChangeType bct = BlockChangeType.BOTH;
 	public int limit = -1, before = 0, since = 0, radius = -1;
 	public Location loc = null;
 	public Order order = Order.DESC;
 	public List<String> players = new ArrayList<String>();
-	public boolean excludePlayersMode = false, prepareToolQuery = false, silent = false;
+	public List<String> killers = new ArrayList<String>();
+	public List<String> victims = new ArrayList<String>();
+	public boolean excludePlayersMode = false, excludeKillersMode = false, excludeVictimsMode = false, prepareToolQuery = false, silent = false;
 	public Selection sel = null;
 	public SummarizationMode sum = SummarizationMode.NONE;
 	public List<Block> types = new ArrayList<Block>();
 	public World world = null;
 	public String match = null;
-	public boolean needCount = false, needId = false, needDate = false, needType = false, needData = false, needPlayer = false, needCoords = false, needSignText = false, needChestAccess = false, needMessage = false;
+	public boolean needCount = false, needId = false, needDate = false, needType = false, needData = false, needPlayer = false, needCoords = false, needSignText = false, needChestAccess = false, needMessage = false, needKiller = false, needVictim = false, needWeapon = false;
 	private final LogBlock logblock;
 
 	public QueryParams(LogBlock logblock) {
@@ -83,6 +88,38 @@ public final class QueryParams implements Cloneable
 			if (needPlayer || players.size() > 0)
 				from += "INNER JOIN `lb-players` USING (playerid) ";
 			return select + " " + from + getWhere() + "ORDER BY date " + order + ", id " + order + " " + getLimit();
+		}
+		if (bct == BlockChangeType.KILLS) {
+			if (sum == SummarizationMode.NONE) {
+				String select = "SELECT ";
+				if (needCount)
+					select += "COUNT(*) AS count";
+				else {
+					if (needId)
+						select += "id, ";
+					if (needDate)
+						select += "date, ";
+					if (needPlayer || needKiller)
+						select += "killers.playername as killer, ";
+					if (needPlayer || needVictim)
+						select += "victims.playername as victim, ";
+					if (needWeapon)
+						select += "weapon, ";
+					if (needCoords)
+						select += "x, y, z, ";
+					select = select.substring(0, select.length() - 2);
+				}
+				String from = "FROM `" + getTable() + "-kills` ";
+
+				if (needPlayer || needKiller || killers.size() > 0)
+					from += "INNER JOIN `lb-players` as killers ON (killer=killers.playerid) ";
+
+				if (needPlayer || needVictim || victims.size() > 0)
+					from += "INNER JOIN `lb-players` as victims ON (victim=victims.playerid) ";
+
+				return select + " " + from + getWhere() + "ORDER BY date " + order + ", id " + order + " " + getLimit();
+			} else if (sum == SummarizationMode.PLAYERS)
+				return "SELECT playername, SUM(kills) AS kills, SUM(killed) AS killed FROM ((SELECT killer AS playerid, count(*) AS kills, 0 as killed FROM `" + getTable() + "-kills` INNER JOIN `lb-players` as killers ON (killer=killers.playerid) INNER JOIN `lb-players` as victims ON (victim=victims.playerid) " + getWhere(BlockChangeType.KILLS) + "GROUP BY killer) UNION (SELECT victim AS playerid, 0 as kills, count(*) AS killed FROM `" + getTable() + "-kills` INNER JOIN `lb-players` as killers ON (killer=killers.playerid) INNER JOIN `lb-players` as victims ON (victim=victims.playerid) " + getWhere(BlockChangeType.KILLS) + "GROUP BY victim)) AS t INNER JOIN `lb-players` USING (playerid) GROUP BY playerid ORDER BY SUM(kills) + SUM(killed) " + order + " " + getLimit();
 		}
 		if (sum == SummarizationMode.NONE) {
 			String select = "SELECT ";
@@ -131,6 +168,8 @@ public final class QueryParams implements Cloneable
 			title.append("chest accesses ");
 		else if (bct == BlockChangeType.CHAT)
 			title.append("chat messages ");
+		else if (bct == BlockChangeType.KILLS)
+			title.append("kills ");
 		else {
 			if (!types.isEmpty()) {
 				final String[] blocknames = new String[types.size()];
@@ -146,6 +185,14 @@ public final class QueryParams implements Cloneable
 			else
 				title.append("changes ");
 		}
+		if (killers.size() > 10)
+			title.append(excludeKillersMode ? "without" : "from").append(" many killers ");
+		else if (!killers.isEmpty())
+			title.append(excludeKillersMode ? "without" : "from").append(" ").append(listing(killers.toArray(new String[killers.size()]), ", ", " and ")).append(" ");
+		if (victims.size() > 10)
+			title.append(excludeVictimsMode ? "without" : "of").append(" many victims ");
+		else if (!victims.isEmpty())
+			title.append(excludeVictimsMode ? "without" : "of").append(" victim").append(victims.size() != 1 ? "s" : "").append(" ").append(listing(victims.toArray(new String[victims.size()]), ", ", " and ")).append(" ");
 		if (players.size() > 10)
 			title.append(excludePlayersMode ? "without" : "from").append(" many players ");
 		else if (!players.isEmpty())
@@ -193,6 +240,52 @@ public final class QueryParams implements Cloneable
 				else
 					where.append("message ").append(unlike ? "NOT " : "").append("LIKE '%").append(unlike ? match.substring(1) : match).append("%' AND ");
 			}
+		} else if (blockChangeType == BlockChangeType.KILLS) {
+			if (!players.isEmpty())
+				if (!excludePlayersMode) {
+					where.append('(');
+					for (final String killerName : players)
+						where.append("killers.playername = '").append(killerName).append("' OR ");
+					for (final String victimName : players)
+						where.append("victims.playername = '").append(victimName).append("' OR ");
+					where.delete(where.length() - 4, where.length());
+					where.append(") AND ");
+				} else {
+					for (final String killerName : players)
+						where.append("killers.playername != '").append(killerName).append("' AND ");
+					for (final String victimName : players)
+						where.append("victims.playername != '").append(victimName).append("' AND ");
+				}
+
+			if (!killers.isEmpty())
+				if (!excludeKillersMode) {
+					where.append('(');
+					for (final String killerName : killers)
+						where.append("killers.playername = '").append(killerName).append("' OR ");
+					where.delete(where.length() - 4, where.length());
+					where.append(") AND ");
+				} else
+					for (final String killerName : killers)
+						where.append("killers.playername != '").append(killerName).append("' AND ");
+
+			if (!victims.isEmpty())
+				if (!excludeVictimsMode) {
+					where.append('(');
+					for (final String victimName : victims)
+						where.append("victims.playername = '").append(victimName).append("' OR ");
+					where.delete(where.length() - 4, where.length());
+					where.append(") AND ");
+				} else
+					for (final String victimName : victims)
+						where.append("victims.playername != '").append(victimName).append("' AND ");
+
+			if (loc != null) {
+				if (radius == 0)
+					where.append("x = '").append(loc.getBlockX()).append("' AND y = '").append(loc.getBlockY()).append("' AND z = '").append(loc.getBlockZ()).append("' AND ");
+				else if (radius > 0)
+					where.append("x > '").append(loc.getBlockX() - radius).append("' AND x < '").append(loc.getBlockX() + radius).append("' AND y > '").append(loc.getBlockY() - radius).append("' AND y < '").append(loc.getBlockY() + radius).append("' AND z > '").append(loc.getBlockZ() - radius).append("' AND z < '").append(loc.getBlockZ() + radius).append("' AND ");
+			} else if (sel != null)
+				where.append("x >= '").append(sel.getMinimumPoint().getBlockX()).append("' AND x <= '").append(sel.getMaximumPoint().getBlockX()).append("' AND y >= '").append(sel.getMinimumPoint().getBlockY()).append("' AND y <= '").append(sel.getMaximumPoint().getBlockY()).append("' AND z >= '").append(sel.getMinimumPoint().getBlockZ()).append("' AND z <= '").append(sel.getMaximumPoint().getBlockZ()).append("' AND ");
 		} else {
 			switch (blockChangeType) {
 				case ALL:
@@ -290,7 +383,7 @@ public final class QueryParams implements Cloneable
 			} else if (sel != null)
 				where.append("x >= '").append(sel.getMinimumPoint().getBlockX()).append("' AND x <= '").append(sel.getMaximumPoint().getBlockX()).append("' AND y >= '").append(sel.getMinimumPoint().getBlockY()).append("' AND y <= '").append(sel.getMaximumPoint().getBlockY()).append("' AND z >= '").append(sel.getMinimumPoint().getBlockZ()).append("' AND z <= '").append(sel.getMaximumPoint().getBlockZ()).append("' AND ");
 		}
-		if (!players.isEmpty() && sum != SummarizationMode.PLAYERS)
+		if (!players.isEmpty() && sum != SummarizationMode.PLAYERS && blockChangeType != BlockChangeType.KILLS)
 			if (!excludePlayersMode) {
 				where.append('(');
 				for (final String playerName : players)
@@ -341,6 +434,53 @@ public final class QueryParams implements Cloneable
 							players.add(matches.size() == 1 ? matches.get(0).getName() : playerName.replaceAll("[^a-zA-Z0-9_]", ""));
 						}
 					}
+			} else if (param.equals("killer")) {
+				if (values.length < 1)
+					throw new IllegalArgumentException("No or wrong count of arguments for '" + param + "'");
+				for (final String killerName : values)
+					if (killerName.length() > 0) {
+						if (killerName.contains("!"))
+							excludeVictimsMode = true;
+						if (killerName.contains("\""))
+							killers.add(killerName.replaceAll("[^a-zA-Z0-9_]", ""));
+						else {
+							final List<Player> matches = logblock.getServer().matchPlayer(killerName);
+							if (matches.size() > 1)
+								throw new IllegalArgumentException("Ambiguous victimname '" + param + "'");
+							killers.add(matches.size() == 1 ? matches.get(0).getName() : killerName.replaceAll("[^a-zA-Z0-9_]", ""));
+						}
+					}
+			} else if (param.equals("victim")) {
+				if (values.length < 1)
+					throw new IllegalArgumentException("No or wrong count of arguments for '" + param + "'");
+				for (final String victimName : values)
+					if (victimName.length() > 0) {
+						if (victimName.contains("!"))
+							excludeVictimsMode = true;
+						if (victimName.contains("\""))
+							victims.add(victimName.replaceAll("[^a-zA-Z0-9_]", ""));
+						else {
+							final List<Player> matches = logblock.getServer().matchPlayer(victimName);
+							if (matches.size() > 1)
+								throw new IllegalArgumentException("Ambiguous victimname '" + param + "'");
+							victims.add(matches.size() == 1 ? matches.get(0).getName() : victimName.replaceAll("[^a-zA-Z0-9_]", ""));
+						}
+					}
+			} else if (param.equals("weapon")) {
+				if (values.length < 1)
+					throw new IllegalArgumentException("No or wrong count of arguments for '" + param + "'");
+				for (final String weaponName : values) {
+					Material mat = Material.matchMaterial(weaponName);
+					if (mat == null)
+						try {
+							mat = Material.getMaterial(Integer.parseInt(weaponName));
+						} catch (NumberFormatException e) {
+							throw new IllegalArgumentException("Data type not a valid number: '" + weaponName + "'");
+						}
+					if (mat == null)
+						throw new IllegalArgumentException("No material matching: '" + weaponName + "'");
+					types.add(new Block(mat.getId(), -1));
+				}
 			} else if (param.equals("block") || param.equals("type")) {
 				if (values.length < 1)
 					throw new IllegalArgumentException("No or wrong count of arguments for '" + param + "'");
@@ -421,6 +561,9 @@ public final class QueryParams implements Cloneable
 				bct = BlockChangeType.CHESTACCESS;
 			else if (param.equals("chat"))
 				bct = BlockChangeType.CHAT;
+			else if (param.equals("kills")) {
+				bct = BlockChangeType.KILLS;
+			}
 			else if (param.equals("all"))
 				bct = BlockChangeType.ALL;
 			else if (param.equals("limit")) {
@@ -461,6 +604,8 @@ public final class QueryParams implements Cloneable
 				throw new IllegalArgumentException("Not a valid argument: '" + param + "'");
 			i += values.length;
 		}
+		if (bct == BlockChangeType.KILLS && !getWorldConfig(world).isLogging(Logging.KILL))
+			throw new IllegalArgumentException("Kill logging not enabled for world '" + world.getName() + "'");
 		if (types.size() > 0)
 			for (final Set<Integer> equivalent : getBlockEquivalents()) {
 				boolean found = false;
@@ -588,7 +733,7 @@ public final class QueryParams implements Cloneable
 
 	public static enum BlockChangeType
 	{
-		ALL, BOTH, CHESTACCESS, CREATED, DESTROYED, CHAT
+		ALL, BOTH, CHESTACCESS, CREATED, DESTROYED, CHAT, KILLS
 	}
 
 	public static enum Order

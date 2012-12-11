@@ -401,6 +401,12 @@ public class CommandsHandler implements CommandExecutor
 					params.needDate = true;
 					params.needPlayer = true;
 					params.needMessage = true;
+				} else if (params.bct == BlockChangeType.KILLS) {
+					params.needDate = true;
+					params.needPlayer = true;
+					params.needKiller = true;
+					params.needVictim = true;
+					params.needWeapon = true;
 				} else {
 					params.needDate = true;
 					params.needType = true;
@@ -429,7 +435,10 @@ public class CommandsHandler implements CommandExecutor
 					if (blockchanges.size() > linesPerPage)
 						sender.sendMessage(ChatColor.DARK_AQUA.toString() + blockchanges.size() + " changes found." + (blockchanges.size() == linesLimit ? " Use 'limit -1' to see all changes." : ""));
 					if (params.sum != SummarizationMode.NONE)
-						sender.sendMessage(ChatColor.GOLD + "Created - Destroyed - " + (params.sum == SummarizationMode.TYPES ? "Block" : "Player"));
+						if (params.bct == BlockChangeType.KILLS && params.sum == SummarizationMode.PLAYERS)
+							sender.sendMessage(ChatColor.GOLD + "Kills - Killed - Player");
+						else
+							sender.sendMessage(ChatColor.GOLD + "Created - Destroyed - " + (params.sum == SummarizationMode.TYPES ? "Block" : "Player"));
 					showPage(sender, 1);
 				} else {
 					sender.sendMessage(ChatColor.DARK_AQUA + "No results found.");
