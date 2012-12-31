@@ -74,7 +74,7 @@ public class BlockChangePreLogEvent extends PreLogEvent {
 
         if (signText != null) {
             // Check for block
-            Validate.isTrue(typeAfter == 63 || typeAfter == 68, "Must be valid sign block");
+            Validate.isTrue(isValidSign(), "Must be valid sign block");
 
             // Check for problems
             Validate.noNullElements(signText, "No null lines");
@@ -84,6 +84,14 @@ public class BlockChangePreLogEvent extends PreLogEvent {
         } else {
             this.signText = null;
         }
+    }
+
+    private boolean isValidSign() {
+
+        if ((typeAfter == 63 || typeAfter == 68) && typeBefore == 0) return true;
+        if ((typeBefore == 63 || typeBefore == 68) && typeAfter == 0) return true;
+        if ((typeAfter == 63 || typeAfter == 68) && typeBefore == typeAfter) return true;
+        return false;
     }
 
     public ChestAccess getChestAccess() {
