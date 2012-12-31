@@ -1,34 +1,22 @@
 package de.diddiz.LogBlock.config;
 
-import static de.diddiz.util.BukkitUtils.friendlyWorldname;
-import static de.diddiz.util.Utils.parseTimeSpec;
-import static org.bukkit.Bukkit.getConsoleSender;
-import static org.bukkit.Bukkit.getLogger;
-import static org.bukkit.Bukkit.getWorlds;
-import java.io.File;
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.logging.Level;
-import java.util.zip.DataFormatException;
+import de.diddiz.LogBlock.*;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.permissions.PermissionDefault;
-import de.diddiz.LogBlock.LogBlock;
-import de.diddiz.LogBlock.Logging;
-import de.diddiz.LogBlock.QueryParams;
-import de.diddiz.LogBlock.Tool;
-import de.diddiz.LogBlock.ToolBehavior;
-import de.diddiz.LogBlock.ToolMode;
+
+import java.io.File;
+import java.io.IOException;
+import java.text.SimpleDateFormat;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.logging.Level;
+import java.util.zip.DataFormatException;
+
+import static de.diddiz.util.BukkitUtils.friendlyWorldname;
+import static de.diddiz.util.Utils.parseTimeSpec;
+import static org.bukkit.Bukkit.*;
 
 public class Config
 {
@@ -36,6 +24,7 @@ public class Config
 	private static Map<String, WorldConfig> worldConfigs;
 	public static String url, user, password;
 	public static int delayBetweenRuns, forceToProcessAtLeast, timePerRun;
+	public static boolean fireCustomEvents;
 	public static boolean useBukkitScheduler;
 	public static boolean enableAutoClearLog;
 	public static List<String> autoClearLog;
@@ -82,6 +71,7 @@ public class Config
 		def.put("consumer.delayBetweenRuns", 6);
 		def.put("consumer.forceToProcessAtLeast", 20);
 		def.put("consumer.timePerRun", 200);
+		def.put("consumer.fireCustomEvents", false);
 		def.put("consumer.useBukkitScheduler", true);
 		def.put("clearlog.dumpDeletedLog", false);
 		def.put("clearlog.enableAutoClearLog", false);
@@ -141,6 +131,7 @@ public class Config
 		delayBetweenRuns = config.getInt("consumer.delayBetweenRuns", 6);
 		forceToProcessAtLeast = config.getInt("consumer.forceToProcessAtLeast", 0);
 		timePerRun = config.getInt("consumer.timePerRun", 100);
+		fireCustomEvents = config.getBoolean("consumer.fireCustomEvents", false);
 		useBukkitScheduler = config.getBoolean("consumer.useBukkitScheduler", true);
 		enableAutoClearLog = config.getBoolean("clearlog.enableAutoClearLog");
 		autoClearLog = config.getStringList("clearlog.auto");

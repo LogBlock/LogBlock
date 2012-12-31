@@ -1,6 +1,7 @@
 package de.diddiz.LogBlock;
 
 import de.diddiz.LogBlock.config.Config;
+import de.diddiz.LogBlock.events.BlockChangePreLogEvent;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
@@ -50,7 +51,7 @@ public class Consumer extends TimerTask
 
 	/**
 	 * Logs a block break. The type afterwards is assumed to be o (air).
-	 * 
+	 *
 	 * @param before
 	 * Blockstate of the block before actually being destroyed.
 	 */
@@ -67,7 +68,7 @@ public class Consumer extends TimerTask
 
 	/**
 	 * Logs a block place. The block type before is assumed to be o (air).
-	 * 
+	 *
 	 * @param after
 	 * Blockstate of the block after actually being placed.
 	 */
@@ -137,7 +138,7 @@ public class Consumer extends TimerTask
 
 	/**
 	 * Logs a container block break. The block type before is assumed to be o (air). All content is assumed to be taken.
-	 * 
+	 *
 	 * @param container
 	 * Must be instanceof InventoryHolder
 	 */
@@ -282,26 +283,26 @@ public class Consumer extends TimerTask
 							}
 							continue process;
 						}
-                    }
-                }
-                if (r instanceof PreparedStatementRow) {
-                    PreparedStatementRow PSRow = (PreparedStatementRow) r;
-                    PSRow.setConnection(conn);
-                    try {
-                        PSRow.executeStatements();
-                    } catch (final SQLException ex) {
-                        getLogger().log(Level.SEVERE, "[Consumer] SQL exception on insertion: ", ex);
-                        break;
-                    }
-                } else {
-                    for (final String insert : r.getInserts())
-                        try {
-                            state.execute(insert);
-                        } catch (final SQLException ex) {
-                            getLogger().log(Level.SEVERE, "[Consumer] SQL exception on " + insert + ": ", ex);
-                            break process;
-                        }
-                }
+					}
+				}
+				if (r instanceof PreparedStatementRow) {
+					PreparedStatementRow PSRow = (PreparedStatementRow) r;
+					PSRow.setConnection(conn);
+					try {
+						PSRow.executeStatements();
+					} catch (final SQLException ex) {
+						getLogger().log(Level.SEVERE, "[Consumer] SQL exception on insertion: ", ex);
+						break;
+					}
+				} else {
+					for (final String insert : r.getInserts())
+						try {
+							state.execute(insert);
+						} catch (final SQLException ex) {
+							getLogger().log(Level.SEVERE, "[Consumer] SQL exception on " + insert + ": ", ex);
+							break process;
+						}
+				}
 
 				count++;
 			}
@@ -371,8 +372,24 @@ public class Consumer extends TimerTask
 	}
 
 	private void queueBlock(String playerName, Location loc, int typeBefore, int typeAfter, byte data, String signtext, ChestAccess ca) {
-		if (playerName == null || loc == null || typeBefore < 0 || typeAfter < 0 || typeBefore > 255 || typeAfter > 255 || hiddenPlayers.contains(playerName) || !isLogged(loc.getWorld()) || typeBefore != typeAfter && hiddenBlocks.contains(typeBefore) && hiddenBlocks.contains(typeAfter))
-			return;
+
+		if (Config.fireCustomEvents) {
+			// Create and call the event
+			BlockChangePreLogEvent event = new BlockChangePreLogEvent(playerName, loc, typeBefore, typeAfter, data, signtext, ca);
+			logblock.getServer().getPluginManager().callEvent(event);
+			if (event.isCancelled()) return;
+
+			// Update variables
+			playerName = event.getOwner();
+			loc = event.getLocation();
+			typeBefore = event.getTypeBefore();
+			typeAfter = event.getTypeAfter();
+			data = event.getData();
+			signtext = event.getSignText();
+			ca = event.getChestAccess();
+		}
+		// Do this last so LogBlock still has final say in what is being added
+		if (playerName == null || loc == null || typeBefore < 0 || typeAfter < 0 || typeBefore > 255 || typeAfter > 255 || hiddenPlayers.contains(playerName) || !isLogged(loc.getWorld()) || typeBefore != typeAfter && hiddenBlocks.contains(typeBefore) && hiddenBlocks.contains(typeAfter)) return;
 		queue.add(new BlockRow(loc, playerName.replaceAll("[^a-zA-Z0-9_]", ""), typeBefore, typeAfter, data, signtext, ca));
 	}
 
@@ -385,12 +402,12 @@ public class Consumer extends TimerTask
 		return "(SELECT playerid FROM `lb-players` WHERE playername = '" + playerName + "')";
 	}
 
-    private Integer playerIDAsInt(String playerName) {
-        if (playerName == null) {
-            return null;
-        }
-        return playerIds.get(playerName);
-    }
+	private Integer playerIDAsInt(String playerName) {
+		if (playerName == null) {
+			return null;
+		}
+		return playerIds.get(playerName);
+	}
 
 	private static interface Row
 	{
@@ -399,21 +416,21 @@ public class Consumer extends TimerTask
 		String[] getPlayers();
 	}
 
-    private interface PreparedStatementRow extends Row
-    {
+	private interface PreparedStatementRow extends Row
+	{
 
-        abstract void setConnection(Connection connection);
-        abstract void executeStatements() throws SQLException;
+		abstract void setConnection(Connection connection);
+		abstract void executeStatements() throws SQLException;
 
-    }
+	}
 
 	private class BlockRow extends BlockChange implements PreparedStatementRow
 	{
-        private Connection connection;
+		private Connection connection;
 
 		public BlockRow(Location loc, String playerName, int replaced, int type, byte data, String signtext, ChestAccess ca) {
-            super(System.currentTimeMillis() / 1000, loc, playerName, replaced, type, data, signtext, ca);
-        }
+			super(System.currentTimeMillis() / 1000, loc, playerName, replaced, type, data, signtext, ca);
+		}
 
 		@Override
 		public String[] getInserts() {
@@ -432,44 +449,44 @@ public class Consumer extends TimerTask
 			return new String[]{playerName};
 		}
 
-        @Override
-        public void setConnection(Connection connection) {
-            this.connection = connection;
-        }
+		@Override
+		public void setConnection(Connection connection) {
+			this.connection = connection;
+		}
 
-        @Override
-        public void executeStatements() throws SQLException {
-            final String table = getWorldConfig(loc.getWorld()).table;
+		@Override
+		public void executeStatements() throws SQLException {
+			final String table = getWorldConfig(loc.getWorld()).table;
 
-            PreparedStatement ps1 = connection.prepareStatement("INSERT INTO `" + table + "` (date, playerid, replaced, type, data, x, y, z) VALUES(?, " + playerID(playerName) + ", ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
-            ps1.setTimestamp(1, new Timestamp(date * 1000));
-            ps1.setInt(2, replaced);
-            ps1.setInt(3, type);
-            ps1.setInt(4, data);
-            ps1.setInt(5, loc.getBlockX());
-            ps1.setInt(6, loc.getBlockY());
-            ps1.setInt(7, loc.getBlockZ());
-            ps1.executeUpdate();
+			PreparedStatement ps1 = connection.prepareStatement("INSERT INTO `" + table + "` (date, playerid, replaced, type, data, x, y, z) VALUES(?, " + playerID(playerName) + ", ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+			ps1.setTimestamp(1, new Timestamp(date * 1000));
+			ps1.setInt(2, replaced);
+			ps1.setInt(3, type);
+			ps1.setInt(4, data);
+			ps1.setInt(5, loc.getBlockX());
+			ps1.setInt(6, loc.getBlockY());
+			ps1.setInt(7, loc.getBlockZ());
+			ps1.executeUpdate();
 
-            int id;
-            ResultSet rs = ps1.getGeneratedKeys();
-            rs.next();
-            id = rs.getInt(1);
+			int id;
+			ResultSet rs = ps1.getGeneratedKeys();
+			rs.next();
+			id = rs.getInt(1);
 
-            if (signtext != null) {
-                PreparedStatement ps = connection.prepareStatement("INSERT INTO `" + table + "-sign` (signtext, id) VALUES(?, ?)");
-                ps.setString(1, signtext);
-                ps.setInt(2, id);
-                ps.executeUpdate();
-            } else if (ca != null) {
-                PreparedStatement ps = connection.prepareStatement("INSERT INTO `" + table + "-chest` (itemtype, itemamount, itemdata, id) values (?, ?, ?, ?)");
-                ps.setInt(1, ca.itemType);
-                ps.setInt(2, ca.itemAmount);
-                ps.setInt(3, ca.itemData);
-                ps.setInt(4, id);
-                ps.executeUpdate();
-            }
-        }
+			if (signtext != null) {
+				PreparedStatement ps = connection.prepareStatement("INSERT INTO `" + table + "-sign` (signtext, id) VALUES(?, ?)");
+				ps.setString(1, signtext);
+				ps.setInt(2, id);
+				ps.executeUpdate();
+			} else if (ca != null) {
+				PreparedStatement ps = connection.prepareStatement("INSERT INTO `" + table + "-chest` (itemtype, itemamount, itemdata, id) values (?, ?, ?, ?)");
+				ps.setInt(1, ca.itemType);
+				ps.setInt(2, ca.itemAmount);
+				ps.setInt(3, ca.itemData);
+				ps.setInt(4, id);
+				ps.executeUpdate();
+			}
+		}
 	}
 
 	private class KillRow implements Row
@@ -500,7 +517,7 @@ public class Consumer extends TimerTask
 
 	private class ChatRow extends ChatMessage implements PreparedStatementRow
 	{
-        private Connection connection;
+		private Connection connection;
 
 		ChatRow(String player, String message) {
 			super(player, message);
@@ -516,34 +533,34 @@ public class Consumer extends TimerTask
 			return new String[]{playerName};
 		}
 
-        @Override
-        public void setConnection(Connection connection) {
-            this.connection = connection;
-        }
+		@Override
+		public void setConnection(Connection connection) {
+			this.connection = connection;
+		}
 
-        @Override
-        public void executeStatements() throws SQLException {
-            boolean noID = false;
-            Integer id;
+		@Override
+		public void executeStatements() throws SQLException {
+			boolean noID = false;
+			Integer id;
 
-            String sql = "INSERT INTO `lb-chat` (date, playerid, message) VALUES (?, ";
-            if ((id = playerIDAsInt(playerName)) == null) {
-                noID = true;
-                sql += playerID(playerName) + ", ";
-            } else {
-                sql += "?, ";
-            }
-            sql += "?)";
-            PreparedStatement ps = connection.prepareStatement(sql);
-            ps.setTimestamp(1, new Timestamp(date * 1000));
-            if (!noID) {
-                ps.setInt(2, id);
-                ps.setString(3, message);
-            } else {
-                ps.setString(2, message);
-            }
-            ps.execute();
-        }
+			String sql = "INSERT INTO `lb-chat` (date, playerid, message) VALUES (?, ";
+			if ((id = playerIDAsInt(playerName)) == null) {
+				noID = true;
+				sql += playerID(playerName) + ", ";
+			} else {
+				sql += "?, ";
+			}
+			sql += "?)";
+			PreparedStatement ps = connection.prepareStatement(sql);
+			ps.setTimestamp(1, new Timestamp(date * 1000));
+			if (!noID) {
+				ps.setInt(2, id);
+				ps.setString(3, message);
+			} else {
+				ps.setString(2, message);
+			}
+			ps.execute();
+		}
 	}
 
 	private class PlayerJoinRow implements Row
