@@ -2,9 +2,6 @@ package de.diddiz.LogBlock.events;
 import org.bukkit.event.Cancellable;
 import org.bukkit.event.Event;
 
-/**
- * Author: Turtle9598
- */
 public abstract class PreLogEvent extends Event implements Cancellable {
 
     protected boolean cancelled = false;
