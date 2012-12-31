@@ -1,6 +1,7 @@
 package de.diddiz.LogBlock;
 
 import de.diddiz.LogBlock.config.Config;
+import de.diddiz.LogBlock.events.BlockChangePreLogEvent;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
@@ -371,8 +372,23 @@ public class Consumer extends TimerTask
 	}
 
 	private void queueBlock(String playerName, Location loc, int typeBefore, int typeAfter, byte data, String signtext, ChestAccess ca) {
-		if (playerName == null || loc == null || typeBefore < 0 || typeAfter < 0 || typeBefore > 255 || typeAfter > 255 || hiddenPlayers.contains(playerName) || !isLogged(loc.getWorld()) || typeBefore != typeAfter && hiddenBlocks.contains(typeBefore) && hiddenBlocks.contains(typeAfter))
-			return;
+
+        // Create and call the event
+        BlockChangePreLogEvent event = new BlockChangePreLogEvent(playerName, loc, typeBefore, typeAfter, data, signtext, ca);
+        logblock.getServer().getPluginManager().callEvent(event);
+        if (event.isCancelled()) return;
+
+        // Update variables
+        playerName = event.getOwner();
+        loc = event.getLocation();
+        typeBefore = event.getTypeBefore();
+        typeAfter = event.getTypeAfter();
+        data = event.getData();
+        signtext = event.getSignText();
+        ca = event.getChestAccess();
+
+        // Do this last so LogBlock still has final say in what is being added
+		if (playerName == null || loc == null || typeBefore < 0 || typeAfter < 0 || typeBefore > 255 || typeAfter > 255 || hiddenPlayers.contains(playerName) || !isLogged(loc.getWorld()) || typeBefore != typeAfter && hiddenBlocks.contains(typeBefore) && hiddenBlocks.contains(typeAfter)) return;
 		queue.add(new BlockRow(loc, playerName.replaceAll("[^a-zA-Z0-9_]", ""), typeBefore, typeAfter, data, signtext, ca));
 	}
 
