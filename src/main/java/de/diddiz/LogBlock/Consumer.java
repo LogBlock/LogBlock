@@ -2,6 +2,7 @@ package de.diddiz.LogBlock;
 
 import de.diddiz.LogBlock.config.Config;
 import de.diddiz.LogBlock.events.BlockChangePreLogEvent;
+import de.diddiz.LogBlock.events.ChatPreLogEvent;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
@@ -200,8 +201,8 @@ public class Consumer extends TimerTask
 	 * Item id of the weapon. 0 for no weapon.
 	 */
 	public void queueKill(Location location, String killerName, String victimName, int weapon) {
-		if (victimName == null || !isLogged(location.getWorld()))
-			return;
+
+		if (victimName == null || !isLogged(location.getWorld())) return;
 		queue.add(new KillRow(location, killerName == null ? null : killerName.replaceAll("[^a-zA-Z0-9_]", ""), victimName.replaceAll("[^a-zA-Z0-9_]", ""), weapon));
 	}
 
@@ -212,8 +213,7 @@ public class Consumer extends TimerTask
 	 * The four lines on the sign.
 	 */
 	public void queueSignBreak(String playerName, Location loc, int type, byte data, String[] lines) {
-		if (type != 63 && type != 68 || lines == null || lines.length != 4)
-			return;
+		if (type != 63 && type != 68 || lines == null || lines.length != 4) return;
 		queueBlock(playerName, loc, type, 0, data, lines[0] + "\0" + lines[1] + "\0" + lines[2] + "\0" + lines[3], null);
 	}
 
@@ -228,8 +228,7 @@ public class Consumer extends TimerTask
 	 * The four lines on the sign.
 	 */
 	public void queueSignPlace(String playerName, Location loc, int type, byte data, String[] lines) {
-		if (type != 63 && type != 68 || lines == null || lines.length != 4)
-			return;
+		if (type != 63 && type != 68 || lines == null || lines.length != 4) return;
 		queueBlock(playerName, loc, 0, type, data, lines[0] + "\0" + lines[1] + "\0" + lines[2] + "\0" + lines[3], null);
 	}
 
@@ -238,6 +237,17 @@ public class Consumer extends TimerTask
 	}
 
 	public void queueChat(String player, String message) {
+
+		if (Config.fireCustomEvents) {
+			// Create and call the event
+			ChatPreLogEvent event = new ChatPreLogEvent(player, message);
+			logblock.getServer().getPluginManager().callEvent(event);
+			if (event.isCancelled()) return;
+
+			// Update variables
+			player = event.getOwner();
+			message = event.getMessage();
+		}
 		for (String ignored : Config.ignoredChat) {
 			if (message.startsWith(ignored)) {
 				return;
@@ -256,12 +266,10 @@ public class Consumer extends TimerTask
 
 	@Override
 	public void run() {
-		if (queue.isEmpty() || !lock.tryLock())
-			return;
+		if (queue.isEmpty() || !lock.tryLock()) return;
 		final Connection conn = logblock.getConnection();
 		Statement state = null;
-		if (getQueueSize() > 1000)
-			getLogger().info("[Consumer] Queue overloaded. Size: " + getQueueSize());
+		if (getQueueSize() > 1000) getLogger().info("[Consumer] Queue overloaded. Size: " + getQueueSize());
 		try {
 			if (conn == null)
 				return;
@@ -272,8 +280,7 @@ public class Consumer extends TimerTask
 			process:
 			while (!queue.isEmpty() && (System.currentTimeMillis() - start < timePerRun || count < forceToProcessAtLeast)) {
 				final Row r = queue.poll();
-				if (r == null)
-					continue;
+				if (r == null) continue;
 				for (final String player : r.getPlayers()) {
 					if (!playerIds.containsKey(player)) {
 						if (!addPlayer(state, player)) {
