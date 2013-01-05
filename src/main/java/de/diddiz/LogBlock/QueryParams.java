@@ -5,7 +5,6 @@ import static de.diddiz.LogBlock.config.Config.defaultDist;
 import static de.diddiz.LogBlock.config.Config.defaultTime;
 import static de.diddiz.LogBlock.config.Config.getWorldConfig;
 import static de.diddiz.LogBlock.config.Config.isLogged;
-import static de.diddiz.LogBlock.config.Config.isLogging;
 import static de.diddiz.util.BukkitUtils.friendlyWorldname;
 import static de.diddiz.util.BukkitUtils.getBlockEquivalents;
 import static de.diddiz.util.MaterialName.materialName;
@@ -27,7 +26,6 @@ import org.bukkit.World;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
-
 import de.diddiz.LogBlock.config.Config;
 import de.diddiz.util.Block;
 
