@@ -27,8 +27,10 @@ import org.bukkit.inventory.ItemStack;
 public class BukkitUtils
 {
 	private static final Set<Set<Integer>> blockEquivalents;
-	private static final Set<Integer> relativeBreakable;
-	private static final Set<Integer> relativeTopBreakable;
+	private static final Set<Material> relativeBreakable;
+	private static final Set<Material> relativeTopBreakable;
+	private static final Set<Material> relativeTopFallables;
+	private static final Set<Material> fallingEntityKillers;
 
 	static {
 		blockEquivalents = new HashSet<Set<Integer>>(7);
@@ -40,33 +42,86 @@ public class BukkitUtils
 		blockEquivalents.add(new HashSet<Integer>(Arrays.asList(75, 76)));
 		blockEquivalents.add(new HashSet<Integer>(Arrays.asList(93, 94)));
 
-		relativeBreakable = new HashSet<Integer>(2);
-		relativeBreakable.add(63); // Sign
-		relativeBreakable.add(68); // Sign
-		relativeBreakable.add(65); // Ladder
-		relativeBreakable.add(77); // Button
+		// Blocks that break when they are attached to a block
+		relativeBreakable = new HashSet<Material>(11);
+		relativeBreakable.add(Material.WALL_SIGN);
+		relativeBreakable.add(Material.LADDER);
+		relativeBreakable.add(Material.STONE_BUTTON);
+		relativeBreakable.add(Material.WOOD_BUTTON);
+		relativeBreakable.add(Material.REDSTONE_TORCH_ON);
+		relativeBreakable.add(Material.REDSTONE_TORCH_OFF);
+		relativeBreakable.add(Material.LEVER);
+		relativeBreakable.add(Material.TORCH);
+		relativeBreakable.add(Material.TRAP_DOOR);
+		relativeBreakable.add(Material.TRIPWIRE_HOOK);
+		relativeBreakable.add(Material.COCOA);
 
-		relativeTopBreakable = new HashSet<Integer>(19);
-		relativeTopBreakable.add(6);   ////Vegetation start////
-		relativeTopBreakable.add(31);  //                  
-		relativeTopBreakable.add(32);  //                  
-		relativeTopBreakable.add(37);  //                  
-		relativeTopBreakable.add(38);  //                 
-		relativeTopBreakable.add(39);  //                 
-		relativeTopBreakable.add(40);  //                 
-		relativeTopBreakable.add(59);  //                
-		relativeTopBreakable.add(81);  //                
-		relativeTopBreakable.add(83);  ////Vegetation end////
-		relativeTopBreakable.add(27);  // Powered rail
-		relativeTopBreakable.add(28);  // Detector rail
-		relativeTopBreakable.add(66);  // Rails
-		relativeTopBreakable.add(55);  // Redstone
-		relativeTopBreakable.add(70);  // Stone pressure plate
-		relativeTopBreakable.add(72);  // Wood pressure plate
-		relativeTopBreakable.add(78);  // Snow
-		relativeTopBreakable.add(93);  // Redstone repeater
-		relativeTopBreakable.add(94);  // Redstone repeater
+		// Blocks that break when they are on top of a block
+		relativeTopBreakable = new HashSet<Material>(26);
+		relativeTopBreakable.add(Material.SAPLING);
+		relativeTopBreakable.add(Material.LONG_GRASS);
+		relativeTopBreakable.add(Material.DEAD_BUSH);
+		relativeTopBreakable.add(Material.YELLOW_FLOWER);
+		relativeTopBreakable.add(Material.RED_ROSE);
+		relativeTopBreakable.add(Material.BROWN_MUSHROOM);
+		relativeTopBreakable.add(Material.RED_MUSHROOM);
+		relativeTopBreakable.add(Material.CROPS);
+		relativeTopBreakable.add(Material.POTATO);
+		relativeTopBreakable.add(Material.CARROT);
+		relativeTopBreakable.add(Material.WATER_LILY);
+		relativeTopBreakable.add(Material.CACTUS);
+		relativeTopBreakable.add(Material.SUGAR_CANE_BLOCK);
+		relativeTopBreakable.add(Material.FLOWER_POT);
+		relativeTopBreakable.add(Material.POWERED_RAIL);
+		relativeTopBreakable.add(Material.DETECTOR_RAIL);
+		relativeTopBreakable.add(Material.RAILS);
+		relativeTopBreakable.add(Material.REDSTONE_WIRE);
+		relativeTopBreakable.add(Material.SIGN_POST);
+		relativeTopBreakable.add(Material.STONE_PLATE);
+		relativeTopBreakable.add(Material.WOOD_PLATE);
+		relativeTopBreakable.add(Material.SNOW);
+		relativeTopBreakable.add(Material.DIODE_BLOCK_ON);
+		relativeTopBreakable.add(Material.DIODE_BLOCK_OFF);
+		relativeTopBreakable.add(Material.WOODEN_DOOR);
+		relativeTopBreakable.add(Material.IRON_DOOR);
+
+		// Blocks that fall
+		relativeTopFallables = new HashSet<Material>(4);
+		relativeTopFallables.add(Material.SAND);
+		relativeTopFallables.add(Material.GRAVEL);
+		relativeTopFallables.add(Material.DRAGON_EGG);
+		relativeTopFallables.add(Material.ANVIL);
+
+		// Blocks that break falling entities
+		fallingEntityKillers = new HashSet<Material>(23);
+		fallingEntityKillers.add(Material.SIGN_POST);
+		fallingEntityKillers.add(Material.WALL_SIGN);
+		fallingEntityKillers.add(Material.SAPLING);
+		fallingEntityKillers.add(Material.YELLOW_FLOWER);
+		fallingEntityKillers.add(Material.RED_ROSE);
+		fallingEntityKillers.add(Material.CROPS);
+		fallingEntityKillers.add(Material.CARROT);
+		fallingEntityKillers.add(Material.POTATO);
+		fallingEntityKillers.add(Material.RED_MUSHROOM);
+		fallingEntityKillers.add(Material.BROWN_MUSHROOM);
+		fallingEntityKillers.add(Material.STEP);
+		fallingEntityKillers.add(Material.WOOD_STEP);
+		fallingEntityKillers.add(Material.TORCH);
+		fallingEntityKillers.add(Material.FLOWER_POT);
+		fallingEntityKillers.add(Material.POWERED_RAIL);
+		fallingEntityKillers.add(Material.DETECTOR_RAIL);
+		fallingEntityKillers.add(Material.RAILS);
+		fallingEntityKillers.add(Material.LEVER);
+		fallingEntityKillers.add(Material.REDSTONE_WIRE);
+		fallingEntityKillers.add(Material.REDSTONE_TORCH_ON);
+		fallingEntityKillers.add(Material.REDSTONE_TORCH_OFF);
+		fallingEntityKillers.add(Material.DIODE_BLOCK_ON);
+		fallingEntityKillers.add(Material.DIODE_BLOCK_OFF);
 	}
+
+	private static final BlockFace[] relativeBlockFaces = new BlockFace[] {
+			BlockFace.EAST, BlockFace.WEST, BlockFace.NORTH, BlockFace.SOUTH, BlockFace.UP, BlockFace.DOWN
+	};
 
 	/**
 	 * Returns a list of block locations around the block that are of the type specified by the integer list parameter
@@ -75,18 +130,13 @@ public class BukkitUtils
 	 * @param type
 	 * @return List of block locations around the block that are of the type specified by the integer list parameter
 	 */
-	public static List<Location> getBlocksNearby(org.bukkit.block.Block block, Set<Integer> type) {
+	public static List<Location> getBlocksNearby(org.bukkit.block.Block block, Set<Material> type) {
 		ArrayList<Location> blocks = new ArrayList<Location>();
-		if (type.contains(block.getRelative(BlockFace.EAST).getTypeId()))
-			blocks.add(block.getRelative(BlockFace.EAST).getLocation());
-		if (type.contains(block.getRelative(BlockFace.WEST).getTypeId()))
-			blocks.add(block.getRelative(BlockFace.WEST).getLocation());
-		if (type.contains(block.getRelative(BlockFace.NORTH).getTypeId()))
-			blocks.add(block.getRelative(BlockFace.NORTH).getLocation());
-		if (type.contains(block.getRelative(BlockFace.SOUTH).getTypeId()))
-			blocks.add(block.getRelative(BlockFace.SOUTH).getLocation());
-		if (type.contains(block.getRelative(BlockFace.UP).getTypeId()))
-			blocks.add(block.getRelative(BlockFace.UP).getLocation());
+		for (BlockFace blockFace : relativeBlockFaces) {
+			if (type.contains(block.getRelative(blockFace).getType())) {
+				blocks.add(block.getRelative(blockFace).getLocation());
+			}
+		}
 		return blocks;
 	}
 
@@ -185,12 +235,20 @@ public class BukkitUtils
 		return blockEquivalents;
 	}
 
-	public static Set<Integer> getRelativeBreakables() {
+	public static Set<Material> getRelativeBreakables() {
 		return relativeBreakable;
 	}
 
-	public static Set<Integer> getRelativeTopBreakabls() {
+	public static Set<Material> getRelativeTopBreakabls() {
 		return relativeTopBreakable;
+	}
+
+	public static Set<Material> getRelativeTopFallables() {
+		return relativeTopFallables;
+	}
+
+	public static Set<Material> getFallingEntityKillers() {
+		return fallingEntityKillers;
 	}
 
 	public static String entityName(Entity entity) {
@@ -261,7 +319,7 @@ public class BukkitUtils
 			return true;
 		} else if (mat == Material.WATER || mat == Material.STATIONARY_WATER || mat == Material.LAVA || mat == Material.STATIONARY_LAVA) { // Fluids
 			return true;
-		} else if (mat == Material.SIGN || mat == Material.FIRE) { // Misc.
+		} else if (getFallingEntityKillers().contains(mat.getId()) || mat == Material.FIRE || mat == Material.VINE || mat == Material.LONG_GRASS || mat == Material.DEAD_BUSH) { // Misc.
 			return true;
 		}
 		return false;
