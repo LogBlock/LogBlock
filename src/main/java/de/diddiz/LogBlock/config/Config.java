@@ -68,9 +68,9 @@ public class Config
 		def.put("mysql.database", "minecraft");
 		def.put("mysql.user", "username");
 		def.put("mysql.password", "pass");
-		def.put("consumer.delayBetweenRuns", 6);
-		def.put("consumer.forceToProcessAtLeast", 20);
-		def.put("consumer.timePerRun", 200);
+		def.put("consumer.delayBetweenRuns", 2);
+		def.put("consumer.forceToProcessAtLeast", 200);
+		def.put("consumer.timePerRun", 1000);
 		def.put("consumer.fireCustomEvents", false);
 		def.put("consumer.useBukkitScheduler", true);
 		def.put("clearlog.dumpDeletedLog", false);
@@ -128,9 +128,9 @@ public class Config
 		url = "jdbc:mysql://" + config.getString("mysql.host") + ":" + config.getInt("mysql.port") + "/" + getStringIncludingInts(config, "mysql.database");
 		user = getStringIncludingInts(config, "mysql.user");
 		password = getStringIncludingInts(config, "mysql.password");
-		delayBetweenRuns = config.getInt("consumer.delayBetweenRuns", 6);
+		delayBetweenRuns = config.getInt("consumer.delayBetweenRuns", 2);
 		forceToProcessAtLeast = config.getInt("consumer.forceToProcessAtLeast", 0);
-		timePerRun = config.getInt("consumer.timePerRun", 100);
+		timePerRun = config.getInt("consumer.timePerRun", 1000);
 		fireCustomEvents = config.getBoolean("consumer.fireCustomEvents", false);
 		useBukkitScheduler = config.getBoolean("consumer.useBukkitScheduler", true);
 		enableAutoClearLog = config.getBoolean("clearlog.enableAutoClearLog");
