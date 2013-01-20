@@ -260,8 +260,10 @@ public class Consumer extends TimerTask
 			return;
 		final Connection conn = logblock.getConnection();
 		Statement state = null;
-		if (getQueueSize() > 1000)
+		if (Config.queueWarningSize > 0 && queue.size() >= Config.queueWarningSize) {
 			getLogger().info("[Consumer] Queue overloaded. Size: " + getQueueSize());
+		}
+
 		try {
 			if (conn == null)
 				return;

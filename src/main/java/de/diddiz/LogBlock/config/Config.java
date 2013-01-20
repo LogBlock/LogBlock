@@ -26,6 +26,7 @@ public class Config
 	public static int delayBetweenRuns, forceToProcessAtLeast, timePerRun;
 	public static boolean fireCustomEvents;
 	public static boolean useBukkitScheduler;
+	public static int queueWarningSize;
 	public static boolean enableAutoClearLog;
 	public static List<String> autoClearLog;
 	public static int autoClearLogDelay;
@@ -73,6 +74,7 @@ public class Config
 		def.put("consumer.timePerRun", 1000);
 		def.put("consumer.fireCustomEvents", false);
 		def.put("consumer.useBukkitScheduler", true);
+		def.put("consumer.queueWarningSize", 1000);
 		def.put("clearlog.dumpDeletedLog", false);
 		def.put("clearlog.enableAutoClearLog", false);
 		def.put("clearlog.auto", Arrays.asList("world \"world\" before 365 days all", "world \"world\" player lavaflow waterflow leavesdecay before 7 days all", "world world_nether before 365 days all", "world world_nether player lavaflow before 7 days all"));
@@ -133,6 +135,7 @@ public class Config
 		timePerRun = config.getInt("consumer.timePerRun", 1000);
 		fireCustomEvents = config.getBoolean("consumer.fireCustomEvents", false);
 		useBukkitScheduler = config.getBoolean("consumer.useBukkitScheduler", true);
+		queueWarningSize = config.getInt("consumer.queueWarningSize", 1000);
 		enableAutoClearLog = config.getBoolean("clearlog.enableAutoClearLog");
 		autoClearLog = config.getStringList("clearlog.auto");
 		dumpDeletedLog = config.getBoolean("clearlog.dumpDeletedLog", false);
