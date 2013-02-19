@@ -25,6 +25,7 @@ permissions:
       logblock.spawnTools: true
       logblock.tools.toolblock: true
       logblock.tools.tool: true
+      logblock.reload: true
   logblock.lookup:
     description: 'Grants access to /lb lookup commands and allows defining custom tool queries'
     default: op
@@ -49,3 +50,6 @@ permissions:
   logblock.spawnTools:
     description: 'Allows lookup tools to be spawned'
     default: true
+  logblock.reload:
+    description: 'Allows reloading the config with /lb reload'
+    default: op
