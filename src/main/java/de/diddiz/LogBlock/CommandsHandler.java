@@ -301,6 +301,12 @@ public class CommandsHandler implements CommandExecutor
 						new CommandLookup(sender, new QueryParams(logblock, sender, argsList), true);
 					} else
 						sender.sendMessage(ChatColor.RED + "You aren't allowed to do this");
+				} else if (command.equals("reload")) {
+					if (logblock.hasPermission(sender, "logblock.reload")) {
+						logblock.reloadConfig();
+						sender.sendMessage(ChatColor.GOLD + "LogBlock configuration reloaded.");
+					} else
+						sender.sendMessage(ChatColor.RED + "You aren't allowed to do this");
 				} else
 					sender.sendMessage(ChatColor.RED + "Unknown command '" + args[0] + "'");
 			}
