@@ -270,15 +270,31 @@ public final class QueryParams implements Cloneable
 					for (final String victimName : victims)
 						where.append("victims.playername != '").append(victimName).append("' AND ");
 
-			if (loc != null) {
-				if (radius == 0)
-					where.append("x = '").append(loc.getBlockX()).append("' AND y = '").append(loc.getBlockY()).append("' AND z = '").append(loc.getBlockZ()).append("' AND ");
-				else if (radius > 0)
-					where.append("x > '").append(loc.getBlockX() - radius).append("' AND x < '").append(loc.getBlockX() + radius).append("' AND y > '").append(loc.getBlockY() - radius).append("' AND y < '").append(loc.getBlockY() + radius).append("' AND z > '").append(loc.getBlockZ() - radius).append("' AND z < '").append(loc.getBlockZ() + radius).append("' AND ");
-			} else if (sel != null)
-				where.append("x >= '").append(sel.getSelection().getMinimumPoint().getBlockX()).append("' AND x <= '").append(sel.getSelection().getMaximumPoint().getBlockX())
-						.append("' AND y >= '").append(sel.getSelection().getMinimumPoint().getBlockY()).append("' AND y <= '").append(sel.getSelection().getMaximumPoint().getBlockY())
-						.append("' AND z >= '").append(sel.getSelection().getMinimumPoint().getBlockZ()).append("' AND z <= '").append(sel.getSelection().getMaximumPoint().getBlockZ()).append("' AND ");
+            if (loc != null) {
+                if (radius == 0)
+                    compileLocationQuery(
+                            where,
+                            loc.getBlockX(), loc.getBlockX(),
+                            loc.getBlockY(), loc.getBlockY(),
+                            loc.getBlockZ(), loc.getBlockZ()
+                            );
+
+                else if (radius > 0)
+                    compileLocationQuery(
+                            where,
+                            loc.getBlockX() - radius + 1, loc.getBlockX() + radius - 1,
+                            loc.getBlockY() - radius + 1, loc.getBlockY() + radius - 1,
+                            loc.getBlockZ() - radius + 1, loc.getBlockZ() + radius - 1
+                            );
+
+            } else if (sel != null)
+                compileLocationQuery(
+                        where,
+                        sel.getSelection().getMinimumPoint().getBlockX(), sel.getSelection().getMaximumPoint().getBlockX(),
+                        sel.getSelection().getMinimumPoint().getBlockY(), sel.getSelection().getMaximumPoint().getBlockY(),
+                        sel.getSelection().getMinimumPoint().getBlockZ(), sel.getSelection().getMaximumPoint().getBlockZ()
+                        );
+
 		} else {
 			switch (blockChangeType) {
 				case ALL:
@@ -368,15 +384,31 @@ public final class QueryParams implements Cloneable
 					}
 					break;
 			}
-			if (loc != null) {
-				if (radius == 0)
-					where.append("x = '").append(loc.getBlockX()).append("' AND y = '").append(loc.getBlockY()).append("' AND z = '").append(loc.getBlockZ()).append("' AND ");
-				else if (radius > 0)
-					where.append("x > '").append(loc.getBlockX() - radius).append("' AND x < '").append(loc.getBlockX() + radius).append("' AND y > '").append(loc.getBlockY() - radius).append("' AND y < '").append(loc.getBlockY() + radius).append("' AND z > '").append(loc.getBlockZ() - radius).append("' AND z < '").append(loc.getBlockZ() + radius).append("' AND ");
-			} else if (sel != null)
-				where.append("x >= '").append(sel.getSelection().getMinimumPoint().getBlockX()).append("' AND x <= '").append(sel.getSelection().getMaximumPoint().getBlockX())
-						.append("' AND y >= '").append(sel.getSelection().getMinimumPoint().getBlockY()).append("' AND y <= '").append(sel.getSelection().getMaximumPoint().getBlockY()).
-						append("' AND z >= '").append(sel.getSelection().getMinimumPoint().getBlockZ()).append("' AND z <= '").append(sel.getSelection().getMaximumPoint().getBlockZ()).append("' AND ");
+            if (loc != null) {
+                if (radius == 0)
+                    compileLocationQuery(
+                            where,
+                            loc.getBlockX(), loc.getBlockX(),
+                            loc.getBlockY(), loc.getBlockY(),
+                            loc.getBlockZ(), loc.getBlockZ()
+                            );
+
+                else if (radius > 0)
+                    compileLocationQuery(
+                            where,
+                            loc.getBlockX() - radius + 1, loc.getBlockX() + radius - 1,
+                            loc.getBlockY() - radius + 1, loc.getBlockY() + radius - 1,
+                            loc.getBlockZ() - radius + 1, loc.getBlockZ() + radius - 1
+                            );
+
+            } else if (sel != null)
+                compileLocationQuery(
+                        where,
+                        sel.getSelection().getMinimumPoint().getBlockX(), sel.getSelection().getMaximumPoint().getBlockX(),
+                        sel.getSelection().getMinimumPoint().getBlockY(), sel.getSelection().getMaximumPoint().getBlockY(),
+                        sel.getSelection().getMinimumPoint().getBlockZ(), sel.getSelection().getMaximumPoint().getBlockZ()
+                        );
+
 		}
 		if (!players.isEmpty() && sum != SummarizationMode.PLAYERS && blockChangeType != BlockChangeType.KILLS)
 			if (!excludePlayersMode) {
@@ -398,6 +430,33 @@ public final class QueryParams implements Cloneable
 			where.delete(0, where.length());
 		return where.toString();
 	}
+	
+	private void compileLocationQuery(StringBuilder where, int blockX, int blockX2, int blockY, int blockY2, int blockZ, int blockZ2) {
+	    compileLocationQueryPart(where, "x", blockX, blockX2);
+	    where.append(" AND ");
+        compileLocationQueryPart(where, "y", blockY, blockY2);
+        where.append(" AND ");
+        compileLocationQueryPart(where, "z", blockZ, blockZ2);
+        where.append(" AND ");
+    }
+
+    private void compileLocationQueryPart(StringBuilder where, String locValue, int loc, int loc2) {
+        int min = Math.min(loc, loc2);
+        int max = Math.max(loc2, loc);
+        
+        if (min == max)
+            where.append(locValue).append(" = ").append(min);
+        else if (max - min > 50)
+            where.append(locValue).append(" >= ").append(min).append(" AND ").append(locValue).append(" <= ").append(max);
+        else {
+            where.append(locValue).append(" in (");
+            for (int c = min; c < max; c++) {
+                where.append(c).append(",");
+            }
+            where.append(max);
+            where.append(")");
+        }
+    }
 
 	public void parseArgs(CommandSender sender, List<String> args) throws IllegalArgumentException {
 		if (args == null || args.isEmpty())
