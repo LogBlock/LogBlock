@@ -26,7 +26,7 @@ public class BlockPlaceLogging extends LoggingListener
 	public void onBlockPlace(BlockPlaceEvent event) {
 		final WorldConfig wcfg = getWorldConfig(event.getBlock().getWorld());
 		if (wcfg != null && wcfg.isLogging(Logging.BLOCKPLACE)) {
-			final int type = event.getBlock().getTypeId();
+			final Material type = event.getBlock().getType();
 			final BlockState before = event.getBlockReplacedState();
 			final BlockState after = event.getBlockPlaced().getState();
 			final String playerName = event.getPlayer().getName();
@@ -53,11 +53,11 @@ public class BlockPlaceLogging extends LoggingListener
 				if (y != 0) {
 					Location finalLoc = new Location(loc.getWorld(), x, y, z);
 					// Run this check to avoid false positives
-					if (!BukkitUtils.getFallingEntityKillers().contains(finalLoc.getBlock().getTypeId())) {
+					if (!BukkitUtils.getFallingEntityKillers().contains(finalLoc.getBlock().getType())) {
 						if (finalLoc.getBlock().getType() == Material.AIR || finalLoc.equals(event.getBlock().getLocation())) {
-							consumer.queueBlockPlace(playerName, finalLoc, type, event.getBlock().getData());
+							consumer.queueBlockPlace(playerName, finalLoc, type.getId(), event.getBlock().getData());
 						} else {
-							consumer.queueBlockReplace(playerName, finalLoc, finalLoc.getBlock().getTypeId(), finalLoc.getBlock().getData(), type, event.getBlock().getData());
+							consumer.queueBlockReplace(playerName, finalLoc, finalLoc.getBlock().getTypeId(), finalLoc.getBlock().getData(), type.getId(), event.getBlock().getData());
 						}
 					}
 				}
@@ -65,8 +65,7 @@ public class BlockPlaceLogging extends LoggingListener
 			}
 
 			//Sign logging is handled elsewhere
-			if (wcfg.isLogging(Logging.SIGNTEXT) && (type == 63 || type == 68))
-				return;
+			if (wcfg.isLogging(Logging.SIGNTEXT) && (type.getId() == 63 || type.getId() == 68)) return;
 
 			//Delay queuing by one tick to allow data to be updated
 			LogBlock.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(LogBlock.getInstance(), new Runnable()

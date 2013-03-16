@@ -332,7 +332,7 @@ public class BukkitUtils
 			return true;
 		} else if (mat == Material.WATER || mat == Material.STATIONARY_WATER || mat == Material.LAVA || mat == Material.STATIONARY_LAVA) { // Fluids
 			return true;
-		} else if (getFallingEntityKillers().contains(mat.getId()) || mat == Material.FIRE || mat == Material.VINE || mat == Material.LONG_GRASS || mat == Material.DEAD_BUSH) { // Misc.
+		} else if (getFallingEntityKillers().contains(mat) || mat == Material.FIRE || mat == Material.VINE || mat == Material.LONG_GRASS || mat == Material.DEAD_BUSH) { // Misc.
 			return true;
 		}
 		return false;
