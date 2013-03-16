@@ -57,7 +57,7 @@ public class BukkitUtils
 		relativeBreakable.add(Material.COCOA);
 
 		// Blocks that break when they are on top of a block
-		relativeTopBreakable = new HashSet<Material>(26);
+		relativeTopBreakable = new HashSet<Material>(31);
 		relativeTopBreakable.add(Material.SAPLING);
 		relativeTopBreakable.add(Material.LONG_GRASS);
 		relativeTopBreakable.add(Material.DEAD_BUSH);
@@ -74,14 +74,19 @@ public class BukkitUtils
 		relativeTopBreakable.add(Material.FLOWER_POT);
 		relativeTopBreakable.add(Material.POWERED_RAIL);
 		relativeTopBreakable.add(Material.DETECTOR_RAIL);
+		relativeTopBreakable.add(Material.ACTIVATOR_RAIL);
 		relativeTopBreakable.add(Material.RAILS);
 		relativeTopBreakable.add(Material.REDSTONE_WIRE);
 		relativeTopBreakable.add(Material.SIGN_POST);
 		relativeTopBreakable.add(Material.STONE_PLATE);
 		relativeTopBreakable.add(Material.WOOD_PLATE);
+		relativeTopBreakable.add(Material.IRON_PLATE);
+		relativeTopBreakable.add(Material.GOLD_PLATE);
 		relativeTopBreakable.add(Material.SNOW);
 		relativeTopBreakable.add(Material.DIODE_BLOCK_ON);
 		relativeTopBreakable.add(Material.DIODE_BLOCK_OFF);
+		relativeTopBreakable.add(Material.REDSTONE_COMPARATOR_ON);
+		relativeTopBreakable.add(Material.REDSTONE_COMPARATOR_OFF);
 		relativeTopBreakable.add(Material.WOODEN_DOOR);
 		relativeTopBreakable.add(Material.IRON_DOOR);
 
@@ -93,9 +98,13 @@ public class BukkitUtils
 		relativeTopFallables.add(Material.ANVIL);
 
 		// Blocks that break falling entities
-		fallingEntityKillers = new HashSet<Material>(23);
+		fallingEntityKillers = new HashSet<Material>(31);
 		fallingEntityKillers.add(Material.SIGN_POST);
 		fallingEntityKillers.add(Material.WALL_SIGN);
+		fallingEntityKillers.add(Material.STONE_PLATE);
+		fallingEntityKillers.add(Material.WOOD_PLATE);
+		fallingEntityKillers.add(Material.IRON_PLATE);
+		fallingEntityKillers.add(Material.GOLD_PLATE);
 		fallingEntityKillers.add(Material.SAPLING);
 		fallingEntityKillers.add(Material.YELLOW_FLOWER);
 		fallingEntityKillers.add(Material.RED_ROSE);
@@ -110,6 +119,7 @@ public class BukkitUtils
 		fallingEntityKillers.add(Material.FLOWER_POT);
 		fallingEntityKillers.add(Material.POWERED_RAIL);
 		fallingEntityKillers.add(Material.DETECTOR_RAIL);
+		fallingEntityKillers.add(Material.ACTIVATOR_RAIL);
 		fallingEntityKillers.add(Material.RAILS);
 		fallingEntityKillers.add(Material.LEVER);
 		fallingEntityKillers.add(Material.REDSTONE_WIRE);
@@ -117,6 +127,9 @@ public class BukkitUtils
 		fallingEntityKillers.add(Material.REDSTONE_TORCH_OFF);
 		fallingEntityKillers.add(Material.DIODE_BLOCK_ON);
 		fallingEntityKillers.add(Material.DIODE_BLOCK_OFF);
+		fallingEntityKillers.add(Material.REDSTONE_COMPARATOR_ON);
+		fallingEntityKillers.add(Material.REDSTONE_COMPARATOR_OFF);
+		fallingEntityKillers.add(Material.DAYLIGHT_DETECTOR);
 	}
 
 	private static final BlockFace[] relativeBlockFaces = new BlockFace[] {
