@@ -37,7 +37,7 @@ public class Config
 	public static int rollbackMaxTime, rollbackMaxArea;
 	public static Map<String, Tool> toolsByName;
 	public static Map<Integer, Tool> toolsByType;
-	public static int defaultDist, defaultTime;
+	public static int defaultDist, defaultTime, maxAreaCap;
 	public static int linesPerPage, linesLimit;
 	public static boolean askRollbacks, askRedos, askClearLogs, askClearLogAfterRollback, askRollbackAfterBan;
 	public static String banPermission;
@@ -92,6 +92,7 @@ public class Config
 		def.put("rollback.maxArea", 50);
 		def.put("lookup.defaultDist", 20);
 		def.put("lookup.defaultTime", "30 minutes");
+		def.put("lookup.maxAreaCap", 20);
 		def.put("lookup.linesPerPage", 15);
 		def.put("lookup.linesLimit", 1500);
 		try {
@@ -170,6 +171,7 @@ public class Config
 		rollbackMaxArea = config.getInt("rollback.maxArea", 50);
 		defaultDist = config.getInt("lookup.defaultDist", 20);
 		defaultTime = parseTimeSpec(config.getString("lookup.defaultTime").split(" "));
+		maxAreaCap = config.getInt("lookup.maxAreaCap", 20);
 		linesPerPage = config.getInt("lookup.linesPerPage", 15);
 		linesLimit = config.getInt("lookup.linesLimit", 1500);
 		askRollbacks = config.getBoolean("questioner.askRollbacks", true);

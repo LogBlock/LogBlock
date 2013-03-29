@@ -2,6 +2,7 @@ package de.diddiz.LogBlock;
 
 import de.diddiz.util.Block;
 import de.diddiz.worldedit.RegionContainer;
+import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -572,7 +573,12 @@ public final class QueryParams implements Cloneable
 				} else {
 					if (!isInt(values[0]))
 						throw new IllegalArgumentException("Not a number: '" + values[0] + "'");
-					radius = Integer.parseInt(values[0]);
+					int requestedRadius = Integer.parseInt(values[0]);
+					if ( requestedRadius > maxAreaCap && !logblock.hasPermission(player, "logblock.noAreaCap")) {
+						sender.sendMessage(ChatColor.RED + "Overriding area " + requestedRadius + " to max allowed area of " + maxAreaCap);
+						requestedRadius = maxAreaCap;
+					}
+					radius = requestedRadius;
 					if (!prepareToolQuery)
 						loc = player.getLocation();
 				}
