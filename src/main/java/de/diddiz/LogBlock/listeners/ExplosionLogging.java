@@ -10,6 +10,7 @@ import org.bukkit.entity.EnderDragon;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Fireball;
 import org.bukkit.entity.Ghast;
+import org.bukkit.entity.minecart.ExplosiveMinecart;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.entity.Wither;
@@ -31,25 +32,29 @@ public class ExplosionLogging extends LoggingListener
 	public void onEntityExplode(EntityExplodeEvent event) {
 		final WorldConfig wcfg = getWorldConfig(event.getLocation().getWorld());
 		if (wcfg != null) {
-			String name = "Unknown";
-			if (event.getEntity() == null) {
+			String name = "Explosion";
+			Entity source = event.getEntity();
+			if (source == null) {
 				if (!wcfg.isLogging(Logging.MISCEXPLOSION))
 					return;
-				name = "Explosion";
-			} else if (event.getEntity() instanceof TNTPrimed) {
+			} else if (source instanceof TNTPrimed) {
 				if (!wcfg.isLogging(Logging.TNTEXPLOSION))
 					return;
 				name = "TNT";
-			} else if (event.getEntity() instanceof Creeper) {
+			} else if (source instanceof ExplosiveMinecart) {
+				if (!wcfg.isLogging(Logging.TNTMINECARTEXPLOSION))
+					return;
+				name = "TNTMinecart";
+			} else if (source instanceof Creeper) {
 				if (!wcfg.isLogging(Logging.CREEPEREXPLOSION))
 					return;
 				if (logCreeperExplosionsAsPlayerWhoTriggeredThese) {
-					final Entity target = ((Creeper)event.getEntity()).getTarget();
+					final Entity target = ((Creeper) source).getTarget();
 					name = target instanceof Player ? ((Player)target).getName() : "Creeper";
 				} else
 					name = "Creeper";
-			} else if (event.getEntity() instanceof Fireball) {
-				Fireball fireball = (Fireball) event.getEntity();
+			} else if (source instanceof Fireball) {
+				Fireball fireball = (Fireball) source;
 				Entity shooter = fireball.getShooter();
 				if (shooter == null) {
 					return;
@@ -65,22 +70,21 @@ public class ExplosionLogging extends LoggingListener
 					}
 					name = "Wither";
 				}
-			} else if (event.getEntity() instanceof EnderDragon) {
+			} else if (source instanceof EnderDragon) {
 				if (!wcfg.isLogging(Logging.ENDERDRAGON))
 					return;
 				name = "EnderDragon";
-			} else if (event.getEntity() instanceof Wither) {
+			} else if (source instanceof Wither) {
 				if(!wcfg.isLogging(Logging.WITHER))
 					return;
 				name = "Wither";
-			} else if (event.getEntity() instanceof WitherSkull) {
+			} else if (source instanceof WitherSkull) {
 				if(!wcfg.isLogging(Logging.WITHER_SKULL))
 					return;
 				name = "WitherSkull";
 			} else {
 				if (!wcfg.isLogging(Logging.MISCEXPLOSION))
 					return;
-				name = "Explosion";
 			}
 			for (final Block block : event.blockList()) {
 				final int type = block.getTypeId();
