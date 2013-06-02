@@ -209,11 +209,6 @@ public class WorldEditor implements Runnable
 				final Block secBlock = bed.isHeadOfBed() ? block.getRelative(bed.getFacing().getOppositeFace()) : block.getRelative(bed.getFacing());
 				if (secBlock.getTypeId() == 0 && !secBlock.setTypeIdAndData(26, (byte)(bed.getData() | 8), true))
 					throw new WorldEditorException(secBlock.getTypeId(), 26, secBlock.getLocation());
-			} else if (curtype == 64 || curtype == 71) {
-				final byte blockData = block.getData();
-				final Block secBlock = (blockData & 8) == 8 ? block.getRelative(BlockFace.DOWN) : block.getRelative(BlockFace.UP);
-				if (secBlock.getTypeId() == 0 && !secBlock.setTypeIdAndData(curtype, (byte)(blockData | 8), true))
-					throw new WorldEditorException(secBlock.getTypeId(), curtype, secBlock.getLocation());
 			} else if ((curtype == 29 || curtype == 33) && (block.getData() & 8) > 0) {
 				final PistonBaseMaterial piston = (PistonBaseMaterial)block.getState().getData();
 				final Block secBlock = block.getRelative(piston.getFacing());

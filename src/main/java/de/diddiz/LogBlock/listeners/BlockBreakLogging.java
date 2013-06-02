@@ -31,13 +31,14 @@ public class BlockBreakLogging extends LoggingListener
 
 			final String playerName = event.getPlayer().getName();
 			final Block origin = event.getBlock();
-			final int type = origin.getTypeId();
+			final int typeId = origin.getTypeId();
+			final Material type = origin.getType();
 
-			if (wcfg.isLogging(Logging.SIGNTEXT) && (type == 63 || type == 68)) {
+			if (wcfg.isLogging(Logging.SIGNTEXT) && (typeId == 63 || typeId == 68)) {
 				consumer.queueSignBreak(playerName, (Sign) origin.getState());
-			} else if (wcfg.isLogging(Logging.CHESTACCESS) && (type == 23 || type == 54 || type == 61)) {
+			} else if (wcfg.isLogging(Logging.CHESTACCESS) && BukkitUtils.getContainerBlocks().contains(type)) {
 				consumer.queueContainerBreak(playerName, origin.getState());
-			} else if (origin.getType() == Material.ICE) {
+			} else if (type == Material.ICE) {
 				// When in creative mode ice doesn't form water
 				if (event.getPlayer().getGameMode().equals(GameMode.CREATIVE)) {
 					consumer.queueBlockBreak(playerName, origin.getState());

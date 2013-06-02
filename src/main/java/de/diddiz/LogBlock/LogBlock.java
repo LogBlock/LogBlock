@@ -149,8 +149,11 @@ public class LogBlock extends JavaPlugin
 		if (isLogging(Logging.CHESTACCESS)) {
 			pm.registerEvents(new ChestAccessLogging(this), this);
 		}
-		if (isLogging(Logging.SWITCHINTERACT) || isLogging(Logging.DOORINTERACT) || isLogging(Logging.CAKEEAT) || isLogging(Logging.DIODEINTERACT) || isLogging(Logging.NOTEBLOCKINTERACT))
+		if (isLogging(Logging.SWITCHINTERACT) || isLogging(Logging.DOORINTERACT) || isLogging(Logging.CAKEEAT) || isLogging(Logging.DIODEINTERACT) || isLogging(Logging.COMPARATORINTERACT) || isLogging(Logging.NOTEBLOCKINTERACT) || isLogging(Logging.PRESUREPLATEINTERACT) || isLogging(Logging.TRIPWIREINTERACT) || isLogging(Logging.CROPTRAMPLE))
 			pm.registerEvents(new InteractLogging(this), this);
+		if (isLogging(Logging.CREATURECROPTRAMPLE)) {
+			pm.registerEvents(new CreatureInteractLogging(this), this);
+		}
 		if (isLogging(Logging.KILL))
 			pm.registerEvents(new KillLogging(this), this);
 		if (isLogging(Logging.CHAT))
@@ -161,6 +164,8 @@ public class LogBlock extends JavaPlugin
 			pm.registerEvents(new WitherLogging(this), this);
 		if (isLogging(Logging.NATURALSTRUCTUREGROW) || isLogging(Logging.BONEMEALSTRUCTUREGROW))
 			pm.registerEvents(new StructureGrowLogging(this), this);
+		if (isLogging(Logging.GRASSGROWTH) || isLogging(Logging.MYCELIUMSPREAD) || isLogging(Logging.VINEGROWTH) || isLogging(Logging.MUSHROOMSPREAD))
+			pm.registerEvents(new BlockSpreadLogging(this), this);
 		if (logPlayerInfo)
 			pm.registerEvents(new PlayerInfoLogging(this), this);
 	}

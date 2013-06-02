@@ -1,5 +1,6 @@
 package de.diddiz.LogBlock.listeners;
 
+import static de.diddiz.LogBlock.config.Config.isLogging;
 import static de.diddiz.util.BukkitUtils.compareInventories;
 import static de.diddiz.util.BukkitUtils.compressInventory;
 import static de.diddiz.util.BukkitUtils.getInventoryHolderLocation;
@@ -7,6 +8,8 @@ import static de.diddiz.util.BukkitUtils.getInventoryHolderType;
 import static de.diddiz.util.BukkitUtils.rawData;
 import java.util.HashMap;
 import java.util.Map;
+
+import de.diddiz.LogBlock.Logging;
 import org.bukkit.Location;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.DoubleChest;
@@ -29,6 +32,8 @@ public class ChestAccessLogging extends LoggingListener
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onInventoryClose(InventoryCloseEvent event) {
+
+		if (!isLogging(event.getPlayer().getWorld(), Logging.CHESTACCESS)) return;
 		InventoryHolder holder = event.getInventory().getHolder();
 		if (holder instanceof BlockState || holder instanceof DoubleChest) {
 			final HumanEntity player = event.getPlayer();
@@ -47,6 +52,8 @@ public class ChestAccessLogging extends LoggingListener
 
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onInventoryOpen(InventoryOpenEvent event) {
+
+		if (!isLogging(event.getPlayer().getWorld(), Logging.CHESTACCESS)) return;
 		if (event.getInventory() != null) {
 			InventoryHolder holder = event.getInventory().getHolder();
 			if (holder instanceof BlockState || holder instanceof DoubleChest) {

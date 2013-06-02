@@ -3,9 +3,12 @@ package de.diddiz.LogBlock;
 import static de.diddiz.util.MaterialName.materialName;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import de.diddiz.util.BukkitUtils;
 import org.bukkit.Location;
 
 import de.diddiz.LogBlock.config.Config;
+import org.bukkit.Material;
 
 public class BlockChange implements LookupCacheElement
 {
@@ -64,18 +67,31 @@ public class BlockChange implements LookupCacheElement
 					msg.append("took ").append(-ca.itemAmount).append("x ").append(materialName(ca.itemType, ca.itemData));
 				else
 					msg.append("put in ").append(ca.itemAmount).append("x ").append(materialName(ca.itemType, ca.itemData));
-			} else if (type == 23 || type == 54 || type == 61 || type == 62)
+			} else if (BukkitUtils.getContainerBlocks().contains(Material.getMaterial(type)))
 				msg.append("opened ").append(materialName(type));
-			else if (type == 64 || type == 71 || type == 96 || type == 107)
-				msg.append(data == 0 ? "opened" : "closed").append(" ").append(materialName(type));
+			else if (type == 64 || type == 71)
+				// This is a problem that will have to be addressed in LB 2,
+				// there is no way to tell from the top half of the block if
+				// the door is opened or closed.
+				msg.append("moved ").append(materialName(type));
+			// Trapdoor
+			else if (type == 96)
+				msg.append((data < 8 || data > 11) ? "opened" : "closed").append(" ").append(materialName(type));
+			// Fence gate
+			else if (type == 107)
+				msg.append(data > 3 ? "opened" : "closed").append(" ").append(materialName(type));
 			else if (type == 69)
 				msg.append("switched ").append(materialName(type));
 			else if (type == 77 || type == 143)
 				msg.append("pressed ").append(materialName(type));
 			else if (type == 92)
 				msg.append("ate a piece of ").append(materialName(type));
-			else if (type == 25 || type == 93 || type == 94)
+			else if (type == 25 || type == 93 || type == 94 || type == 149 || type == 150)
 				msg.append("changed ").append(materialName(type));
+			else if (type == 70 || type == 72 || type == 147 || type == 148)
+				msg.append("stepped on ").append(materialName(type));
+			else if (type == 132)
+				msg.append("ran into ").append(materialName(type));
 		} else if (type == 0)
 			msg.append("destroyed ").append(materialName(replaced, data));
 		else if (replaced == 0)
