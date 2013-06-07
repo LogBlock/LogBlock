@@ -464,8 +464,8 @@ public class Consumer extends TimerTask
 			PreparedStatement ps1 = null;
 			PreparedStatement ps = null;
 			try {
-				ps1 = connection.prepareStatement("INSERT INTO `" + table + "` (date, playerid, replaced, type, data, x, y, z) VALUES(?, " + playerID(playerName) + ", ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
-				ps1.setTimestamp(1, new Timestamp(date * 1000));
+				ps1 = connection.prepareStatement("INSERT INTO `" + table + "` (date, playerid, replaced, type, data, x, y, z) VALUES(FROM_UNIXTIME(?), " + playerID(playerName) + ", ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+				ps1.setLong(1, date );
 				ps1.setInt(2, replaced);
 				ps1.setInt(3, type);
 				ps1.setInt(4, data);
@@ -574,7 +574,7 @@ public class Consumer extends TimerTask
 			boolean noID = false;
 			Integer id;
 
-			String sql = "INSERT INTO `lb-chat` (date, playerid, message) VALUES (?, ";
+			String sql = "INSERT INTO `lb-chat` (date, playerid, message) VALUES (FROM_UNIXTIME(?), ";
 			if ((id = playerIDAsInt(playerName)) == null) {
 				noID = true;
 				sql += playerID(playerName) + ", ";
@@ -586,7 +586,7 @@ public class Consumer extends TimerTask
 			PreparedStatement ps = null;
 			try {
 				ps = connection.prepareStatement(sql);
-				ps.setTimestamp(1, new Timestamp(date * 1000));
+				ps.setLong(1, date);
 				if (!noID) {
 					ps.setInt(2, id);
 					ps.setString(3, message);
