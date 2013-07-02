@@ -46,14 +46,14 @@ public class ToolListener implements Listener
 			final Tool tool = toolsByType.get(type);
 			final Player player = event.getPlayer();
 			if (tool != null && (action == Action.RIGHT_CLICK_BLOCK || action == Action.LEFT_CLICK_BLOCK) && logblock.hasPermission(player, "logblock.tools." + tool.name)) {
-				if (!isLogged(player.getWorld())) {
-					player.sendMessage(ChatColor.RED + "This world is not currently logged.");
-					event.setCancelled(true);
-					return;
-				}
 				final ToolBehavior behavior = action == Action.RIGHT_CLICK_BLOCK ? tool.rightClickBehavior : tool.leftClickBehavior;
 				final ToolData toolData = getSession(player).toolData.get(tool);
 				if (behavior != ToolBehavior.NONE && toolData.enabled) {
+					if (!isLogged(player.getWorld())) {
+						player.sendMessage(ChatColor.RED + "This world is not currently logged.");
+						event.setCancelled(true);
+						return;
+					}
 					final Block block = event.getClickedBlock();
 					final QueryParams params = toolData.params;
 					params.loc = null;

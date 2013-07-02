@@ -60,7 +60,7 @@ public class BukkitUtils
 		relativeBreakable.add(Material.COCOA);
 
 		// Blocks that break when they are on top of a block
-		relativeTopBreakable = new HashSet<Material>(31);
+		relativeTopBreakable = new HashSet<Material>(32);
 		relativeTopBreakable.add(Material.SAPLING);
 		relativeTopBreakable.add(Material.LONG_GRASS);
 		relativeTopBreakable.add(Material.DEAD_BUSH);
@@ -92,6 +92,7 @@ public class BukkitUtils
 		relativeTopBreakable.add(Material.REDSTONE_COMPARATOR_OFF);
 		relativeTopBreakable.add(Material.WOODEN_DOOR);
 		relativeTopBreakable.add(Material.IRON_DOOR);
+		relativeTopBreakable.add(Material.CARPET);
 
 		// Blocks that fall
 		relativeTopFallables = new HashSet<Material>(4);
@@ -101,7 +102,7 @@ public class BukkitUtils
 		relativeTopFallables.add(Material.ANVIL);
 
 		// Blocks that break falling entities
-		fallingEntityKillers = new HashSet<Material>(31);
+		fallingEntityKillers = new HashSet<Material>(32);
 		fallingEntityKillers.add(Material.SIGN_POST);
 		fallingEntityKillers.add(Material.WALL_SIGN);
 		fallingEntityKillers.add(Material.STONE_PLATE);
@@ -133,6 +134,7 @@ public class BukkitUtils
 		fallingEntityKillers.add(Material.REDSTONE_COMPARATOR_ON);
 		fallingEntityKillers.add(Material.REDSTONE_COMPARATOR_OFF);
 		fallingEntityKillers.add(Material.DAYLIGHT_DETECTOR);
+		fallingEntityKillers.add(Material.CARPET);
 
 		// Crop Blocks
 		cropBlocks = new HashSet<Material>(5);
