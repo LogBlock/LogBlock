@@ -171,12 +171,11 @@ public class Consumer extends TimerTask
 		int weapon = 0;
                 
                 if(killer instanceof Projectile)
-                    killer = ((Projectile)killer).getShooter();
-                
+			killer = ((Projectile)killer).getShooter();
+		
 		if (killer instanceof Player && ((Player)killer).getItemInHand() != null)
 			weapon = ((Player)killer).getItemInHand().getTypeId();
-                
-                
+		
 		queueKill(victim.getLocation(), entityName(killer), entityName(victim), weapon);
 	}
 
