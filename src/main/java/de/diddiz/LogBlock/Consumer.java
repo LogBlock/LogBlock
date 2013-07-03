@@ -8,6 +8,7 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -25,7 +26,6 @@ import java.util.logging.Level;
 import static de.diddiz.LogBlock.config.Config.*;
 import static de.diddiz.util.BukkitUtils.*;
 import static org.bukkit.Bukkit.getLogger;
-import org.bukkit.entity.Projectile;
 
 public class Consumer extends TimerTask
 {
