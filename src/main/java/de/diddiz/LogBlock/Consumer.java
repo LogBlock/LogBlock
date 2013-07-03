@@ -25,6 +25,7 @@ import java.util.logging.Level;
 import static de.diddiz.LogBlock.config.Config.*;
 import static de.diddiz.util.BukkitUtils.*;
 import static org.bukkit.Bukkit.getLogger;
+import org.bukkit.entity.Projectile;
 
 public class Consumer extends TimerTask
 {
@@ -168,8 +169,14 @@ public class Consumer extends TimerTask
 		if (killer == null || victim == null)
 			return;
 		int weapon = 0;
+                
+                if(killer instanceof Projectile)
+                    killer = ((Projectile)killer).getShooter();
+                
 		if (killer instanceof Player && ((Player)killer).getItemInHand() != null)
 			weapon = ((Player)killer).getItemInHand().getTypeId();
+                
+                
 		queueKill(victim.getLocation(), entityName(killer), entityName(victim), weapon);
 	}
 
