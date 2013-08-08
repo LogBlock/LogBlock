@@ -52,6 +52,7 @@ public class ToolListener implements Listener
 					if (!isLogged(player.getWorld())) {
 						player.sendMessage(ChatColor.RED + "This world is not currently logged.");
 						event.setCancelled(true);
+						player.updateInventory();
 						return;
 					}
 					final Block block = event.getClickedBlock();
@@ -90,6 +91,7 @@ public class ToolListener implements Listener
 						player.sendMessage(ChatColor.RED + ex.getMessage());
 					}
 					event.setCancelled(true);
+					player.updateInventory();
 				}
 			}
 		}
@@ -124,6 +126,7 @@ public class ToolListener implements Listener
 				if (item == tool.item && toolData.enabled && !tool.canDrop) {
 					player.sendMessage(ChatColor.RED + "You cannot drop this tool.");
 					event.setCancelled(true);
+					player.updateInventory();
 				}
 			}
 		}
