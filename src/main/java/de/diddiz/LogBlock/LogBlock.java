@@ -15,6 +15,7 @@ import de.diddiz.LogBlock.listeners.FluidFlowLogging;
 import de.diddiz.LogBlock.listeners.InteractLogging;
 import de.diddiz.LogBlock.listeners.KillLogging;
 import de.diddiz.LogBlock.listeners.LeavesDecayLogging;
+import de.diddiz.LogBlock.listeners.LockedChestDecayLogging;
 import de.diddiz.LogBlock.listeners.PlayerInfoLogging;
 import de.diddiz.LogBlock.listeners.SignChangeLogging;
 import de.diddiz.LogBlock.listeners.SnowFadeLogging;
@@ -187,6 +188,8 @@ public class LogBlock extends JavaPlugin
 			pm.registerEvents(new StructureGrowLogging(this), this);
 		if (isLogging(Logging.GRASSGROWTH) || isLogging(Logging.MYCELIUMSPREAD) || isLogging(Logging.VINEGROWTH) || isLogging(Logging.MUSHROOMSPREAD))
 			pm.registerEvents(new BlockSpreadLogging(this), this);
+		if (isLogging(Logging.LOCKEDCHESTDECAY))
+			pm.registerEvents(new LockedChestDecayLogging(this), this);
 		if (logPlayerInfo)
 			pm.registerEvents(new PlayerInfoLogging(this), this);
 	}
