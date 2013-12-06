@@ -1,5 +1,6 @@
 package de.diddiz.LogBlock;
 
+import de.diddiz.util.serializable.itemstack.SerializableItemStack;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -71,8 +72,8 @@ public class WorldEditor implements Runnable
         this.sender = sender;
     }
 
-	public void queueEdit(int x, int y, int z, int replaced, int type, byte data, String signtext, short itemType, short itemAmount, short itemData) {
-		edits.add(new Edit(0, new Location(world, x, y, z), null, replaced, type, data, signtext, new ChestAccess(itemType, itemAmount, itemData)));
+	public void queueEdit(int x, int y, int z, int replaced, int type, byte data, String signtext, SerializableItemStack itemStack) {
+		edits.add(new Edit(0, new Location(world, x, y, z), null, replaced, type, data, signtext, itemStack));
 	}
 
 	public long getElapsedTime() {
@@ -145,8 +146,8 @@ public class WorldEditor implements Runnable
 
 	private class Edit extends BlockChange
 	{
-		public Edit(long time, Location loc, String playerName, int replaced, int type, byte data, String signtext, ChestAccess ca) {
-			super(time, loc, playerName, replaced, type, data, signtext, ca);
+		public Edit(long time, Location loc, String playerName, int replaced, int type, byte data, String signtext, SerializableItemStack itemStack) {
+			super(time, loc, playerName, replaced, type, data, signtext, itemStack);
 		}
 
 		PerformResult perform() throws WorldEditorException {
@@ -162,20 +163,28 @@ public class WorldEditor implements Runnable
 				if (type == 0) {
 					if (!block.setTypeId(0))
 						throw new WorldEditorException(block.getTypeId(), 0, block.getLocation());
-				} else if (ca != null && (type == 23 || type == 54 || type == 61 || type == 62)) {
+				} else if (itemStack != null && (type == 23 || type == 54 || type == 61 || type == 62)) {
 					int leftover;
+
+					// TODO Update methods to be more effective with new system
+					// Done temporarily this way
+					ItemStack result = itemStack.toBukkit();
+					if (!itemStack.wasAdded()) {
+						result.setAmount(result.getAmount() * -1);
+					}
+
 					try {
-						leftover = modifyContainer(state, new ItemStack(ca.itemType, -ca.itemAmount, ca.itemData));
+						leftover = modifyContainer(state, result);
 						if (leftover > 0)
 							for (final BlockFace face : new BlockFace[]{BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST})
 								if (block.getRelative(face).getTypeId() == 54)
-									leftover = modifyContainer(block.getRelative(face).getState(), new ItemStack(ca.itemType, ca.itemAmount < 0 ? leftover : -leftover, ca.itemData));
+									leftover = modifyContainer(block.getRelative(face).getState(), new ItemStack(result.getTypeId(), result.getAmount() < 0 ? leftover : -leftover, result.getData().getData()));
 					} catch (final Exception ex) {
 						throw new WorldEditorException(ex.getMessage(), block.getLocation());
 					}
 					if (!state.update())
 						throw new WorldEditorException("Failed to update inventory of " + materialName(block.getTypeId()), block.getLocation());
-					if (leftover > 0 && ca.itemAmount < 0)
+					if (leftover > 0 && result.getAmount() < 0)
 						throw new WorldEditorException("Not enough space left in " + materialName(block.getTypeId()), block.getLocation());
 				} else
 					return PerformResult.NO_ACTION;

@@ -5,11 +5,12 @@ import static de.diddiz.util.BukkitUtils.compareInventories;
 import static de.diddiz.util.BukkitUtils.compressInventory;
 import static de.diddiz.util.BukkitUtils.getInventoryHolderLocation;
 import static de.diddiz.util.BukkitUtils.getInventoryHolderType;
-import static de.diddiz.util.BukkitUtils.rawData;
+
 import java.util.HashMap;
 import java.util.Map;
 
 import de.diddiz.LogBlock.Logging;
+import de.diddiz.util.serializable.itemstack.SerializableItemStackFactory;
 import org.bukkit.Location;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.DoubleChest;
@@ -42,8 +43,12 @@ public class ChestAccessLogging extends LoggingListener
 				final ItemStack[] after = compressInventory(event.getInventory().getContents());
 				final ItemStack[] diff = compareInventories(before, after);
 				final Location loc = getInventoryHolderLocation(holder);
-				for (final ItemStack item : diff) {
-					consumer.queueChestAccess(player.getName(), loc, loc.getWorld().getBlockTypeIdAt(loc), (short)item.getTypeId(), (short)item.getAmount(), rawData(item));
+				for (ItemStack item : diff) {
+
+					boolean wasAdded = item.getAmount() > 0;
+					item.setAmount(Math.abs(item.getAmount()));
+
+					consumer.queueChestAccess(player.getName(), loc, loc.getWorld().getBlockTypeIdAt(loc), SerializableItemStackFactory.makeItemStack(item, wasAdded));
 				}
 				containers.remove(player);
 			}

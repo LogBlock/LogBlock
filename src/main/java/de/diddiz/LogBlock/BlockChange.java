@@ -1,14 +1,18 @@
 package de.diddiz.LogBlock;
 
 import static de.diddiz.util.MaterialName.materialName;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import de.diddiz.util.BukkitUtils;
+import de.diddiz.util.serializable.itemstack.SerializableItemStack;
+import de.diddiz.util.serializable.util.ConversionUtil;
 import org.bukkit.Location;
 
 import de.diddiz.LogBlock.config.Config;
 import org.bukkit.Material;
+import org.bukkit.inventory.ItemStack;
 
 public class BlockChange implements LookupCacheElement
 {
@@ -18,9 +22,9 @@ public class BlockChange implements LookupCacheElement
 	public final int replaced, type;
 	public final byte data;
 	public final String signtext;
-	public final ChestAccess ca;
+	public final SerializableItemStack itemStack;
 
-	public BlockChange(long date, Location loc, String playerName, int replaced, int type, byte data, String signtext, ChestAccess ca) {
+	public BlockChange(long date, Location loc, String playerName, int replaced, int type, byte data, String signtext, SerializableItemStack itemStack) {
 		id = 0;
 		this.date = date;
 		this.loc = loc;
@@ -29,7 +33,7 @@ public class BlockChange implements LookupCacheElement
 		this.type = type;
 		this.data = data;
 		this.signtext = signtext;
-		this.ca = ca;
+		this.itemStack = itemStack;
 	}
 
 	public BlockChange(ResultSet rs, QueryParams p) throws SQLException {
@@ -41,7 +45,7 @@ public class BlockChange implements LookupCacheElement
 		type = p.needType ? rs.getInt("type") : 0;
 		data = p.needData ? rs.getByte("data") : (byte)0;
 		signtext = p.needSignText ? rs.getString("signtext") : null;
-		ca = p.needChestAccess && rs.getShort("itemtype") != 0 && rs.getShort("itemamount") != 0 ? new ChestAccess(rs.getShort("itemtype"), rs.getShort("itemamount"), rs.getShort("itemdata")) : null;
+		itemStack = p.needChestAccess ? ConversionUtil.grabFromRS(rs) : null;
 	}
 
 	@Override
@@ -60,13 +64,12 @@ public class BlockChange implements LookupCacheElement
 		} else if (type == replaced) {
 			if (type == 0)
 				msg.append("did an unspecified action");
-			else if (ca != null) {
-				if (ca.itemType == 0 || ca.itemAmount == 0)
-					msg.append("looked inside ").append(materialName(type));
-				else if (ca.itemAmount < 0)
-					msg.append("took ").append(-ca.itemAmount).append("x ").append(materialName(ca.itemType, ca.itemData)).append(" from ").append(materialName(type));
+			else if (itemStack != null) {
+				ItemStack is = itemStack.toBukkit();
+				if (!itemStack.wasAdded())
+					msg.append("took ").append(is.getAmount()).append("x ").append(materialName(is.getTypeId(), is.getData().getData())).append(" from ").append(materialName(type));
 				else
-					msg.append("put ").append(ca.itemAmount).append("x ").append(materialName(ca.itemType, ca.itemData)).append(" into ").append(materialName(type));
+					msg.append("put ").append(is.getAmount()).append("x ").append(materialName(is.getTypeId(), is.getData().getData())).append(" into ").append(materialName(type));
 			} else if (BukkitUtils.getContainerBlocks().contains(Material.getMaterial(type)))
 				msg.append("opened ").append(materialName(type));
 			else if (type == 64 || type == 71)

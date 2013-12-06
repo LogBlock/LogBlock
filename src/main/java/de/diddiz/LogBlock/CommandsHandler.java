@@ -7,6 +7,7 @@ import de.diddiz.LogBlock.config.Config;
 import de.diddiz.LogBlock.config.WorldConfig;
 import de.diddiz.LogBlockQuestioner.LogBlockQuestioner;
 import de.diddiz.util.Block;
+import de.diddiz.util.serializable.util.ConversionUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -607,7 +608,7 @@ public class CommandsHandler implements CommandExecutor
                 final WorldEditor editor = new WorldEditor(logblock, params.world);
 
 				while (rs.next())
-					editor.queueEdit(rs.getInt("x"), rs.getInt("y"), rs.getInt("z"), rs.getInt("replaced"), rs.getInt("type"), rs.getByte("data"), rs.getString("signtext"), rs.getShort("itemtype"), rs.getShort("itemamount"), rs.getShort("itemdata"));
+					editor.queueEdit(rs.getInt("x"), rs.getInt("y"), rs.getInt("z"), rs.getInt("replaced"), rs.getInt("type"), rs.getByte("data"), rs.getString("signtext"), ConversionUtil.grabFromRS(rs));
 				final int changes = editor.getSize();
                 if (changes > 10000) {
                     editor.setSender(sender);
@@ -672,7 +673,7 @@ public class CommandsHandler implements CommandExecutor
 					sender.sendMessage(ChatColor.DARK_AQUA + "Searching " + params.getTitle() + ":");
 				final WorldEditor editor = new WorldEditor(logblock, params.world);
 				while (rs.next())
-					editor.queueEdit(rs.getInt("x"), rs.getInt("y"), rs.getInt("z"), rs.getInt("type"), rs.getInt("replaced"), rs.getByte("data"), rs.getString("signtext"), rs.getShort("itemtype"), (short)-rs.getShort("itemamount"), rs.getShort("itemdata"));
+					editor.queueEdit(rs.getInt("x"), rs.getInt("y"), rs.getInt("z"), rs.getInt("type"), rs.getInt("replaced"), rs.getByte("data"), rs.getString("signtext"), ConversionUtil.grabFromRS(rs)); // TODO This isn't done correctly atm
 				final int changes = editor.getSize();
 				if (!params.silent)
 					sender.sendMessage(ChatColor.GREEN.toString() + changes + " blocks found.");

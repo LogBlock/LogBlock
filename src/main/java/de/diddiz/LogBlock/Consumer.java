@@ -2,6 +2,8 @@ package de.diddiz.LogBlock;
 
 import de.diddiz.LogBlock.config.Config;
 import de.diddiz.LogBlock.events.BlockChangePreLogEvent;
+import de.diddiz.util.serializable.itemstack.SerializableItemStack;
+import de.diddiz.util.serializable.itemstack.SerializableItemStackFactory;
 import org.bukkit.Location;
 import org.bukkit.World;
 import org.bukkit.block.BlockState;
@@ -122,18 +124,18 @@ public class Consumer extends TimerTask
 	 * @param container
 	 * The respective container. Must be an instance of an InventoryHolder.
 	 */
-	public void queueChestAccess(String playerName, BlockState container, short itemType, short itemAmount, short itemData) {
+	public void queueChestAccess(String playerName, BlockState container, SerializableItemStack itemStack) {
 		if (!(container instanceof InventoryHolder))
 			return;
-		queueChestAccess(playerName, new Location(container.getWorld(), container.getX(), container.getY(), container.getZ()), container.getTypeId(), itemType, itemAmount, itemData);
+		queueChestAccess(playerName, new Location(container.getWorld(), container.getX(), container.getY(), container.getZ()), container.getTypeId(), itemStack);
 	}
 
 	/**
 	 * @param type
 	 * Type id of the container.
 	 */
-	public void queueChestAccess(String playerName, Location loc, int type, short itemType, short itemAmount, short itemData) {
-		queueBlock(playerName, loc, type, type, (byte)0, null, new ChestAccess(itemType, itemAmount, itemData));
+	public void queueChestAccess(String playerName, Location loc, int type, SerializableItemStack itemStack) {
+		queueBlock(playerName, loc, type, type, (byte) 0, null, itemStack);
 	}
 
 	/**
@@ -145,7 +147,7 @@ public class Consumer extends TimerTask
 	public void queueContainerBreak(String playerName, BlockState container) {
 		if (!(container instanceof InventoryHolder))
 			return;
-		queueContainerBreak(playerName, new Location(container.getWorld(), container.getX(), container.getY(), container.getZ()), container.getTypeId(), container.getRawData(), ((InventoryHolder)container).getInventory());
+		queueContainerBreak(playerName, new Location(container.getWorld(), container.getX(), container.getY(), container.getZ()), container.getTypeId(), container.getRawData(), ((InventoryHolder) container).getInventory());
 	}
 
 	/**
@@ -153,8 +155,13 @@ public class Consumer extends TimerTask
 	 */
 	public void queueContainerBreak(String playerName, Location loc, int type, byte data, Inventory inv) {
 		final ItemStack[] items = compressInventory(inv.getContents());
-		for (final ItemStack item : items)
-			queueChestAccess(playerName, loc, type, (short)item.getTypeId(), (short)(item.getAmount() * -1), rawData(item));
+		for (ItemStack item : items) {
+
+			boolean wasAdded = item.getAmount() > 0;
+			item.setAmount(Math.abs(item.getAmount()));
+
+			queueChestAccess(playerName, loc, type, SerializableItemStackFactory.makeItemStack(item, wasAdded));
+		}
 		queueBlockBreak(playerName, loc, type, data);
 	}
 
@@ -388,11 +395,11 @@ public class Consumer extends TimerTask
 		return playerIds.containsKey(playerName);
 	}
 
-	private void queueBlock(String playerName, Location loc, int typeBefore, int typeAfter, byte data, String signtext, ChestAccess ca) {
+	private void queueBlock(String playerName, Location loc, int typeBefore, int typeAfter, byte data, String signtext, SerializableItemStack itemStack) {
 
 		if (Config.fireCustomEvents) {
 			// Create and call the event
-			BlockChangePreLogEvent event = new BlockChangePreLogEvent(playerName, loc, typeBefore, typeAfter, data, signtext, ca);
+			BlockChangePreLogEvent event = new BlockChangePreLogEvent(playerName, loc, typeBefore, typeAfter, data, signtext, itemStack);
 			logblock.getServer().getPluginManager().callEvent(event);
 			if (event.isCancelled()) return;
 
@@ -403,11 +410,11 @@ public class Consumer extends TimerTask
 			typeAfter = event.getTypeAfter();
 			data = event.getData();
 			signtext = event.getSignText();
-			ca = event.getChestAccess();
+			itemStack = event.getRawItemStack();
 		}
 		// Do this last so LogBlock still has final say in what is being added
 		if (playerName == null || loc == null || typeBefore < 0 || typeAfter < 0 || (Config.safetyIdCheck && (typeBefore > 255 || typeAfter > 255)) || hiddenPlayers.contains(playerName.toLowerCase()) || !isLogged(loc.getWorld()) || typeBefore != typeAfter && hiddenBlocks.contains(typeBefore) && hiddenBlocks.contains(typeAfter)) return;
-		queue.add(new BlockRow(loc, playerName.replaceAll("[^a-zA-Z0-9_]", ""), typeBefore, typeAfter, data, signtext, ca));
+		queue.add(new BlockRow(loc, playerName.replaceAll("[^a-zA-Z0-9_]", ""), typeBefore, typeAfter, data, signtext, itemStack));
 	}
 
 	private String playerID(String playerName) {
@@ -445,20 +452,22 @@ public class Consumer extends TimerTask
 	{
 		private Connection connection;
 
-		public BlockRow(Location loc, String playerName, int replaced, int type, byte data, String signtext, ChestAccess ca) {
-			super(System.currentTimeMillis() / 1000, loc, playerName, replaced, type, data, signtext, ca);
+		public BlockRow(Location loc, String playerName, int replaced, int type, byte data, String signtext, SerializableItemStack itemStack) {
+			super(System.currentTimeMillis() / 1000, loc, playerName, replaced, type, data, signtext, itemStack);
 		}
 
 		@Override
 		public String[] getInserts() {
 			final String table = getWorldConfig(loc.getWorld()).table;
-			final String[] inserts = new String[ca != null || signtext != null ? 2 : 1];
+			final String[] inserts = new String[itemStack != null || signtext != null ? 2 : 1];
 			inserts[0] = "INSERT INTO `" + table + "` (date, playerid, replaced, type, data, x, y, z) VALUES (FROM_UNIXTIME(" + date + "), " + playerID(playerName) + ", " + replaced + ", " + type + ", " + data + ", '" + loc.getBlockX() + "', " + loc.getBlockY() + ", '" + loc.getBlockZ() + "');";
 			if (signtext != null) {
 				inserts[1] = "INSERT INTO `" + table + "-sign` (id, signtext) values (LAST_INSERT_ID(), '" + signtext.replace("\\", "\\\\").replace("'", "\\'") + "');";
 			}
-			else if (ca != null)
-				inserts[1] = "INSERT INTO `" + table + "-chest` (id, itemtype, itemamount, itemdata) values (LAST_INSERT_ID(), " + ca.itemType + ", " + ca.itemAmount + ", " + ca.itemData + ");";
+			else if (itemStack != null) {
+				// TODO Update this/figure out how to
+				//inserts[1] = "INSERT INTO `" + table + "-chest` (id, itemtype, itemamount, itemdata) values (LAST_INSERT_ID(), " + ca.itemType + ", " + ca.itemAmount + ", " + ca.itemData + ");";
+			}
 			return inserts;
 		}
 
@@ -499,12 +508,11 @@ public class Consumer extends TimerTask
 					ps.setString(1, signtext);
 					ps.setInt(2, id);
 					ps.executeUpdate();
-				} else if (ca != null) {
-					ps = connection.prepareStatement("INSERT INTO `" + table + "-chest` (itemtype, itemamount, itemdata, id) values (?, ?, ?, ?)");
-					ps.setInt(1, ca.itemType);
-					ps.setInt(2, ca.itemAmount);
-					ps.setInt(3, ca.itemData);
-					ps.setInt(4, id);
+				} else if (itemStack != null) {
+					ps = connection.prepareStatement("INSERT INTO `" + table + "-chest` (itemstack, id) values (?, ?)");
+					// TODO Serialize and imput into the SQL
+					//ps.setBinaryStream(1, );
+					ps.setInt(2, id);
 					ps.executeUpdate();
 				}
 			}
