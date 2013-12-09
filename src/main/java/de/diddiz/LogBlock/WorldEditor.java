@@ -1,5 +1,6 @@
 package de.diddiz.LogBlock;
 
+import de.diddiz.util.BukkitUtils;
 import de.diddiz.util.serializable.itemstack.SerializableItemStack;
 import de.diddiz.util.serializable.itemstack.SerializableItemStackFactory;
 import org.bukkit.ChatColor;
@@ -28,7 +29,7 @@ import java.util.logging.Level;
 import static de.diddiz.LogBlock.config.Config.dontRollback;
 import static de.diddiz.LogBlock.config.Config.replaceAnyway;
 import static de.diddiz.util.BukkitUtils.equalTypes;
-import static de.diddiz.util.BukkitUtils.modifyContainer;
+import static de.diddiz.util.BukkitUtils.saveSpawnHeight;
 import static de.diddiz.util.MaterialName.materialName;
 import static org.bukkit.Bukkit.getLogger;
 
@@ -73,8 +74,12 @@ public class WorldEditor implements Runnable
         this.sender = sender;
     }
 
-	public void queueEdit(int x, int y, int z, int replaced, int type, byte data, String signtext, SerializableItemStack itemStack) {
-		edits.add(new Edit(0, new Location(world, x, y, z), null, replaced, type, data, signtext, itemStack));
+	public void queueRollbackEdit(int x, int y, int z, int replaced, int type, byte data, String signtext, SerializableItemStack itemStack) {
+		edits.add(new RevertEdit(0, new Location(world, x, y, z), null, replaced, type, data, signtext, itemStack));
+	}
+
+	public void queueRedoEdit(int x, int y, int z, int replaced, int type, byte data, String signtext, SerializableItemStack itemStack) {
+		edits.add(new RestoreEdit(0, new Location(world, x, y, z), null, replaced, type, data, signtext, itemStack));
 	}
 
 	public long getElapsedTime() {
@@ -145,62 +150,39 @@ public class WorldEditor implements Runnable
 		SUCCESS, BLACKLISTED, NO_ACTION
 	}
 
-	private class Edit extends BlockChange
-	{
+	private abstract class Edit extends BlockChange {
+
 		public Edit(long time, Location loc, String playerName, int replaced, int type, byte data, String signtext, SerializableItemStack itemStack) {
 			super(time, loc, playerName, replaced, type, data, signtext, itemStack);
 		}
 
-		PerformResult perform() throws WorldEditorException {
-			if (dontRollback.contains(replaced))
-				return PerformResult.BLACKLISTED;
-			final Block block = loc.getBlock();
-			if (replaced == 0 && block.getTypeId() == 0)
-				return PerformResult.NO_ACTION;
-			final BlockState state = block.getState();
-			if (!world.isChunkLoaded(block.getChunk()))
-				world.loadChunk(block.getChunk());
-			if (type == replaced) {
-				if (type == 0) {
-					if (!block.setTypeId(0))
-						throw new WorldEditorException(block.getTypeId(), 0, block.getLocation());
-				} else if (itemStack != null && (type == 23 || type == 54 || type == 61 || type == 62)) {
-					int leftover;
+		public PerformResult perform() throws WorldEditorException {
 
-					try {
-						leftover = modifyContainer(state, itemStack);
-						if (leftover > 0)
-							for (final BlockFace face : new BlockFace[]{BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST})
-								if (block.getRelative(face).getTypeId() == 54) {
-									ItemStack k = itemStack.toBukkit();
-									k.setAmount(leftover);
-									leftover = modifyContainer(block.getRelative(face).getState(), SerializableItemStackFactory.makeItemStack(k, itemStack.wasAdded()));
-								}
-					} catch (final Exception ex) {
-						throw new WorldEditorException(ex.getMessage(), block.getLocation());
-					}
-					if (!state.update())
-						throw new WorldEditorException("Failed to update inventory of " + materialName(block.getTypeId()), block.getLocation());
-					// TODO was && result.getAmount() < 0 (is this needed?)
-					if (leftover > 0)
-						throw new WorldEditorException("Not enough space left in " + materialName(block.getTypeId()), block.getLocation());
-				} else
-					return PerformResult.NO_ACTION;
-				return PerformResult.SUCCESS;
+			// Should we skip this edit?
+			if (!checkBlackList()) return PerformResult.BLACKLISTED;
+			final Block block = loc.getBlock();
+			final BlockState state = block.getState();
+			if (!checkAction(block)) return PerformResult.NO_ACTION;
+
+			// Ensure the chunk that's going to be edited is loaded
+			if (!world.isChunkLoaded(state.getChunk())) world.loadChunk(state.getChunk());
+			if (afterID == beforeID) {
+				return performChest(block, state);
 			}
-			if (!(equalTypes(block.getTypeId(), type) || replaceAnyway.contains(block.getTypeId())))
-				return PerformResult.NO_ACTION;
-			if (state instanceof InventoryHolder) {
-				((InventoryHolder)state).getInventory().clear();
-				state.update();
-			}
-			if (block.getTypeId() == replaced) {
-				if (block.getData() != (type == 0 ? data : (byte)0))
-					block.setData(type == 0 ? data : (byte)0, true);
-				else
-					return PerformResult.NO_ACTION;
-			} else if (!block.setTypeIdAndData(replaced, type == 0 ? data : (byte)0, true))
-				throw new WorldEditorException(block.getTypeId(), replaced, block.getLocation());
+
+			// Are these types actually equal?
+			if (!checkEqual(block)) return PerformResult.NO_ACTION;
+
+			// Begin editing
+			return performBlockEdit(block, state);
+		}
+
+		public PerformResult performBlockEdit(Block block, BlockState state) throws WorldEditorException {
+			// Prevent errors
+			destroyHolder(state);
+			if (!ambiguousA(block)) return PerformResult.NO_ACTION;
+
+			// TODO break this down into individual methods
 			final int curtype = block.getTypeId();
 			if (signtext != null && (curtype == 63 || curtype == 68)) {
 				final Sign sign = (Sign)block.getState();
@@ -229,6 +211,187 @@ public class WorldEditor implements Runnable
 			} else if (curtype == 18 && (block.getData() & 8) > 0)
 				block.setData((byte)(block.getData() & 0xF7));
 			return PerformResult.SUCCESS;
+		}
+
+		/**
+		 *
+		 * @return true if the black list is fine
+		 */
+		public abstract boolean checkBlackList();
+
+		/**
+		 *
+		 * @return true if something is going to be done
+		 */
+		public abstract boolean checkAction(Block block);
+
+		/**
+		 *
+		 * @return true if something was done
+		 */
+		public abstract PerformResult performChest(Block block, BlockState state) throws WorldEditorException;
+
+		/**
+		 *
+		 * @return true if the blocks are different
+		 */
+		public abstract boolean checkEqual(Block block);
+
+		/**
+		 * Ensures that the block will not cause an exception when edited over
+		 */
+		public abstract void destroyHolder(BlockState state);
+
+		/**
+		 * IDK what this does, but it's here
+		 *
+		 * @return true if something was done
+		 */
+		public abstract boolean ambiguousA(Block block) throws WorldEditorException;
+
+	}
+
+	private class RevertEdit extends Edit {
+
+		public RevertEdit(long time, Location loc, String playerName, int replaced, int type, byte data, String signtext, SerializableItemStack itemStack) {
+			super(time, loc, playerName, replaced, type, data, signtext, itemStack);
+		}
+
+		@Override
+		public boolean checkBlackList() {
+			return !dontRollback.contains(beforeID);
+		}
+
+		@Override
+		public boolean checkAction(Block block) {
+			return !(beforeID == 0 && block.getTypeId() == 0);
+		}
+
+		@Override
+		public PerformResult performChest(Block block, BlockState state) throws WorldEditorException {
+			if (afterID == 0) {
+				if (!block.setTypeId(0)) throw new WorldEditorException(block.getTypeId(), 0, block.getLocation());
+			} else if (itemStack != null && (afterID == 23 || afterID == 54 || afterID == 61 || afterID == 62)) {
+				int leftover;
+
+				try {
+					leftover = BukkitUtils.revertContainer(state, itemStack);
+					if (leftover > 0)
+						for (final BlockFace face : new BlockFace[]{BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST})
+							if (block.getRelative(face).getTypeId() == 54) {
+								ItemStack k = itemStack.toBukkit();
+								k.setAmount(leftover);
+								leftover = BukkitUtils.revertContainer(block.getRelative(face).getState(), SerializableItemStackFactory.makeItemStack(k, itemStack.wasAdded()));
+							}
+				} catch (final Exception ex) {
+					throw new WorldEditorException(ex.getMessage(), block.getLocation());
+				}
+				if (!state.update())
+					throw new WorldEditorException("Failed to update inventory of " + materialName(block.getTypeId()), block.getLocation());
+				// TODO was && result.getAmount() < 0 (is this needed?)
+				if (leftover > 0)
+					throw new WorldEditorException("Not enough space left in " + materialName(block.getTypeId()), block.getLocation());
+			} else
+				return PerformResult.NO_ACTION;
+			return PerformResult.SUCCESS;
+		}
+
+		@Override
+		public boolean checkEqual(Block block) {
+			return equalTypes(block.getTypeId(), afterID) || replaceAnyway.contains(block.getTypeId());
+		}
+
+		@Override
+		public void destroyHolder(BlockState state) {
+			if (state instanceof InventoryHolder) {
+				((InventoryHolder)state).getInventory().clear();
+				state.update();
+			}
+		}
+
+		@Override
+		public boolean ambiguousA(Block block) throws WorldEditorException {
+			if (block.getTypeId() == beforeID) {
+				if (block.getData() != (afterID == 0 ? data : (byte) 0)) {
+					block.setData(afterID == 0 ? data : (byte) 0, true);
+				} else {
+					return false;
+				}
+			} else if (!block.setTypeIdAndData(beforeID, afterID == 0 ? data : (byte) 0, true))
+				throw new WorldEditorException(block.getTypeId(), beforeID, block.getLocation());
+			return true;
+		}
+	}
+
+	private class RestoreEdit extends Edit {
+
+		public RestoreEdit(long time, Location loc, String playerName, int replaced, int type, byte data, String signtext, SerializableItemStack itemStack) {
+			super(time, loc, playerName, replaced, type, data, signtext, itemStack);
+		}
+
+		@Override
+		public boolean checkBlackList() {
+			return !dontRollback.contains(beforeID);
+		}
+
+		@Override
+		public boolean checkAction(Block block) {
+			return !(beforeID == 0 && block.getTypeId() == 0);
+		}
+
+		@Override
+		public PerformResult performChest(Block block, BlockState state) throws WorldEditorException {
+			if (afterID == 0) {
+				if (!block.setTypeId(0)) throw new WorldEditorException(block.getTypeId(), 0, block.getLocation());
+			} else if (itemStack != null && (afterID == 23 || afterID == 54 || afterID == 61 || afterID == 62)) {
+				int leftover;
+
+				try {
+					leftover = BukkitUtils.restoreContainer(state, itemStack);
+					if (leftover > 0)
+						for (final BlockFace face : new BlockFace[]{BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST})
+							if (block.getRelative(face).getTypeId() == 54) {
+								ItemStack k = itemStack.toBukkit();
+								k.setAmount(leftover);
+								leftover = BukkitUtils.restoreContainer(block.getRelative(face).getState(), SerializableItemStackFactory.makeItemStack(k, itemStack.wasAdded()));
+							}
+				} catch (final Exception ex) {
+					throw new WorldEditorException(ex.getMessage(), block.getLocation());
+				}
+				if (!state.update())
+					throw new WorldEditorException("Failed to update inventory of " + materialName(block.getTypeId()), block.getLocation());
+				// TODO was && result.getAmount() < 0 (is this needed?)
+				if (leftover > 0)
+					throw new WorldEditorException("Not enough space left in " + materialName(block.getTypeId()), block.getLocation());
+			} else
+				return PerformResult.NO_ACTION;
+			return PerformResult.SUCCESS;
+		}
+
+		@Override
+		public boolean checkEqual(Block block) {
+			return equalTypes(block.getTypeId(), afterID) || replaceAnyway.contains(block.getTypeId());
+		}
+
+		@Override
+		public void destroyHolder(BlockState state) {
+			if (state instanceof InventoryHolder) {
+				((InventoryHolder)state).getInventory().clear();
+				state.update();
+			}
+		}
+
+		@Override
+		public boolean ambiguousA(Block block) throws WorldEditorException {
+			if (block.getTypeId() == beforeID) {
+				if (block.getData() != (afterID == 0 ? data : (byte) 0)) {
+					block.setData(afterID == 0 ? data : (byte) 0, true);
+				} else {
+					return false;
+				}
+			} else if (!block.setTypeIdAndData(beforeID, afterID == 0 ? data : (byte) 0, true))
+				throw new WorldEditorException(block.getTypeId(), beforeID, block.getLocation());
+			return true;
 		}
 	}
 

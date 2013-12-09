@@ -445,15 +445,15 @@ public class Consumer extends TimerTask
 	{
 		private Connection connection;
 
-		public BlockRow(Location loc, String playerName, int replaced, int type, byte data, String signtext, SerializableItemStack itemStack) {
-			super(System.currentTimeMillis() / 1000, loc, playerName, replaced, type, data, signtext, itemStack);
+		public BlockRow(Location loc, String playerName, int beforeID, int afterID, byte data, String signtext, SerializableItemStack itemStack) {
+			super(System.currentTimeMillis() / 1000, loc, playerName, beforeID, afterID, data, signtext, itemStack);
 		}
 
 		@Override
 		public String[] getInserts() {
 			final String table = getWorldConfig(loc.getWorld()).table;
 			final String[] inserts = new String[itemStack != null || signtext != null ? 2 : 1];
-			inserts[0] = "INSERT INTO `" + table + "` (date, playerid, replaced, type, data, x, y, z) VALUES (FROM_UNIXTIME(" + date + "), " + playerID(playerName) + ", " + replaced + ", " + type + ", " + data + ", '" + loc.getBlockX() + "', " + loc.getBlockY() + ", '" + loc.getBlockZ() + "');";
+			inserts[0] = "INSERT INTO `" + table + "` (date, playerid, replaced, type, data, x, y, z) VALUES (FROM_UNIXTIME(" + date + "), " + playerID(playerName) + ", " + beforeID + ", " + afterID + ", " + data + ", '" + loc.getBlockX() + "', " + loc.getBlockY() + ", '" + loc.getBlockZ() + "');";
 			if (signtext != null) {
 				inserts[1] = "INSERT INTO `" + table + "-sign` (id, signtext) values (LAST_INSERT_ID(), '" + signtext.replace("\\", "\\\\").replace("'", "\\'") + "');";
 			}
@@ -484,8 +484,8 @@ public class Consumer extends TimerTask
 			try {
 				ps1 = connection.prepareStatement("INSERT INTO `" + table + "` (date, playerid, replaced, type, data, x, y, z) VALUES(FROM_UNIXTIME(?), " + playerID(playerName) + ", ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
 				ps1.setLong(1, date );
-				ps1.setInt(2, replaced);
-				ps1.setInt(3, type);
+				ps1.setInt(2, beforeID);
+				ps1.setInt(3, afterID);
 				ps1.setInt(4, data);
 				ps1.setInt(5, loc.getBlockX());
 				ps1.setInt(6, loc.getBlockY());

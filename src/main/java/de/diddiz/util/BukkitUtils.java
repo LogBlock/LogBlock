@@ -363,7 +363,21 @@ public class BukkitUtils
 		return 0;
 	}
 
-	public static int modifyContainer(BlockState b, SerializableItemStack item) {
+	public static int revertContainer(BlockState b, SerializableItemStack item) {
+		if (b instanceof InventoryHolder) {
+			final Inventory inv = ((InventoryHolder)b).getInventory();
+			if (item.wasAdded()) {
+				final ItemStack tmp = inv.removeItem(item.toBukkit()).get(0);
+				return tmp != null ? tmp.getAmount() : 0;
+			} else {
+				final ItemStack tmp = inv.addItem(item.toBukkit()).get(0);
+				return tmp != null ? tmp.getAmount() : 0;
+			}
+		}
+		return 0;
+	}
+
+	public static int restoreContainer(BlockState b, SerializableItemStack item) {
 		if (b instanceof InventoryHolder) {
 			final Inventory inv = ((InventoryHolder)b).getInventory();
 			if (!item.wasAdded()) {
