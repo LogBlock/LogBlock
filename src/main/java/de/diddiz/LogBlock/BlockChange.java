@@ -67,9 +67,9 @@ public class BlockChange implements LookupCacheElement
 			else if (itemStack != null) {
 				ItemStack is = itemStack.toBukkit();
 				if (!itemStack.wasAdded())
-					msg.append("took ").append(is.getAmount()).append("x ").append(materialName(is.getTypeId(), is.getData().getData())).append(" from ").append(materialName(type));
+					msg.append("took ").append(is.getAmount()).append("x ").append(materialName(is.getTypeId(), is.getDurability())).append(" from ").append(materialName(type));
 				else
-					msg.append("put ").append(is.getAmount()).append("x ").append(materialName(is.getTypeId(), is.getData().getData())).append(" into ").append(materialName(type));
+					msg.append("put ").append(is.getAmount()).append("x ").append(materialName(is.getTypeId(), is.getDurability())).append(" into ").append(materialName(type));
 			} else if (BukkitUtils.getContainerBlocks().contains(Material.getMaterial(type)))
 				msg.append("opened ").append(materialName(type));
 			else if (type == 64 || type == 71)

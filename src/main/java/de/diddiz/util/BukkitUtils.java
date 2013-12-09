@@ -9,6 +9,8 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+
+import de.diddiz.util.serializable.itemstack.SerializableItemStack;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
 import org.bukkit.Location;
@@ -237,6 +239,7 @@ public class BukkitUtils
 		return diff.toArray(new ItemStack[diff.size()]);
 	}
 
+	@Deprecated
 	public static ItemStack[] compressInventory(ItemStack[] items) {
 		final ArrayList<ItemStack> compressed = new ArrayList<ItemStack>();
 		for (final ItemStack item : items)
@@ -343,7 +346,9 @@ public class BukkitUtils
 		return y;
 	}
 
+	@Deprecated
 	public static int modifyContainer(BlockState b, ItemStack item) {
+		item = item.clone();
 		if (b instanceof InventoryHolder) {
 			final Inventory inv = ((InventoryHolder)b).getInventory();
 			if (item.getAmount() < 0) {
@@ -352,6 +357,20 @@ public class BukkitUtils
 				return tmp != null ? tmp.getAmount() : 0;
 			} else if (item.getAmount() > 0) {
 				final ItemStack tmp = inv.addItem(item).get(0);
+				return tmp != null ? tmp.getAmount() : 0;
+			}
+		}
+		return 0;
+	}
+
+	public static int modifyContainer(BlockState b, SerializableItemStack item) {
+		if (b instanceof InventoryHolder) {
+			final Inventory inv = ((InventoryHolder)b).getInventory();
+			if (!item.wasAdded()) {
+				final ItemStack tmp = inv.removeItem(item.toBukkit()).get(0);
+				return tmp != null ? tmp.getAmount() : 0;
+			} else {
+				final ItemStack tmp = inv.addItem(item.toBukkit()).get(0);
 				return tmp != null ? tmp.getAmount() : 0;
 			}
 		}

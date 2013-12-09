@@ -53,13 +53,14 @@ public class SerializableItemStack_G1 implements SerializableItemStack {
 					o = aColorMap;
 				}
 
+				// This is a done as a dummy on construction so that unserializable
+				// keys will be removed without corrupting the entire itemstack
 				ByteArrayOutputStream bos;
 				ObjectOutputStream oss = null;
 				try {
 					bos = new ByteArrayOutputStream();
 					oss = new ObjectOutputStream(bos);
 					oss.writeObject(o);
-					oss.close();
 				} catch (IOException ex) {
 					System.out.println("LogBlock error encountered processing key: " + key);
 					ex.printStackTrace();

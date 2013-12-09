@@ -4,8 +4,8 @@ import org.bukkit.inventory.ItemStack;
 
 public class SerializableItemStackFactory {
 
-	public static SerializableItemStack makeItemStack(ItemStack itemStack, boolean wasTaken) {
+	public static SerializableItemStack makeItemStack(ItemStack itemStack, boolean wasAdded) {
 
-		return new SerializableItemStack_G1(itemStack, wasTaken);
+		return new SerializableItemStack_G1(itemStack, wasAdded);
 	}
 }

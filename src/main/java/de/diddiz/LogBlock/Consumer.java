@@ -14,9 +14,7 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
+import java.io.*;
 import java.sql.*;
 import java.util.*;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -154,13 +152,8 @@ public class Consumer extends TimerTask
 	 * Logs a container block break. The block type before is assumed to be o (air). All content is assumed to be taken.
 	 */
 	public void queueContainerBreak(String playerName, Location loc, int type, byte data, Inventory inv) {
-		final ItemStack[] items = compressInventory(inv.getContents());
-		for (ItemStack item : items) {
-
-			boolean wasAdded = item.getAmount() > 0;
-			item.setAmount(Math.abs(item.getAmount()));
-
-			queueChestAccess(playerName, loc, type, SerializableItemStackFactory.makeItemStack(item, wasAdded));
+		for (ItemStack item : inv.getContents()) {
+			queueChestAccess(playerName, loc, type, SerializableItemStackFactory.makeItemStack(item, false));
 		}
 		queueBlockBreak(playerName, loc, type, data);
 	}
@@ -465,8 +458,9 @@ public class Consumer extends TimerTask
 				inserts[1] = "INSERT INTO `" + table + "-sign` (id, signtext) values (LAST_INSERT_ID(), '" + signtext.replace("\\", "\\\\").replace("'", "\\'") + "');";
 			}
 			else if (itemStack != null) {
-				// TODO Update this/figure out how to
-				//inserts[1] = "INSERT INTO `" + table + "-chest` (id, itemtype, itemamount, itemdata) values (LAST_INSERT_ID(), " + ca.itemType + ", " + ca.itemAmount + ", " + ca.itemData + ");";
+				ItemStack bukkitStack = itemStack.toBukkit();
+				// TODO How do you insert a binary blob here???
+				inserts[1] = "INSERT INTO `" + table + "-chest` (id, itemtype, itemamount, itemdata, itemstack) values (LAST_INSERT_ID(), " + bukkitStack.getTypeId() + ", " + 0 + ", " + bukkitStack.getDurability() + ", " + null + ");";
 			}
 			return inserts;
 		}
@@ -509,10 +503,41 @@ public class Consumer extends TimerTask
 					ps.setInt(2, id);
 					ps.executeUpdate();
 				} else if (itemStack != null) {
-					ps = connection.prepareStatement("INSERT INTO `" + table + "-chest` (itemstack, id) values (?, ?)");
-					// TODO Serialize and imput into the SQL
-					//ps.setBinaryStream(1, );
-					ps.setInt(2, id);
+					ItemStack bukkitStack = itemStack.toBukkit();
+					ps = connection.prepareStatement("INSERT INTO `" + table + "-chest` (itemtype, itemamount, itemdata, itemstack, id) values (?, ?, ?, ?, ?)");
+					ps.setInt(1, bukkitStack.getTypeId());
+					ps.setInt(2, 0);
+					ps.setInt(3, bukkitStack.getDurability());
+
+					// TODO There may be a better way to do this
+					PipedOutputStream pos;
+					PipedInputStream pis = null;
+					ObjectOutputStream oss = null;
+					try {
+						pos = new PipedOutputStream();
+						oss = new ObjectOutputStream(pos);
+						oss.writeObject(itemStack);
+						pis = new PipedInputStream(pos);
+						ps.setBinaryStream(4, pis);
+					} catch (IOException ex) {
+						return;
+					} finally {
+						if (oss != null) {
+							try {
+								oss.close();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+						if (pis != null) {
+							try {
+								pis.close();
+							} catch (IOException e) {
+								e.printStackTrace();
+							}
+						}
+					}
+					ps.setInt(5, id);
 					ps.executeUpdate();
 				}
 			}

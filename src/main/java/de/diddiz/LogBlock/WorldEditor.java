@@ -1,6 +1,7 @@
 package de.diddiz.LogBlock;
 
 import de.diddiz.util.serializable.itemstack.SerializableItemStack;
+import de.diddiz.util.serializable.itemstack.SerializableItemStackFactory;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -166,25 +167,22 @@ public class WorldEditor implements Runnable
 				} else if (itemStack != null && (type == 23 || type == 54 || type == 61 || type == 62)) {
 					int leftover;
 
-					// TODO Update methods to be more effective with new system
-					// Done temporarily this way
-					ItemStack result = itemStack.toBukkit();
-					if (!itemStack.wasAdded()) {
-						result.setAmount(result.getAmount() * -1);
-					}
-
 					try {
-						leftover = modifyContainer(state, result);
+						leftover = modifyContainer(state, itemStack);
 						if (leftover > 0)
 							for (final BlockFace face : new BlockFace[]{BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST})
-								if (block.getRelative(face).getTypeId() == 54)
-									leftover = modifyContainer(block.getRelative(face).getState(), new ItemStack(result.getTypeId(), result.getAmount() < 0 ? leftover : -leftover, result.getData().getData()));
+								if (block.getRelative(face).getTypeId() == 54) {
+									ItemStack k = itemStack.toBukkit();
+									k.setAmount(leftover);
+									leftover = modifyContainer(block.getRelative(face).getState(), SerializableItemStackFactory.makeItemStack(k, itemStack.wasAdded()));
+								}
 					} catch (final Exception ex) {
 						throw new WorldEditorException(ex.getMessage(), block.getLocation());
 					}
 					if (!state.update())
 						throw new WorldEditorException("Failed to update inventory of " + materialName(block.getTypeId()), block.getLocation());
-					if (leftover > 0 && result.getAmount() < 0)
+					// TODO was && result.getAmount() < 0 (is this needed?)
+					if (leftover > 0)
 						throw new WorldEditorException("Not enough space left in " + materialName(block.getTypeId()), block.getLocation());
 				} else
 					return PerformResult.NO_ACTION;
