@@ -162,14 +162,24 @@ public class WorldEditor implements Runnable
 				if (type == 0) {
 					if (!block.setTypeId(0))
 						throw new WorldEditorException(block.getTypeId(), 0, block.getLocation());
-				} else if (ca != null && (type == 23 || type == 54 || type == 61 || type == 62)) {
+				} else if (ca != null) {
 					int leftover;
 					try {
-						leftover = modifyContainer(state, new ItemStack(ca.itemType, -ca.itemAmount, ca.itemData));
-						if (leftover > 0)
-							for (final BlockFace face : new BlockFace[]{BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST})
-								if (block.getRelative(face).getTypeId() == 54)
-									leftover = modifyContainer(block.getRelative(face).getState(), new ItemStack(ca.itemType, ca.itemAmount < 0 ? leftover : -leftover, ca.itemData));
+						switch (type) {
+							case 23:
+							case 61:
+							case 62:
+								leftover = modifyContainer(state, new ItemStack(ca.itemType, -ca.itemAmount, ca.itemData));
+								break;
+							case 54:
+							case 146:
+								leftover = modifyContainer(state, new ItemStack(ca.itemType, -ca.itemAmount, ca.itemData));
+								if (leftover > 0)
+									for (final BlockFace face : new BlockFace[]{BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST})
+										if (block.getRelative(face).getTypeId() == type)
+											leftover = modifyContainer(block.getRelative(face).getState(), new ItemStack(ca.itemType, ca.itemAmount < 0 ? leftover : -leftover, ca.itemData));
+								break;
+						}
 					} catch (final Exception ex) {
 						throw new WorldEditorException(ex.getMessage(), block.getLocation());
 					}
