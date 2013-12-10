@@ -162,21 +162,24 @@ public class WorldEditor implements Runnable
 				if (type == 0) {
 					if (!block.setTypeId(0))
 						throw new WorldEditorException(block.getTypeId(), 0, block.getLocation());
-				} else if (ca != null && (type == 23 || type == 54 || type == 61 || type == 62)) {
-					int leftover;
-					try {
-						leftover = modifyContainer(state, new ItemStack(ca.itemType, -ca.itemAmount, ca.itemData));
-						if (leftover > 0)
-							for (final BlockFace face : new BlockFace[]{BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST})
-								if (block.getRelative(face).getTypeId() == 54)
-									leftover = modifyContainer(block.getRelative(face).getState(), new ItemStack(ca.itemType, ca.itemAmount < 0 ? leftover : -leftover, ca.itemData));
-					} catch (final Exception ex) {
-						throw new WorldEditorException(ex.getMessage(), block.getLocation());
+				} else if (ca != null ) {
+					boolean chest = (type == 54 || type == 146);
+					if (chest || type == 23 || type == 61 || type == 62) {
+						int leftover;
+						try {
+							leftover = modifyContainer(state, new ItemStack(ca.itemType, -ca.itemAmount, ca.itemData));
+							if (leftover > 0 && chest)
+								for (final BlockFace face : new BlockFace[]{BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST})
+									if (block.getRelative(face).getTypeId() == type)
+										leftover = modifyContainer(block.getRelative(face).getState(), new ItemStack(ca.itemType, ca.itemAmount < 0 ? leftover : -leftover, ca.itemData));
+						} catch (final Exception ex) {
+							throw new WorldEditorException(ex.getMessage(), block.getLocation());
+						}
+						if (!state.update())
+							throw new WorldEditorException("Failed to update inventory of " + materialName(block.getTypeId()), block.getLocation());
+						if (leftover > 0 && ca.itemAmount < 0)
+							throw new WorldEditorException("Not enough space left in " + materialName(block.getTypeId()), block.getLocation());
 					}
-					if (!state.update())
-						throw new WorldEditorException("Failed to update inventory of " + materialName(block.getTypeId()), block.getLocation());
-					if (leftover > 0 && ca.itemAmount < 0)
-						throw new WorldEditorException("Not enough space left in " + materialName(block.getTypeId()), block.getLocation());
 				} else
 					return PerformResult.NO_ACTION;
 				return PerformResult.SUCCESS;
