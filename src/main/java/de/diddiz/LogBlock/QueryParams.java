@@ -38,7 +38,7 @@ public final class QueryParams implements Cloneable
 	public List<Block> types = new ArrayList<Block>();
 	public World world = null;
 	public String match = null;
-	public boolean needCount = false, needId = false, needDate = false, needType = false, needData = false, needPlayer = false, needCoords = false, needSignText = false, needChestAccess = false, needMessage = false, needKiller = false, needVictim = false, needWeapon = false;
+	public boolean needCount = false, needId = false, needDate = false, needType = false, needData = false, needPlayer = false, needCoords = false, needSignText = false, needGeneralItemData = false, needSpecificItemData = false, needMessage = false, needKiller = false, needVictim = false, needWeapon = false;
 	private final LogBlock logblock;
 
 	public QueryParams(LogBlock logblock) {
@@ -131,8 +131,10 @@ public final class QueryParams implements Cloneable
 					select += "x, y, z, ";
 				if (needSignText)
 					select += "signtext, ";
-				if (needChestAccess)
+				if (needGeneralItemData)
 					select += "itemtype, itemamount, itemdata, ";
+				if (needSpecificItemData)
+					select += "itemstack, ";
 				select = select.substring(0, select.length() - 2);
 			}
 			String from = "FROM `" + getTable() + "` ";
@@ -140,7 +142,7 @@ public final class QueryParams implements Cloneable
 				from += "INNER JOIN `lb-players` USING (playerid) ";
 			if (needSignText)
 				from += "LEFT JOIN `" + getTable() + "-sign` USING (id) ";
-			if (needChestAccess)
+			if (needGeneralItemData || needSpecificItemData)
 				// If BlockChangeType is CHESTACCESS, we can use more efficient query
 				if (bct == BlockChangeType.CHESTACCESS) {
 					from += "RIGHT JOIN `" + getTable() + "-chest` USING (id) ";

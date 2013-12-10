@@ -458,9 +458,8 @@ public class Consumer extends TimerTask
 				inserts[1] = "INSERT INTO `" + table + "-sign` (id, signtext) values (LAST_INSERT_ID(), '" + signtext.replace("\\", "\\\\").replace("'", "\\'") + "');";
 			}
 			else if (itemStack != null) {
-				ItemStack bukkitStack = itemStack.toBukkit();
 				// TODO How do you insert a binary blob here???
-				inserts[1] = "INSERT INTO `" + table + "-chest` (id, itemtype, itemamount, itemdata, itemstack) values (LAST_INSERT_ID(), " + bukkitStack.getTypeId() + ", " + 0 + ", " + bukkitStack.getDurability() + ", " + null + ");";
+				inserts[1] = "INSERT INTO `" + table + "-chest` (id, itemtype, itemamount, itemdata, itemstack) values (LAST_INSERT_ID(), " + itemStack.getType() + ", " + itemStack.getAmount() + ", " + itemStack.getData() + ", " + null + ");";
 			}
 			return inserts;
 		}
@@ -503,11 +502,10 @@ public class Consumer extends TimerTask
 					ps.setInt(2, id);
 					ps.executeUpdate();
 				} else if (itemStack != null) {
-					ItemStack bukkitStack = itemStack.toBukkit();
 					ps = connection.prepareStatement("INSERT INTO `" + table + "-chest` (itemtype, itemamount, itemdata, itemstack, id) values (?, ?, ?, ?, ?)");
-					ps.setInt(1, bukkitStack.getTypeId());
-					ps.setInt(2, 0);
-					ps.setInt(3, bukkitStack.getDurability());
+					ps.setInt(1, itemStack.getType());
+					ps.setInt(2, itemStack.getAmount());
+					ps.setInt(3, itemStack.getData());
 
 					// TODO There may be a better way to do this
 					PipedOutputStream pos;

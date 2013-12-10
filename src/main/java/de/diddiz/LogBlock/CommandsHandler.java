@@ -407,8 +407,10 @@ public class CommandsHandler implements CommandExecutor
 					params.needPlayer = true;
 					if (params.types.isEmpty() || Block.inList(params.types, 63) || Block.inList(params.types, 68))
 						params.needSignText = true;
-					if (params.bct == BlockChangeType.CHESTACCESS || params.bct == BlockChangeType.ALL)
-						params.needChestAccess = true;
+					if (params.bct == BlockChangeType.CHESTACCESS || params.bct == BlockChangeType.ALL) {
+						params.needGeneralItemData = true;
+						params.needSpecificItemData = true;
+					}
 				}
 				conn = logblock.getConnection();
 				if (conn == null) {
@@ -467,8 +469,10 @@ public class CommandsHandler implements CommandExecutor
 					params.needPlayer = true;
 					if (params.types.isEmpty() || Block.inList(params.types, 63) || Block.inList(params.types, 68))
 						params.needSignText = true;
-					if (params.bct == BlockChangeType.CHESTACCESS || params.bct == BlockChangeType.ALL)
-						params.needChestAccess = true;
+					if (params.bct == BlockChangeType.CHESTACCESS || params.bct == BlockChangeType.ALL) {
+						params.needGeneralItemData = true;
+						params.needSpecificItemData = true;
+					}
 				}
 				conn = logblock.getConnection();
 				if (conn == null) {
@@ -539,8 +543,10 @@ public class CommandsHandler implements CommandExecutor
 		public void run() {
 			try {
 				params.needCoords = true;
-				if (params.bct == BlockChangeType.CHESTACCESS || params.bct == BlockChangeType.ALL)
-					params.needChestAccess = true;
+				if (params.bct == BlockChangeType.CHESTACCESS || params.bct == BlockChangeType.ALL) {
+					params.needGeneralItemData = true;
+					params.needSpecificItemData = true;
+				}
 				params.limit = 1;
 				params.sum = SummarizationMode.NONE;
 				conn = logblock.getConnection();
@@ -589,7 +595,8 @@ public class CommandsHandler implements CommandExecutor
 				params.needType = true;
 				params.needData = true;
 				params.needSignText = true;
-				params.needChestAccess = true;
+				params.needGeneralItemData = true;
+				params.needSpecificItemData = true;
 				params.order = Order.DESC;
 				params.sum = SummarizationMode.NONE;
 				conn = logblock.getConnection();
@@ -608,7 +615,7 @@ public class CommandsHandler implements CommandExecutor
                 final WorldEditor editor = new WorldEditor(logblock, params.world);
 
 				while (rs.next())
-					editor.queueRollbackEdit(rs.getInt("x"), rs.getInt("y"), rs.getInt("z"), rs.getInt("replaced"), rs.getInt("type"), rs.getByte("data"), rs.getString("signtext"), ConversionUtil.grabFromRS(rs));
+					editor.queueRollbackEdit(rs.getInt("x"), rs.getInt("y"), rs.getInt("z"), rs.getInt("replaced"), rs.getInt("type"), rs.getByte("data"), rs.getString("signtext"), ConversionUtil.grabFromRS(rs, params));
 				final int changes = editor.getSize();
                 if (changes > 10000) {
                     editor.setSender(sender);
@@ -657,7 +664,8 @@ public class CommandsHandler implements CommandExecutor
 				params.needType = true;
 				params.needData = true;
 				params.needSignText = true;
-				params.needChestAccess = true;
+				params.needGeneralItemData = true;
+				params.needSpecificItemData = true;
 				params.order = Order.ASC;
 				params.sum = SummarizationMode.NONE;
 				conn = logblock.getConnection();
@@ -673,7 +681,7 @@ public class CommandsHandler implements CommandExecutor
 					sender.sendMessage(ChatColor.DARK_AQUA + "Searching " + params.getTitle() + ":");
 				final WorldEditor editor = new WorldEditor(logblock, params.world);
 				while (rs.next())
-					editor.queueRedoEdit(rs.getInt("x"), rs.getInt("y"), rs.getInt("z"), rs.getInt("type"), rs.getInt("replaced"), rs.getByte("data"), rs.getString("signtext"), ConversionUtil.grabFromRS(rs));
+					editor.queueRedoEdit(rs.getInt("x"), rs.getInt("y"), rs.getInt("z"), rs.getInt("type"), rs.getInt("replaced"), rs.getByte("data"), rs.getString("signtext"), ConversionUtil.grabFromRS(rs, params));
 				final int changes = editor.getSize();
 				if (!params.silent)
 					sender.sendMessage(ChatColor.GREEN.toString() + changes + " blocks found.");

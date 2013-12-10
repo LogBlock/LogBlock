@@ -17,10 +17,15 @@ import java.util.Map;
 @SuppressWarnings("unchecked")
 public class SerializableItemStack_G1 implements SerializableItemStack {
 
+	private final int type, data, amount;
 	private final boolean added;
 	private final Map<String, Object> map;
 
 	protected SerializableItemStack_G1(ItemStack itemStack, boolean added) {
+
+		this.type = itemStack.getAmount();
+		this.data = itemStack.getDurability();
+		this.amount = itemStack.getAmount();
 
 		this.added = added;
 		map = itemStack.serialize();
@@ -79,6 +84,24 @@ public class SerializableItemStack_G1 implements SerializableItemStack {
 			}
 			map.put("meta", aMetaMap);
 		}
+	}
+
+	@Override
+	public int getType() {
+
+		return type;
+	}
+
+	@Override
+	public int getData() {
+
+		return data;
+	}
+
+	@Override
+	public int getAmount() {
+
+		return amount;
 	}
 
 	@Override

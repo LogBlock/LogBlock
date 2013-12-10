@@ -45,7 +45,7 @@ public class BlockChange implements LookupCacheElement
 		afterID = p.needType ? rs.getInt("type") : 0;
 		data = p.needData ? rs.getByte("data") : (byte)0;
 		signtext = p.needSignText ? rs.getString("signtext") : null;
-		itemStack = p.needChestAccess ? ConversionUtil.grabFromRS(rs) : null;
+		itemStack = ConversionUtil.grabFromRS(rs, p);
 	}
 
 	@Override
@@ -65,11 +65,10 @@ public class BlockChange implements LookupCacheElement
 			if (afterID == 0)
 				msg.append("did an unspecified action");
 			else if (itemStack != null) {
-				ItemStack is = itemStack.toBukkit();
 				if (!itemStack.wasAdded())
-					msg.append("took ").append(is.getAmount()).append("x ").append(materialName(is.getTypeId(), is.getDurability())).append(" from ").append(materialName(afterID));
+					msg.append("took ").append(itemStack.getAmount()).append("x ").append(materialName(itemStack.getType(), (short) itemStack.getData())).append(" from ").append(materialName(afterID));
 				else
-					msg.append("put ").append(is.getAmount()).append("x ").append(materialName(is.getTypeId(), is.getDurability())).append(" into ").append(materialName(afterID));
+					msg.append("put ").append(itemStack.getAmount()).append("x ").append(materialName(itemStack.getType(), (short) itemStack.getData())).append(" into ").append(materialName(afterID));
 			} else if (BukkitUtils.getContainerBlocks().contains(Material.getMaterial(afterID)))
 				msg.append("opened ").append(materialName(afterID));
 			else if (afterID == 64 || afterID == 71)
