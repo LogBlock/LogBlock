@@ -1,8 +1,10 @@
 package de.diddiz.LogBlock.events;
-import de.diddiz.LogBlock.ChestAccess;
+import de.diddiz.util.serializable.itemstack.SerializableItemStack;
+import de.diddiz.util.serializable.itemstack.SerializableItemStackFactory;
 import org.apache.commons.lang.Validate;
 import org.bukkit.Location;
 import org.bukkit.event.HandlerList;
+import org.bukkit.inventory.ItemStack;
 
 public class BlockChangePreLogEvent extends PreLogEvent {
 
@@ -11,10 +13,10 @@ public class BlockChangePreLogEvent extends PreLogEvent {
 	private int typeBefore, typeAfter;
 	private byte data;
 	private String signText;
-	private ChestAccess chestAccess;
+	private SerializableItemStack itemStack;
 
 	public BlockChangePreLogEvent(String owner, Location location, int typeBefore, int typeAfter, byte data,
-								  String signText, ChestAccess chestAccess) {
+								  String signText, SerializableItemStack itemStack) {
 
 		super(owner);
 		this.location = location;
@@ -22,7 +24,7 @@ public class BlockChangePreLogEvent extends PreLogEvent {
 		this.typeAfter = typeAfter;
 		this.data = data;
 		this.signText = signText;
-		this.chestAccess = chestAccess;
+		this.itemStack = itemStack;
 	}
 
 	public Location getLocation() {
@@ -94,14 +96,24 @@ public class BlockChangePreLogEvent extends PreLogEvent {
 		return false;
 	}
 
-	public ChestAccess getChestAccess() {
+	public boolean wasItemStackAdded() {
 
-		return chestAccess;
+		return itemStack.wasAdded();
 	}
 
-	public void setChestAccess(ChestAccess chestAccess) {
+	public SerializableItemStack getRawItemStack() {
 
-		this.chestAccess = chestAccess;
+		return itemStack;
+	}
+
+	public ItemStack getItemStack() {
+
+		return itemStack.toBukkit();
+	}
+
+	public void setItemStack(ItemStack itemStack, boolean wasAdded) {
+
+		this.itemStack = SerializableItemStackFactory.makeItemStack(itemStack, wasAdded);
 	}
 
 	public HandlerList getHandlers() {
