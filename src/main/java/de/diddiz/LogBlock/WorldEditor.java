@@ -164,7 +164,7 @@ public class WorldEditor implements Runnable
 						throw new WorldEditorException(block.getTypeId(), 0, block.getLocation());
 				} else if (ca != null ) {
 					boolean chest = (type == 54 || type == 146);
-					if (chest || type == 23 || type == 61 || type == 62)) {
+					if (chest || type == 23 || type == 61 || type == 62) {
 						int leftover;
 						try {
 							leftover = modifyContainer(state, new ItemStack(ca.itemType, -ca.itemAmount, ca.itemData));
