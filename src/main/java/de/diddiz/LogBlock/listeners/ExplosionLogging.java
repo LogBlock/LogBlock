@@ -50,7 +50,7 @@ public class ExplosionLogging extends LoggingListener
 					return;
 				if (logCreeperExplosionsAsPlayerWhoTriggeredThese) {
 					final Entity target = ((Creeper) source).getTarget();
-					name = target instanceof Player ? ((Player)target).getName() : "Creeper";
+					name = target instanceof Player ? ((Player)target).getName() + " [Creeper]" : "Creeper";
 				} else
 					name = "Creeper";
 			} else if (source instanceof Fireball) {
