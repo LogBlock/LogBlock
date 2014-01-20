@@ -8,6 +8,7 @@ import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Player;
+import org.bukkit.entity.Projectile;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
@@ -168,8 +169,13 @@ public class Consumer extends TimerTask
 		if (killer == null || victim == null)
 			return;
 		int weapon = 0;
+                
+                if(killer instanceof Projectile)
+			killer = ((Projectile)killer).getShooter();
+		
 		if (killer instanceof Player && ((Player)killer).getItemInHand() != null)
 			weapon = ((Player)killer).getItemInHand().getTypeId();
+		
 		queueKill(victim.getLocation(), entityName(killer), entityName(victim), weapon);
 	}
 
