@@ -1,6 +1,8 @@
 package de.diddiz.LogBlock.config;
 
 import de.diddiz.LogBlock.*;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
@@ -66,7 +68,8 @@ public class Config
 			worldNames.add("world_the_end");
 		}
 		def.put("loggedWorlds", worldNames);
-		def.put("mysql.host", "localhost");
+		def.put("logAllWorlds", false);
+        def.put("mysql.host", "localhost");
 		def.put("mysql.port", 3306);
 		def.put("mysql.database", "minecraft");
 		def.put("mysql.user", "username");
@@ -211,6 +214,11 @@ public class Config
 				toolsByName.put(alias, tool);
 		}
 		final List<String> loggedWorlds = config.getStringList("loggedWorlds");
+		if (config.getBoolean("logAllWorlds", false)) {
+		    loggedWorlds.clear();
+		    for (World w : Bukkit.getWorlds())
+		        loggedWorlds.add(w.getName());
+		}
 		worldConfigs = new HashMap<String, WorldConfig>();
 		if (loggedWorlds.isEmpty())
 			throw new DataFormatException("No worlds configured");
