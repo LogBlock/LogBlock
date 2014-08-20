@@ -21,7 +21,7 @@ import java.util.Enumeration;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Properties;
-import java.util.Vector;
+import java.util.ArrayList;
 import java.util.concurrent.Executor;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
@@ -30,7 +30,7 @@ public class MySQLConnectionPool implements Closeable
 {
 	private final static int poolSize = 10;
 	private final static long timeToLive = 300000;
-	private final Vector<JDCConnection> connections;
+	private final ArrayList<JDCConnection> connections;
 	private final String url, user, password;
 	private final Lock lock = new ReentrantLock();
 
@@ -39,7 +39,7 @@ public class MySQLConnectionPool implements Closeable
 		this.url = url;
 		this.user = user;
 		this.password = password;
-		connections = new Vector<JDCConnection>(poolSize);
+		connections = new ArrayList<JDCConnection>(poolSize);
         ConnectionReaper reaper = new ConnectionReaper();
 		new Thread(reaper, "MySQL Connection Reaper Thread - LogBlock").start();
 	}
@@ -47,10 +47,10 @@ public class MySQLConnectionPool implements Closeable
 	@Override
 	public void close() {
 		lock.lock();
-		final Enumeration<JDCConnection> conns = connections.elements();
-		while (conns.hasMoreElements()) {
-			final JDCConnection conn = conns.nextElement();
-			connections.remove(conn);
+		final Iterator<JDCConnection> conns = connections.iterator();
+		while (conns.hasNext()) {
+			final JDCConnection conn = conns.next();
+			conns.remove();
 			conn.terminate();
 		}
 		lock.unlock();
@@ -59,13 +59,13 @@ public class MySQLConnectionPool implements Closeable
 	public Connection getConnection() throws SQLException {
 		lock.lock();
 		try {
-			final Enumeration<JDCConnection> conns = connections.elements();
-			while (conns.hasMoreElements()) {
-				final JDCConnection conn = conns.nextElement();
+			final Iterator<JDCConnection> conns = connections.iterator();
+			while (conns.hasNext()) {
+				final JDCConnection conn = conns.next();
 				if (conn.lease()) {
 					if (conn.isValid())
 						return conn;
-					connections.remove(conn);
+					conns.remove();
 					conn.terminate();
 				}
 			}
