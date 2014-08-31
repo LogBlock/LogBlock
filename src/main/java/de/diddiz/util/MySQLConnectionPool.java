@@ -30,7 +30,7 @@ public class MySQLConnectionPool implements Closeable
 {
 	private final static int poolSize = 10;
 	private final static long timeToLive = 300000;
-	private final ArrayList<JDCConnection> connections;
+	private final Vector<JDCConnection> connections;
 	private final String url, user, password;
 	private final Lock lock = new ReentrantLock();
 
@@ -39,7 +39,7 @@ public class MySQLConnectionPool implements Closeable
 		this.url = url;
 		this.user = user;
 		this.password = password;
-		connections = new ArrayList<JDCConnection>(poolSize);
+		connections = new Vector<JDCConnection>(poolSize);
         ConnectionReaper reaper = new ConnectionReaper();
 		new Thread(reaper, "MySQL Connection Reaper Thread - LogBlock").start();
 	}
