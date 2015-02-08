@@ -4,7 +4,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import org.bukkit.Location;
 
-public class ChatMessage implements LookupCacheElement
+public class ChatMessage extends AbstractLookupCacheElement
 {
 	final long id, date;
 	final String playerName, message;

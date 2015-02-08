@@ -10,7 +10,7 @@ import org.bukkit.Location;
 import de.diddiz.LogBlock.config.Config;
 import org.bukkit.Material;
 
-public class BlockChange implements LookupCacheElement
+public class BlockChange extends AbstractLookupCacheElement
 {
 	public final long id, date;
 	public final Location loc;

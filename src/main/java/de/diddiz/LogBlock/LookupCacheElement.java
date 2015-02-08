@@ -7,4 +7,6 @@ public interface LookupCacheElement
 	public Location getLocation();
 
 	public String getMessage();
+
+	String getXmlMessage();
 }

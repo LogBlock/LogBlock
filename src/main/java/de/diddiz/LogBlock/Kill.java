@@ -7,7 +7,7 @@ import org.bukkit.inventory.ItemStack;
 
 import de.diddiz.LogBlock.config.Config;
 
-public class Kill implements LookupCacheElement
+public class Kill extends AbstractLookupCacheElement
 {
 	final long id, date;
 	public final Location loc;

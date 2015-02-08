@@ -1,5 +1,6 @@
 package de.diddiz.LogBlock;
 
+import de.diddiz.LogBlock.html.Parser;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -247,6 +248,11 @@ public class WorldEditor implements Runnable
 		@Override
 		public Location getLocation() {
 			return loc;
+		}
+
+		@Override
+		public String getXmlMessage() {
+			return Parser.escape(getMessage());
 		}
 	}
 }

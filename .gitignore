@@ -33,3 +33,6 @@
 *.ipr
 *.iws
 .idea/
+
+*-private.sh
+

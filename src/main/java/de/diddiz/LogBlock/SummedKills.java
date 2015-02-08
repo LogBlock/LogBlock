@@ -7,7 +7,7 @@ import java.sql.SQLException;
 import org.bukkit.Location;
 import de.diddiz.LogBlock.QueryParams.SummarizationMode;
 
-public class SummedKills implements LookupCacheElement
+public class SummedKills extends AbstractLookupCacheElement
 {
 	private final String playerName;
 	private final int kills, killed;
