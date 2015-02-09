@@ -1,11 +1,14 @@
 package de.diddiz.LogBlock;
 
-import static de.diddiz.util.MaterialName.materialName;
-import static de.diddiz.util.Utils.spaces;
+import org.bukkit.Location;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import org.bukkit.Location;
-import de.diddiz.LogBlock.QueryParams.SummarizationMode;
+
+import static de.diddiz.util.ActionColor.CREATE;
+import static de.diddiz.util.ActionColor.DESTROY;
+import static de.diddiz.util.MessagingUtil.DEFAULT;
+import static de.diddiz.util.Utils.spaces;
 
 public class SummedKills implements LookupCacheElement
 {
@@ -27,6 +30,10 @@ public class SummedKills implements LookupCacheElement
 
 	@Override
 	public String getMessage() {
-		return kills + spaces((int)((6 - String.valueOf(kills).length()) / spaceFactor)) + killed + spaces((int)((7 - String.valueOf(killed).length()) / spaceFactor)) + playerName;
+		StringBuilder builder = new StringBuilder();
+		builder.append(CREATE).append(kills).append(spaces((int)((6 - String.valueOf(kills).length()) / spaceFactor)));
+		builder.append(DESTROY).append(killed).append(spaces((int)((7 - String.valueOf(killed).length()) / spaceFactor)));
+		builder.append(DEFAULT).append(playerName);
+		return builder.toString();
 	}
 }

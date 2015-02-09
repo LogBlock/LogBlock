@@ -1,11 +1,16 @@
 package de.diddiz.LogBlock;
 
-import static de.diddiz.util.MaterialName.materialName;
-import static de.diddiz.util.Utils.spaces;
+import de.diddiz.LogBlock.QueryParams.SummarizationMode;
+import org.bukkit.Location;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import org.bukkit.Location;
-import de.diddiz.LogBlock.QueryParams.SummarizationMode;
+
+import static de.diddiz.util.ActionColor.CREATE;
+import static de.diddiz.util.ActionColor.DESTROY;
+import static de.diddiz.util.MaterialName.materialName;
+import static de.diddiz.util.MessagingUtil.prettyMaterial;
+import static de.diddiz.util.Utils.spaces;
 
 public class SummedBlockChanges implements LookupCacheElement
 {
@@ -27,6 +32,10 @@ public class SummedBlockChanges implements LookupCacheElement
 
 	@Override
 	public String getMessage() {
-		return created + spaces((int)((10 - String.valueOf(created).length()) / spaceFactor)) + destroyed + spaces((int)((10 - String.valueOf(destroyed).length()) / spaceFactor)) + group;
+		StringBuilder builder = new StringBuilder();
+		builder.append(CREATE).append(created).append(spaces((int) ((10 - String.valueOf(created).length()) / spaceFactor)));
+		builder.append(DESTROY).append(destroyed).append(spaces((int)((10 - String.valueOf(destroyed).length()) / spaceFactor)));
+		builder.append(prettyMaterial(group.toUpperCase()));
+		return builder.toString();
 	}
 }

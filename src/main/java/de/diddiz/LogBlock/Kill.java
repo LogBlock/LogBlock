@@ -1,11 +1,13 @@
 package de.diddiz.LogBlock;
 
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import org.bukkit.Location;
 import org.bukkit.inventory.ItemStack;
 
-import de.diddiz.LogBlock.config.Config;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import static de.diddiz.util.ActionColor.DESTROY;
+import static de.diddiz.util.MessagingUtil.*;
 
 public class Kill implements LookupCacheElement
 {
@@ -35,13 +37,16 @@ public class Kill implements LookupCacheElement
 	@Override
 	public String toString() {
 		final StringBuilder msg = new StringBuilder();
-		if (date > 0)
-			msg.append(Config.formatter.format(date)).append(" ");
-		msg.append(killerName).append(" killed ").append(victimName);
-		if (loc != null)
-			msg.append(" at ").append(loc.getBlockX()).append(":").append(loc.getBlockY()).append(":").append(loc.getBlockZ());
+		if (date > 0) {
+			msg.append(brackets(prettyDate(date), BracketType.STANDARD)).append(' ');
+		}
+
+		msg.append(killerName).append(DESTROY).append(" killed ").append(DEFAULT).append(victimName);
+		if (loc != null) {
+			msg.append(" at ").append(prettyLocation(loc));
+		}
 		String weaponName = prettyItemName(new ItemStack(weapon));
-		msg.append(" with " + weaponName); // + ("aeiou".contains(weaponName.substring(0, 1)) ? "an " : "a " )
+		msg.append(" with ").append(weaponName); // + ("aeiou".contains(weaponName.substring(0, 1)) ? "an " : "a " )
 		return msg.toString();
 	}
 

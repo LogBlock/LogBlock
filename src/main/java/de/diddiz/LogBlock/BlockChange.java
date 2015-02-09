@@ -1,14 +1,15 @@
 package de.diddiz.LogBlock;
 
-import static de.diddiz.util.MaterialName.materialName;
+import de.diddiz.util.BukkitUtils;
+import de.diddiz.util.MaterialName;
+import org.bukkit.Location;
+import org.bukkit.Material;
+
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import de.diddiz.util.BukkitUtils;
-import org.bukkit.Location;
-
-import de.diddiz.LogBlock.config.Config;
-import org.bukkit.Material;
+import static de.diddiz.util.ActionColor.*;
+import static de.diddiz.util.MessagingUtil.*;
 
 public class BlockChange implements LookupCacheElement
 {
@@ -44,62 +45,86 @@ public class BlockChange implements LookupCacheElement
 		ca = p.needChestAccess && rs.getShort("itemtype") != 0 && rs.getShort("itemamount") != 0 ? new ChestAccess(rs.getShort("itemtype"), rs.getShort("itemamount"), rs.getShort("itemdata")) : null;
 	}
 
+	private String formatMaterial(String string) {
+		return prettyMaterial(string);
+	}
+
+	private String materialName(int type) {
+		return formatMaterial(MaterialName.materialName(type));
+	}
+
+	private String materialName(int type, short data) {
+		return formatMaterial(MaterialName.materialName(type, data));
+	}
+
 	@Override
 	public String toString() {
 		final StringBuilder msg = new StringBuilder();
-		if (date > 0)
-			msg.append(Config.formatter.format(date)).append(" ");
-		if (playerName != null)
-			msg.append(playerName).append(" ");
+
+		if (date > 0) {
+			msg.append(brackets(prettyDate(date), BracketType.STANDARD)).append(' ');
+		}
+
+		if (playerName != null) {
+			msg.append(playerName).append(' ');
+		}
+
 		if (signtext != null) {
-			final String action = type == 0 ? "destroyed " : "created ";
-			if (!signtext.contains("\0"))
-				msg.append(action).append(signtext);
-			else
-				msg.append(action).append(materialName(type != 0 ? type : replaced)).append(" [").append(signtext.replace("\0", "] [")).append("]");
+			final String action = type == 0 ? DESTROY + "destroyed " : CREATE + "created ";
+			if (!signtext.contains("\0")) {
+				msg.append(action).append(DEFAULT).append(signtext);
+			} else {
+				msg.append(action).append(DEFAULT).append(materialName(type != 0 ? type : replaced)).append(" [").append(signtext.replace("\0", "] [")).append("]");
+			}
 		} else if (type == replaced) {
-			if (type == 0)
-				msg.append("did an unspecified action");
-			else if (ca != null) {
-				if (ca.itemType == 0 || ca.itemAmount == 0)
-					msg.append("looked inside ").append(materialName(type));
-				else if (ca.itemAmount < 0)
-					msg.append("took ").append(-ca.itemAmount).append("x ").append(materialName(ca.itemType, ca.itemData)).append(" from ").append(materialName(type));
-				else
-					msg.append("put ").append(ca.itemAmount).append("x ").append(materialName(ca.itemType, ca.itemData)).append(" into ").append(materialName(type));
-			} else if (BukkitUtils.getContainerBlocks().contains(Material.getMaterial(type)))
-				msg.append("opened ").append(materialName(type));
-			else if (type == 64 || type == 71)
+			if (type == 0) {
+				msg.append(INTERACT).append("did an unspecified action");
+			} else if (ca != null) {
+				if (ca.itemType == 0 || ca.itemAmount == 0) {
+					msg.append(INTERACT).append("looked inside ").append(materialName(type));
+				} else if (ca.itemAmount < 0) {
+					msg.append(DESTROY).append("took ").append(-ca.itemAmount).append("x ").append(materialName(ca.itemType, ca.itemData)).append(" from ").append(materialName(type));
+				} else {
+					msg.append(CREATE).append("put ").append(ca.itemAmount).append("x ").append(materialName(ca.itemType, ca.itemData)).append(" into ").append(materialName(type));
+				}
+			} else if (BukkitUtils.getContainerBlocks().contains(Material.getMaterial(type))) {
+				msg.append(INTERACT).append("opened ").append(materialName(type));
+			} else if (type == 64 || type == 71) {
 				// This is a problem that will have to be addressed in LB 2,
 				// there is no way to tell from the top half of the block if
 				// the door is opened or closed.
-				msg.append("moved ").append(materialName(type));
-			// Trapdoor
-			else if (type == 96)
-				msg.append((data < 8 || data > 11) ? "opened" : "closed").append(" ").append(materialName(type));
-			// Fence gate
-			else if (type == 107)
-				msg.append(data > 3 ? "opened" : "closed").append(" ").append(materialName(type));
-			else if (type == 69)
-				msg.append("switched ").append(materialName(type));
-			else if (type == 77 || type == 143)
-				msg.append("pressed ").append(materialName(type));
-			else if (type == 92)
-				msg.append("ate a piece of ").append(materialName(type));
-			else if (type == 25 || type == 93 || type == 94 || type == 149 || type == 150)
-				msg.append("changed ").append(materialName(type));
-			else if (type == 70 || type == 72 || type == 147 || type == 148)
-				msg.append("stepped on ").append(materialName(type));
-			else if (type == 132)
-				msg.append("ran into ").append(materialName(type));
-		} else if (type == 0)
-			msg.append("destroyed ").append(materialName(replaced, data));
-		else if (replaced == 0)
-			msg.append("created ").append(materialName(type, data));
-		else
-			msg.append("replaced ").append(materialName(replaced, (byte)0)).append(" with ").append(materialName(type, data));
-		if (loc != null)
-			msg.append(" at ").append(loc.getBlockX()).append(":").append(loc.getBlockY()).append(":").append(loc.getBlockZ());
+				msg.append(INTERACT).append("moved ").append(materialName(type));
+				// Trapdoor
+			} else if (type == 96) {
+				msg.append(INTERACT).append((data < 8 || data > 11) ? "opened" : "closed").append(" ").append(materialName(type));
+				// Fence gate
+			} else if (type == 107) {
+				msg.append(INTERACT).append(data > 3 ? "opened" : "closed").append(" ").append(materialName(type));
+			} else if (type == 69) {
+				msg.append(INTERACT).append("switched ").append(materialName(type));
+			} else if (type == 77 || type == 143) {
+				msg.append(INTERACT).append("pressed ").append(materialName(type));
+			} else if (type == 92) {
+				msg.append(INTERACT).append("ate a piece of ").append(materialName(type));
+			} else if (type == 25 || type == 93 || type == 94 || type == 149 || type == 150) {
+				msg.append(INTERACT).append("changed ").append(materialName(type));
+			} else if (type == 70 || type == 72 || type == 147 || type == 148) {
+				msg.append(INTERACT).append("stepped on ").append(materialName(type));
+			} else if (type == 132) {
+				msg.append(INTERACT).append("ran into ").append(materialName(type));
+			}
+		} else if (type == 0) {
+			msg.append(DESTROY).append("destroyed ").append(materialName(replaced, data));
+		} else if (replaced == 0) {
+			msg.append(CREATE).append("created ").append(materialName(type, data));
+		} else {
+			msg.append(DESTROY).append("replaced ").append(materialName(replaced, (byte) 0)).append(CREATE).append(" with ").append(materialName(type, data));
+		}
+
+		if (loc != null) {
+			msg.append(" at:\n     ").append(prettyLocation(loc));
+		}
+
 		return msg.toString();
 	}
 

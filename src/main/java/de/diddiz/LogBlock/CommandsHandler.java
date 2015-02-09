@@ -7,6 +7,7 @@ import de.diddiz.LogBlock.config.Config;
 import de.diddiz.LogBlock.config.WorldConfig;
 import de.diddiz.LogBlockQuestioner.LogBlockQuestioner;
 import de.diddiz.util.Block;
+import de.diddiz.util.MessagingUtil;
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
 import org.bukkit.World;
@@ -34,6 +35,7 @@ import static de.diddiz.LogBlock.Session.getSession;
 import static de.diddiz.LogBlock.config.Config.*;
 import static de.diddiz.util.BukkitUtils.giveTool;
 import static de.diddiz.util.BukkitUtils.saveSpawnHeight;
+import static de.diddiz.util.MessagingUtil.DEFAULT;
 import static de.diddiz.util.Utils.isInt;
 import static de.diddiz.util.Utils.listing;
 import static org.bukkit.Bukkit.getLogger;
@@ -323,9 +325,9 @@ public class CommandsHandler implements CommandExecutor
 				final int stoppos = startpos + linesPerPage >= session.lookupCache.length ? session.lookupCache.length - 1 : startpos + linesPerPage - 1;
 				final int numberOfPages = (int)Math.ceil(session.lookupCache.length / (double)linesPerPage);
 				if (numberOfPages != 1)
-					sender.sendMessage(ChatColor.DARK_AQUA + "Page " + page + "/" + numberOfPages);
+					sender.sendMessage(ChatColor.GOLD + "Results - Page (" + page + "/" + numberOfPages + ")");
 				for (int i = startpos; i <= stoppos; i++)
-					sender.sendMessage(ChatColor.GOLD + (session.lookupCache[i].getLocation() != null ? "(" + (i + 1) + ") " : "") + session.lookupCache[i].getMessage());
+					sender.sendMessage(DEFAULT + (session.lookupCache[i].getLocation() != null ? "(" + (i + 1) + ") " : "") + session.lookupCache[i].getMessage());
 				session.page = page;
 			} else
 				sender.sendMessage(ChatColor.RED + "There isn't a page '" + page + "'");
