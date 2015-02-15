@@ -9,6 +9,7 @@ import org.bukkit.block.Block;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.block.BlockBurnEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 
@@ -35,10 +36,12 @@ public class BlockBurnLogging extends LoggingListener
 	public void onExtinguish(PlayerInteractEvent event) {
 		Player player = event.getPlayer();
 		Block block = player.getTargetBlock(null, 5);
-		if (block.getType().equals(Material.FIRE) && isLogging(player.getWorld(), Logging.FIRE)) {
-			Actor actor = Actor.actorFromEntity(player);
-			smartLogBlockBreak(consumer, actor, block);
-			smartLogFallables(consumer, actor, block);
+		if(event.getAction().equals(Action.LEFT_CLICK_BLOCK)){
+			if (block.getType().equals(Material.FIRE) && isLogging(player.getWorld(), Logging.FIRE)) {
+				Actor actor = Actor.actorFromEntity(player);
+				smartLogBlockBreak(consumer, actor, block);
+				smartLogFallables(consumer, actor, block);
+			}
 		}
 	}
 }
