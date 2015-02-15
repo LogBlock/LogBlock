@@ -1,12 +1,9 @@
 package de.diddiz.LogBlock.listeners;
 
-import de.diddiz.LogBlock.Actor;
-import de.diddiz.LogBlock.LogBlock;
-import de.diddiz.LogBlock.Logging;
 import static de.diddiz.LogBlock.config.Config.getWorldConfig;
 import static de.diddiz.LogBlock.config.Config.logCreeperExplosionsAsPlayerWhoTriggeredThese;
-import de.diddiz.LogBlock.config.WorldConfig;
 import static de.diddiz.util.BukkitUtils.getContainerBlocks;
+
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.Sign;
@@ -23,6 +20,12 @@ import org.bukkit.entity.minecart.ExplosiveMinecart;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.entity.EntityExplodeEvent;
+import org.bukkit.projectiles.ProjectileSource;
+
+import de.diddiz.LogBlock.Actor;
+import de.diddiz.LogBlock.LogBlock;
+import de.diddiz.LogBlock.Logging;
+import de.diddiz.LogBlock.config.WorldConfig;
 
 public class ExplosionLogging extends LoggingListener
 {
@@ -57,7 +60,7 @@ public class ExplosionLogging extends LoggingListener
 					new Actor("Creeper");
 			} else if (source instanceof Fireball) {
 				Fireball fireball = (Fireball) source;
-				Entity shooter = fireball.getShooter();
+				ProjectileSource shooter = fireball.getShooter();
 				if (shooter == null) {
 					return;
 				}
@@ -65,12 +68,12 @@ public class ExplosionLogging extends LoggingListener
 					if (!wcfg.isLogging(Logging.GHASTFIREBALLEXPLOSION)) {
 						return;
 					}
-					actor = Actor.actorFromEntity(shooter);
+					actor = Actor.actorFromProjectileSource(shooter);
 				} else if (shooter instanceof Wither) {
 					if (!wcfg.isLogging(Logging.WITHER)) {
 						return;
 					}
-					actor = Actor.actorFromEntity(shooter);
+					actor = Actor.actorFromProjectileSource(shooter);
 				}
 			} else if (source instanceof EnderDragon) {
 				if (!wcfg.isLogging(Logging.ENDERDRAGON))

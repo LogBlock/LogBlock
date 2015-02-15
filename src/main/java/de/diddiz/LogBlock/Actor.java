@@ -1,12 +1,14 @@
 package de.diddiz.LogBlock;
 
 import static de.diddiz.util.BukkitUtils.entityName;
-import org.bukkit.entity.Entity;
-import org.bukkit.entity.EntityType;
-import org.bukkit.entity.Player;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+
+import org.bukkit.entity.Entity;
+import org.bukkit.entity.EntityType;
+import org.bukkit.entity.Player;
+import org.bukkit.projectiles.ProjectileSource;
 
 public class Actor {
 
@@ -69,6 +71,16 @@ public class Actor {
 		return new Actor(entity.getName());
 	}
 
+
+	public static Actor actorFromProjectileSource(ProjectileSource psource) {
+			if (psource instanceof Player) {
+				Player player = ((Player) psource).getPlayer();
+			return new Actor(player.getName(),player.getUniqueId().toString());
+		} else {
+			return new Actor(psource.toString());
+		}
+	}
+	
 	public static boolean isValidUUID(String uuid) {
 		try {
 			java.util.UUID.fromString(uuid);
@@ -82,4 +94,5 @@ public class Actor {
 		return "log_" + name;
 
 	}
+
 }
