@@ -1,5 +1,10 @@
 package de.diddiz.worldedit;
 
+import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Sign;
+
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.LocalPlayer;
 import com.sk89q.worldedit.LocalWorld;
@@ -7,17 +12,16 @@ import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.bags.BlockBag;
 import com.sk89q.worldedit.blocks.BaseBlock;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
+
+import de.diddiz.LogBlock.Actor;
 import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.LogBlock.Logging;
 import de.diddiz.LogBlock.config.Config;
-import org.bukkit.Location;
-import org.bukkit.Material;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Sign;
 
 public class LogBlockEditSession extends EditSession {
 
 	private LocalPlayer player;
+	private Actor actor;
 	private LogBlock plugin;
 
 	/**
@@ -27,6 +31,7 @@ public class LogBlockEditSession extends EditSession {
 		super(world, maxBlocks);
 		this.player = player;
 		this.plugin = lb;
+		this.actor = Actor.actorFromEntity(plugin.getServer().getPlayer(player.getName()));
 	}
 
 	/**
@@ -36,6 +41,7 @@ public class LogBlockEditSession extends EditSession {
 		super(world, maxBlocks, blockBag);
 		this.player = player;
 		this.plugin = lb;
+		this.actor = Actor.actorFromEntity(plugin.getServer().getPlayer(player.getName()));
 	}
 
 	@Override
@@ -57,18 +63,18 @@ public class LogBlockEditSession extends EditSession {
 
 			// Check to see if we've broken a sign
 			if (Config.isLogging(location.getWorld().getName(), Logging.SIGNTEXT) && (typeBefore == Material.SIGN_POST.getId() || typeBefore == Material.SIGN.getId())) {
-				plugin.getConsumer().queueSignBreak(player, (Sign) stateBefore);
+				plugin.getConsumer().queueSignBreak(actor, (Sign) stateBefore);
 				if (block.getType() != Material.AIR.getId()) {
-					plugin.getConsumer().queueBlockPlace(player.getName(), location, block.getType(), (byte) block.getData());
+					plugin.getConsumer().queueBlockPlace(actor, location, block.getType(), (byte) block.getData());
 				}
 			} else {
 				if (dataBefore != 0) {
-					plugin.getConsumer().queueBlockBreak(player.getName(), location, typeBefore, dataBefore);
+					plugin.getConsumer().queueBlockBreak(actor, location, typeBefore, dataBefore);
 					if (block.getType() != Material.AIR.getId()) {
-						plugin.getConsumer().queueBlockPlace(player.getName(), location, block.getType(), (byte) block.getData());
+						plugin.getConsumer().queueBlockPlace(actor, location, block.getType(), (byte) block.getData());
 					}
 				} else {
-					plugin.getConsumer().queueBlock(player.getName(), location, typeBefore, block.getType(), (byte) block.getData());
+					plugin.getConsumer().queueBlock(actor, location, typeBefore, block.getType(), (byte) block.getData());
 				}
 			}
 		}
