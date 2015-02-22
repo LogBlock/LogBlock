@@ -3,24 +3,16 @@ package de.diddiz.util;
 import static de.diddiz.util.Utils.isInt;
 import static de.diddiz.util.Utils.isShort;
 import static org.bukkit.Bukkit.getLogger;
-
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
-
-import net.milkbowl.vault.Vault;
-import net.milkbowl.vault.VaultEco;
-import net.milkbowl.vault.item.ItemInfo;
 import net.milkbowl.vault.item.Items;
-
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.material.MaterialData;
-import org.bukkit.plugin.RegisteredServiceProvider;
-
 import de.diddiz.LogBlock.LogBlock;
 
 public class MaterialName
