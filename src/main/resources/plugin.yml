@@ -5,7 +5,7 @@ authors: [md_5, ammar2, frymaster]
 website: http://dev.bukkit.org/server-mods/logblock/
 main: de.diddiz.LogBlock.LogBlock
 description: ${project.description}
-softdepend: [LogBlockQuestioner, WorldEdit]
+softdepend: [LogBlockQuestioner, WorldEdit, Vault]
 commands:
   lb:
     description: 'LogBlock plugin commands'
