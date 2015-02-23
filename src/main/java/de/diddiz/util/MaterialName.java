@@ -36,8 +36,10 @@ public class MaterialName
 					if (materialDataNames.containsKey(item.getId())) {
 						dataNames.putAll(materialDataNames.get(item.getId()));
 					}
-					dataNames.put(item.subTypeId, item.getName().toLowerCase());
+					dataNames.put(item.subTypeId, item.getName());
 					materialDataNames.put(item.getId(), dataNames);
+				} else {
+					materialNames.put(item.getId(), item.getName());
 				}
 
 			}
