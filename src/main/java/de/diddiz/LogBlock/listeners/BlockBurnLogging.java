@@ -6,6 +6,7 @@ import static de.diddiz.util.LoggingUtil.smartLogFallables;
 
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
@@ -34,9 +35,9 @@ public class BlockBurnLogging extends LoggingListener
 	
 	@EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
 	public void onExtinguish(PlayerInteractEvent event) {
-		Player player = event.getPlayer();
-		Block block = player.getTargetBlock(null, 5);
 		if(event.getAction().equals(Action.LEFT_CLICK_BLOCK)){
+			Player player = event.getPlayer();
+			Block block = event.getClickedBlock().getRelative(BlockFace.UP);
 			if (block.getType().equals(Material.FIRE) && isLogging(player.getWorld(), Logging.FIRE)) {
 				Actor actor = Actor.actorFromEntity(player);
 				smartLogBlockBreak(consumer, actor, block);
