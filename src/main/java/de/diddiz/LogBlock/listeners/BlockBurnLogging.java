@@ -36,7 +36,7 @@ public class BlockBurnLogging extends LoggingListener
 	public void onExtinguish(PlayerInteractEvent event) {
 		if(event.getAction().equals(Action.LEFT_CLICK_BLOCK)){
 			Player player = event.getPlayer();
-			Block block = event.getClickedBlock().getRelative(BlockFace.UP);
+			Block block = event.getClickedBlock().getRelative(event.getBlockFace());
 			if (block.getType().equals(Material.FIRE) && isLogging(player.getWorld(), Logging.FIRE)) {
 				Actor actor = Actor.actorFromEntity(player);
 				smartLogBlockBreak(consumer, actor, block);
