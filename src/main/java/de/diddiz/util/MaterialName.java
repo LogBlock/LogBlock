@@ -3,16 +3,21 @@ package de.diddiz.util;
 import static de.diddiz.util.Utils.isInt;
 import static de.diddiz.util.Utils.isShort;
 import static org.bukkit.Bukkit.getLogger;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+
+import net.milkbowl.vault.item.ItemInfo;
 import net.milkbowl.vault.item.Items;
+
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.material.MaterialData;
+
 import de.diddiz.LogBlock.LogBlock;
 
 public class MaterialName
@@ -24,30 +29,31 @@ public class MaterialName
 		// Add all known materials
 		for (final Material mat : Material.values())
 			materialNames.put(mat.getId(), mat.toString().replace('_', ' ').toLowerCase());
+		if(LogBlock.isVaultInstalled()){
+			for (ItemInfo item : Items.getItemList()) {
+				if (item.getSubTypeId() != 0 || !materialNames.containsKey(item.getId())){
+					final Map<Short, String> dataNames = new HashMap<Short, String>();
+					if (materialDataNames.containsKey(item.getId())) {
+						dataNames.putAll(materialDataNames.get(item.getId()));
+					}
+					dataNames.put(item.subTypeId, item.getName().toLowerCase());
+					materialDataNames.put(item.getId(), dataNames);
+				}
+
+			}
+		}
 		// Load config
 		final File file = new File("plugins/LogBlock/materials.yml");
 		final YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
 		if (cfg.getKeys(false).isEmpty()) {
 			// Generate defaults
 			cfg.options().header("Add block or item names you want to be overridden or also names for custom blocks");
-			cfg.set("1.1", "granite");
-			cfg.set("1.2", "polished granite");
-			cfg.set("1.3", "diorite");
-			cfg.set("1.4", "polished diorite");
-			cfg.set("1.5", "andesite");
-			cfg.set("1.6", "polished andesite");
-			cfg.set("3.1", "coarse dirt");
-			cfg.set("3.2", "podzol");
 			cfg.set("6.1", "redwood sapling");
 			cfg.set("6.2", "birch sapling");
-			cfg.set("6.3", "jungle sapling");
-			cfg.set("6.4", "acacia sapling");
-			cfg.set("6.5", "dark oak sapling");
 			cfg.set("9", "water");
 			cfg.set("11", "lava");
 			cfg.set("17.1", "redwood log");
 			cfg.set("17.2", "birch log");
-			cfg.set("17.3", "jungle log");
 			cfg.set("18.1", "redwood leaves");
 			cfg.set("18.2", "birch leaves");
 			cfg.set("31.0", "dead long grass");
@@ -92,14 +98,6 @@ public class MaterialName
 	 * @return Name of the material, or if it's unknown, the id.
 	 */
 	public static String materialName(int type) {
-		if(LogBlock.isVaultInstalled()){
-			try {
-				return Items.itemById(type).getName();
-			} catch (final NullPointerException ex) {
-				//This causes spam :(
-				//getLogger().warning("Vault could not find this material: '" + type + "'");
-			}
-		}
 		return materialNames.containsKey(type) ? materialNames.get(type) : String.valueOf(type);
 	}
 
@@ -107,14 +105,6 @@ public class MaterialName
 	 * @return Name of the material regarding it's data, or if it's unknown, the basic name.
 	 */
 	public static String materialName(int type, short data) {
-		if(LogBlock.isVaultInstalled()){
-			try {
-				return Items.itemById(type,data).getName();
-			} catch (final NullPointerException ex) {
-				//This causes spam :(
-				//getLogger().warning("Vault could not find this material: '" + type + ":" + data + "'");
-			}
-		}
 		final Map<Short, String> dataNames = materialDataNames.get(type);
 		if (dataNames != null)
 			if (dataNames.containsKey(data))
