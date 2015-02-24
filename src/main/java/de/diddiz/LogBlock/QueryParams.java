@@ -2,6 +2,8 @@ package de.diddiz.LogBlock;
 
 import de.diddiz.util.Block;
 import de.diddiz.worldedit.RegionContainer;
+import net.milkbowl.vault.item.Items;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.World;
@@ -171,8 +173,20 @@ public final class QueryParams implements Cloneable
 				if (excludeBlocksMode)
 					title.append("all blocks except ");
 				final String[] blocknames = new String[types.size()];
-				for (int i = 0; i < types.size(); i++)
-					blocknames[i] = materialName(types.get(i).getBlock());
+				//TODO Remove Debugging
+				System.out.println("getTable: "+types.toString());
+				for (int i = 0; i < types.size(); i++) {
+					if(LogBlock.isVaultInstalled()) {
+						try{
+							blocknames[i] = Items.itemById(types.get(i).getBlock(), (short) types.get(i).getData()).getName();
+						} catch (NullPointerException ex) {
+							blocknames[i] = materialName(types.get(i).getBlock());
+						}
+					} else {
+						blocknames[i] = materialName(types.get(i).getBlock());
+					}
+					
+				}
 				title.append(listing(blocknames, ", ", " and ")).append(" ");
 			} else
 				title.append("block ");
@@ -310,6 +324,8 @@ public final class QueryParams implements Cloneable
 							where.append("NOT ");
 						where.append('(');
 						for (final Block block : types) {
+							//TODO REMOVE DEBUG
+							System.out.println("ALL param: "+block.getBlock() +":"+ block.getData());
 							where.append("((type = ").append(block.getBlock()).append(" OR replaced = ").append(block.getBlock());
 							if (block.getData() != -1) {
 								where.append(") AND data = ").append(block.getData());
@@ -541,16 +557,30 @@ public final class QueryParams implements Cloneable
 				if (values.length < 1)
 					throw new IllegalArgumentException("No or wrong count of arguments for '" + param + "'");
 				for (final String weaponName : values) {
-					Material mat = Material.matchMaterial(weaponName);
+					Material mat = null;
+					int matid = -1;
+					int data = -1;
+					if(LogBlock.isVaultInstalled()) {
+						try{
+							matid = Items.itemByString(weaponName).getId();
+							data = Items.itemByString(weaponName).getSubTypeId();
+						} catch (NullPointerException ex) {
+							matid = -1;
+						}
+					}
+					if (mat == null)
+						mat = Material.matchMaterial(weaponName);
 					if (mat == null)
 						try {
 							mat = Material.getMaterial(Integer.parseInt(weaponName));
 						} catch (NumberFormatException e) {
 							throw new IllegalArgumentException("Data type not a valid number: '" + weaponName + "'");
 						}
-					if (mat == null)
+					if (mat == null && matid == -1)
 						throw new IllegalArgumentException("No material matching: '" + weaponName + "'");
-					types.add(new Block(mat.getId(), -1));
+					if (matid == -1)
+						matid = mat.getId();
+					types.add(new Block(matid, data));
 				}
 				needWeapon = true;
 			} else if (param.equals("block") || param.equals("type")) {
@@ -561,11 +591,13 @@ public final class QueryParams implements Cloneable
 						excludeBlocksMode = true;
 						blockName = blockName.substring(1);
 					}
+					Material mat = null;
+					int matid = -1;
+					int data = -1;
 					if (blockName.contains(":")) {
 						String[] blockNameSplit = blockName.split(":");
 						if (blockNameSplit.length > 2)
 							throw new IllegalArgumentException("No material matching: '" + blockName + "'");
-						final int data;
 						try {
 							data = Integer.parseInt(blockNameSplit[1]);
 						} catch (NumberFormatException e) {
@@ -573,15 +605,42 @@ public final class QueryParams implements Cloneable
 						}
 						if (data > 255 || data < 0)
 							throw new IllegalArgumentException("Data type out of range (0-255): '" + data + "'");
-						final Material mat = Material.matchMaterial(blockNameSplit[0]);
-						if (mat == null)
+						if(LogBlock.isVaultInstalled()) {
+							try{
+								matid = Items.itemByString(blockNameSplit[0]).getId();
+							} catch (NullPointerException ex) {
+								matid = -1;
+							}
+						}
+						if (mat == null && matid == -1)
+							mat = Material.matchMaterial(blockNameSplit[0]);
+						if (mat == null && matid == -1)
 							throw new IllegalArgumentException("No material matching: '" + blockName + "'");
-						types.add(new Block(mat.getId(), data));
+						if (matid == -1)
+							matid = mat.getId();
+						
+						//TODO REMOVE DEBUG
+						System.out.println("types.add (with subid): "+matid +":"+ data);
+						types.add(new Block(matid, data));
 					} else {
-						final Material mat = Material.matchMaterial(blockName);
-						if (mat == null)
+						if(LogBlock.isVaultInstalled()) {
+							try{
+								matid = Items.itemByString(blockName).getId();
+								data = Items.itemByString(blockName).getSubTypeId();
+							} catch (NullPointerException ex) {
+								matid = -1;
+							}
+						}
+						if (mat == null && matid == -1)
+							mat = Material.matchMaterial(blockName);
+						if (mat == null && matid == -1)
 							throw new IllegalArgumentException("No material matching: '" + blockName + "'");
-						types.add(new Block(mat.getId(), -1));
+						if (matid == -1)
+							matid = mat.getId();
+						
+						//TODO REMOVE DEBUG
+						System.out.println("types.add (without subid): "+matid +":"+ data);
+						types.add(new Block(matid, data));
 					}
 				}
 			} else if (param.equals("area")) {
