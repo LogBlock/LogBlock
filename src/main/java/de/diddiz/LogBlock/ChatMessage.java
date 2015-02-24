@@ -1,5 +1,6 @@
 package de.diddiz.LogBlock;
 
+import de.diddiz.LogBlock.config.Config;
 import static de.diddiz.util.LoggingUtil.checkText;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -34,6 +35,6 @@ public class ChatMessage implements LookupCacheElement
 
 	@Override
 	public String getMessage() {
-		return (player != null ? "<" + player.getName() + "> " : "") + (message != null ? message : "");
+		return Config.formatter.format(date) + " " + (player != null ? "<" + player.getName() + "> " : "") + (message != null ? message : "");
 	}
 }
