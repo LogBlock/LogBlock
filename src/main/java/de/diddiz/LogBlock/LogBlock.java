@@ -120,7 +120,7 @@ public class LogBlock extends JavaPlugin
 			if(Integer.parseInt(pm.getPlugin("WorldEdit").getDescription().getVersion().substring(0, 1)) > 5) {
 				new WorldEditLoggingHook(this).hook();
 			} else {
-				getLogger().warning("Failed too hook into WorldEdit. Your Version seems to be outdated. Please use at least WorldEdit 6.");
+				getLogger().warning("Failed to hook into WorldEdit. Your WorldEdit version seems to be outdated, please make sure WorldEdit is at least version 6.");
 			}
 		}
 		commandsHandler = new CommandsHandler(this);
