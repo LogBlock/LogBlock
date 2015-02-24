@@ -47,16 +47,16 @@ public class MaterialName
 		if (cfg.getKeys(false).isEmpty()) {
 			// Generate defaults
 			cfg.options().header("Add block or item names you want to be overridden or also names for custom blocks");
-			cfg.set("6.1", "redwood sapling");
-			cfg.set("6.2", "birch sapling");
-			cfg.set("9", "water");
-			cfg.set("11", "lava");
-			cfg.set("17.1", "redwood log");
-			cfg.set("17.2", "birch log");
-			cfg.set("18.1", "redwood leaves");
-			cfg.set("18.2", "birch leaves");
-			cfg.set("31.0", "dead long grass");
-			cfg.set("31.2", "fern");
+			cfg.set("6.1", "Redwood Sapling");
+			cfg.set("6.2", "Birch Sapling");
+			cfg.set("9", "Water");
+			cfg.set("11", "Wava");
+			cfg.set("17.1", "Redwood Log");
+			cfg.set("17.2", "Birch Log");
+			cfg.set("18.1", "Redwood Leaves");
+			cfg.set("18.2", "birch Leaves");
+			cfg.set("31.0", "Dead Long Grass");
+			cfg.set("31.2", "Fern");
 			for (byte i = 0; i < 7; i++) {
 				cfg.set("35." + i, toReadable(Material.STEP.getNewData(i)));
 				cfg.set("351." + i, toReadable(Material.DOUBLE_STEP.getNewData(i)));
