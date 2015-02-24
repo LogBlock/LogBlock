@@ -103,7 +103,7 @@ public class Config
 		} catch (IllegalArgumentException e) {
 			throw new DataFormatException("Invalid specification for  date format, please see http://docs.oracle.com/javase/1.4.2/docs/api/java/text/SimpleDateFormat.html : " + e.getMessage());
 		}
-		def.put("lookup.dateFormat", "MM-dd HH:mm:ss");
+		def.put("lookup.dateFormat", "dd/MM/yy HH:mm:ss");
 		def.put("questioner.askRollbacks", true);
 		def.put("questioner.askRedos", true);
 		def.put("questioner.askClearLogs", true);
