@@ -57,6 +57,7 @@ public class LogBlock extends JavaPlugin
 	private Updater updater = null;
 	private Timer timer = null;
 	private boolean errorAtLoading = false, noDb = false, connected = true;
+	private static boolean vault = false;
 
 	public static LogBlock getInstance() {
 		return logblock;
@@ -125,6 +126,8 @@ public class LogBlock extends JavaPlugin
 				getLogger().warning("Failed to hook into WorldEdit. Your WorldEdit version seems to be outdated, please make sure WorldEdit is at least version 6.");
 			}
 		}
+		if (pm.getPlugin("Vault") != null)
+			vault=true;
 		commandsHandler = new CommandsHandler(this);
 		getCommand("lb").setExecutor(commandsHandler);
 		if (enableAutoClearLog && autoClearLogDelay > 0)
@@ -250,6 +253,10 @@ public class LogBlock extends JavaPlugin
 
 	public boolean hasPermission(CommandSender sender, String permission) {
 		return sender.hasPermission(permission);
+	}
+	
+	public static boolean isVaultInstalled() {
+		return vault;
 	}
 
 	public Connection getConnection() {

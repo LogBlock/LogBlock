@@ -8,10 +8,14 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Level;
+import net.milkbowl.vault.item.ItemInfo;
+import net.milkbowl.vault.item.Items;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.material.MaterialData;
+
+import de.diddiz.LogBlock.LogBlock;
 
 public class MaterialName
 {
@@ -23,6 +27,21 @@ public class MaterialName
 		// Add all known materials
 		for (final Material mat : Material.values())
 			materialNames.put(mat.getId(), mat.toString().replace('_', ' ').toLowerCase());
+		if(LogBlock.isVaultInstalled()){
+			for (ItemInfo item : Items.getItemList()) {
+				if (item.getSubTypeId() == 0){
+					materialNames.put(item.getId(), item.getName());
+				}
+				Map<Short, String> dataNames = new HashMap<Short, String>();
+				if (materialDataNames.containsKey(item.getId())) {
+					//rescue datavalues set before!
+					dataNames = materialDataNames.get(item.getId());
+				}
+				dataNames.put(item.subTypeId, item.getName());
+				materialDataNames.put(item.getId(), dataNames);
+
+			}
+		}
 		// Load config
 		final File file = new File("plugins/LogBlock/materials.yml");
 		final YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
@@ -200,7 +219,11 @@ public class MaterialName
 				if (cfg.isString(entry))
 					materialNames.put(Integer.valueOf(entry), cfg.getString(entry));
 				else if (cfg.isConfigurationSection(entry)) {
-					final Map<Short, String> dataNames = new HashMap<Short, String>();
+					Map<Short, String> dataNames = new HashMap<Short, String>();
+					if (materialDataNames.containsKey(Integer.valueOf(entry))) {
+						//rescue datavalues set before!
+						dataNames = materialDataNames.get(Integer.valueOf(entry));
+					}
 					materialDataNames.put(Integer.valueOf(entry), dataNames);
 					final ConfigurationSection sec = cfg.getConfigurationSection(entry);
 					for (final String data : sec.getKeys(false))
@@ -238,4 +261,5 @@ public class MaterialName
 	private static String toReadable(MaterialData matData) {
 		return matData.toString().toLowerCase().replace('_', ' ').replaceAll("[^a-z ]", "");
 	}
+	
 }
