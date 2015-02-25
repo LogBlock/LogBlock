@@ -45,6 +45,7 @@ import java.util.Timer;
 import java.util.logging.Level;
 
 import static de.diddiz.LogBlock.config.Config.*;
+import static de.diddiz.util.MaterialName.materialName;
 import static org.bukkit.Bukkit.getPluginManager;
 
 public class LogBlock extends JavaPlugin
@@ -110,6 +111,7 @@ public class LogBlock extends JavaPlugin
 
 	@Override
 	public void onEnable() {
+		materialName(0);	// Force static code to run
 		final PluginManager pm = getPluginManager();
 		if (errorAtLoading) {
 			pm.disablePlugin(this);
@@ -118,7 +120,11 @@ public class LogBlock extends JavaPlugin
 		if (noDb)
 			return;
 		if (pm.getPlugin("WorldEdit") != null) {
-			new WorldEditLoggingHook(this).hook();
+			if(Integer.parseInt(pm.getPlugin("WorldEdit").getDescription().getVersion().substring(0, 1)) > 5) {
+				new WorldEditLoggingHook(this).hook();
+			} else {
+				getLogger().warning("Failed to hook into WorldEdit. Your WorldEdit version seems to be outdated, please make sure WorldEdit is at least version 6.");
+			}
 		}
 		if (pm.getPlugin("Vault") != null)
 			vault=true;
