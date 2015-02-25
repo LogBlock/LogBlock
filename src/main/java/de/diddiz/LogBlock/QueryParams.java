@@ -173,8 +173,6 @@ public final class QueryParams implements Cloneable
 				if (excludeBlocksMode)
 					title.append("all blocks except ");
 				final String[] blocknames = new String[types.size()];
-				//TODO Remove Debugging
-				System.out.println("getTable: "+types.toString());
 				for (int i = 0; i < types.size(); i++) {
 					if(LogBlock.isVaultInstalled()) {
 						try{
@@ -324,8 +322,6 @@ public final class QueryParams implements Cloneable
 							where.append("NOT ");
 						where.append('(');
 						for (final Block block : types) {
-							//TODO REMOVE DEBUG
-							System.out.println("ALL param: "+block.getBlock() +":"+ block.getData());
 							where.append("((type = ").append(block.getBlock()).append(" OR replaced = ").append(block.getBlock());
 							if (block.getData() != -1) {
 								where.append(") AND data = ").append(block.getData());
@@ -618,9 +614,6 @@ public final class QueryParams implements Cloneable
 							throw new IllegalArgumentException("No material matching: '" + blockName + "'");
 						if (matid == -1)
 							matid = mat.getId();
-						
-						//TODO REMOVE DEBUG
-						System.out.println("types.add (with subid): "+matid +":"+ data);
 						types.add(new Block(matid, data));
 					} else {
 						if(LogBlock.isVaultInstalled()) {
@@ -637,9 +630,6 @@ public final class QueryParams implements Cloneable
 							throw new IllegalArgumentException("No material matching: '" + blockName + "'");
 						if (matid == -1)
 							matid = mat.getId();
-						
-						//TODO REMOVE DEBUG
-						System.out.println("types.add (without subid): "+matid +":"+ data);
 						types.add(new Block(matid, data));
 					}
 				}
