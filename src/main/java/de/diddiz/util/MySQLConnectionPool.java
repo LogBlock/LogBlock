@@ -48,10 +48,10 @@ public class MySQLConnectionPool implements Closeable
 	@Override
 	public void close() {
 		lock.lock();
-		final Enumeration<JDCConnection> conns = connections.elements();
-		while (conns.hasMoreElements()) {
-			final JDCConnection conn = conns.nextElement();
-			connections.remove(conn);
+		final Iterator<JDCConnection> conns = connections.iterator();
+		while (conns.hasNext()) {
+			final JDCConnection conn = conns.next();
+			conns.remove();
 			conn.terminate();
 		}
 		lock.unlock();
@@ -60,13 +60,13 @@ public class MySQLConnectionPool implements Closeable
 	public Connection getConnection() throws SQLException {
 		lock.lock();
 		try {
-			final Enumeration<JDCConnection> conns = connections.elements();
-			while (conns.hasMoreElements()) {
-				final JDCConnection conn = conns.nextElement();
+			final Iterator<JDCConnection> conns = connections.iterator();
+			while (conns.hasNext()) {
+				final JDCConnection conn = conns.next();
 				if (conn.lease()) {
 					if (conn.isValid())
 						return conn;
-					connections.remove(conn);
+					conns.remove();
 					conn.terminate();
 				}
 			}
