@@ -40,10 +40,12 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.bukkit</groupId>
-            <artifactId>bukkit</artifactId>
-            <version>1.7.2-R0.3</version>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <!-- Bukkit API Version, change if out dated -->
+            <version>1.8-R0.1-SNAPSHOT</version>
             <scope>provided</scope>
+            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>${project.groupId}</groupId>
@@ -79,8 +81,8 @@
     </dependencies>
     <repositories>
         <repository>
-            <id>repobo-snap</id>
-            <url>http://repo.bukkit.org/content/groups/public</url>
+            <id>spigot-repo</id>
+            <url>http://repo.md-5.net/content/repositories/snapshots/</url>
         </repository>
         <repository>
             <id>sk89q-repo</id>
