@@ -860,22 +860,22 @@ public class Consumer extends TimerTask {
                 ps1.setInt(7, loc.getBlockZ());
                 ps1.executeUpdate();
 
-                int id;
+                long id;
                 ResultSet rs = ps1.getGeneratedKeys();
                 rs.next();
-                id = rs.getInt(1);
+                id = rs.getLong(1);
 
                 if (signtext != null) {
                     ps = connection.prepareStatement("INSERT INTO `" + table + "-sign` (signtext, id) VALUES(?, ?)");
                     ps.setString(1, signtext);
-                    ps.setInt(2, id);
+                    ps.setLong(2, id);
                     ps.executeUpdate();
                 } else if (ca != null) {
                     ps = connection.prepareStatement("INSERT INTO `" + table + "-chest` (itemtype, itemamount, itemdata, id) values (?, ?, ?, ?)");
                     ps.setInt(1, ca.itemType);
                     ps.setInt(2, ca.itemAmount);
                     ps.setInt(3, ca.itemData);
-                    ps.setInt(4, id);
+                    ps.setLong(4, id);
                     ps.executeUpdate();
                 }
             } catch (final SQLException ex) {
@@ -1153,7 +1153,6 @@ public class Consumer extends TimerTask {
     }
 
     private class PlayerLeaveRow implements Row {
-        ;
         private final long leaveTime;
         private final Actor actor;
 
