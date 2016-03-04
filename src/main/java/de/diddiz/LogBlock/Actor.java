@@ -8,6 +8,7 @@ import org.bukkit.projectiles.ProjectileSource;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Collection;
 
 import static de.diddiz.util.BukkitUtils.entityName;
 import org.bukkit.Bukkit;
@@ -102,7 +103,7 @@ public class Actor {
  * @return 
  */
     public static Actor actorFromString(String actorName) {
-        Player[] players = Bukkit.getServer().getOnlinePlayers();
+        Collection<? extends Player> players = Bukkit.getServer().getOnlinePlayers();
         for (Player p : players) {
             if (p.getName().equalsIgnoreCase(actorName)) {
                 return actorFromEntity(p);
