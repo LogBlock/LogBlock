@@ -150,6 +150,22 @@ public class BukkitUtils {
         containerBlocks.add(Material.FURNACE);
         containerBlocks.add(Material.BURNING_FURNACE);
         containerBlocks.add(Material.BEACON);
+        containerBlocks.add(Material.BLACK_SHULKER_BOX);
+        containerBlocks.add(Material.BLUE_SHULKER_BOX);
+        containerBlocks.add(Material.SILVER_SHULKER_BOX);
+        containerBlocks.add(Material.BROWN_SHULKER_BOX);
+        containerBlocks.add(Material.CYAN_SHULKER_BOX);
+        containerBlocks.add(Material.GRAY_SHULKER_BOX);
+        containerBlocks.add(Material.GREEN_SHULKER_BOX);
+        containerBlocks.add(Material.LIGHT_BLUE_SHULKER_BOX);
+        containerBlocks.add(Material.MAGENTA_SHULKER_BOX);
+        containerBlocks.add(Material.LIME_SHULKER_BOX);
+        containerBlocks.add(Material.ORANGE_SHULKER_BOX);
+        containerBlocks.add(Material.PINK_SHULKER_BOX);
+        containerBlocks.add(Material.PURPLE_SHULKER_BOX);
+        containerBlocks.add(Material.RED_SHULKER_BOX);
+        containerBlocks.add(Material.WHITE_SHULKER_BOX);
+        containerBlocks.add(Material.YELLOW_SHULKER_BOX);
         // Doesn't actually have a block inventory
         // containerBlocks.add(Material.ENDER_CHEST);
 
