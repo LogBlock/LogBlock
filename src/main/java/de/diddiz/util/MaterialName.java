@@ -178,10 +178,12 @@ public class MaterialName {
             for (byte i = 0; i < 16; i++) {
                 cfg.set("351." + i, toReadable(Material.INK_SACK.getNewData(i)));
                 cfg.set("35." + i, COLORS[i] + " wool");
-                cfg.set("159." + i, COLORS[i] + " stained clay");
+                cfg.set("159." + i, COLORS[i] + " stained terracotta");
                 cfg.set("95." + i, COLORS[i] + " stained glass");
                 cfg.set("160." + i, COLORS[i] + " stained glass pane");
                 cfg.set("171." + i, COLORS[i] + " carpet");
+                cfg.set("251." + i, COLORS[i] + " concrete");
+                cfg.set("252." + i, COLORS[i] + " concrete powder");
             }
             for (byte i = 0; i < 6; i++) {
                 cfg.set("125." + i, toReadable(Material.WOOD_DOUBLE_STEP.getNewData(i)));
@@ -194,7 +196,7 @@ public class MaterialName {
                 getLogger().log(Level.WARNING, "Unable to save material.yml: ", ex);
             }
         }
-        if (cfg.getString("263.1") == null) {
+        if (cfg.getString("252.1") == null) {
             getLogger().info("[Logblock-names] Logblock's default materials.yml file has been updated with more names");
             getLogger().info("[Logblock-names] Consider deleting your current materials.yml file to allow it to be recreated");
         }
