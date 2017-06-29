@@ -1,5 +1,6 @@
 package de.diddiz.util;
 
+import de.diddiz.LogBlock.LogBlock;
 import org.bukkit.Material;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -27,7 +28,7 @@ public class MaterialName {
             materialNames.put(mat.getId(), mat.toString().replace('_', ' ').toLowerCase());
         }
         // Load config
-        final File file = new File("plugins/LogBlock/materials.yml");
+        final File file = new File(LogBlock.getInstance().getDataFolder(), "materials.yml");
         final YamlConfiguration cfg = YamlConfiguration.loadConfiguration(file);
         if (cfg.getKeys(false).isEmpty()) {
             // Generate defaults
