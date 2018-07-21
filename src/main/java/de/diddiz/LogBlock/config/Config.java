@@ -88,10 +88,10 @@ public class Config {
         def.put("logging.logEnvironmentalKills", false);
         def.put("logging.logPlayerInfo", false);
         def.put("logging.hiddenPlayers", new ArrayList<String>());
-        def.put("logging.hiddenBlocks", Arrays.asList(0));
+        def.put("logging.hiddenBlocks", Arrays.asList(Material.AIR.name()));
         def.put("logging.ignoredChat", Arrays.asList("/register", "/login"));
-        def.put("rollback.dontRollback", Arrays.asList(10, 11, 46, 51));
-        def.put("rollback.replaceAnyway", Arrays.asList(8, 9, 10, 11, 51));
+        def.put("rollback.dontRollback", Arrays.asList(Material.LAVA.name(), Material.TNT.name(), Material.FIRE.name()));
+        def.put("rollback.replaceAnyway", Arrays.asList(Material.LAVA.name(), Material.WATER.name(), Material.FIRE.name()));
         def.put("rollback.maxTime", "2 days");
         def.put("rollback.maxArea", 50);
         def.put("lookup.defaultDist", 20);
@@ -114,7 +114,7 @@ public class Config {
         def.put("tools.tool.leftClickBehavior", "NONE");
         def.put("tools.tool.rightClickBehavior", "TOOL");
         def.put("tools.tool.defaultEnabled", true);
-        def.put("tools.tool.item", 270);
+        def.put("tools.tool.item", Material.WOODEN_PICKAXE.name());
         def.put("tools.tool.canDrop", true);
         def.put("tools.tool.params", "area 0 all sum none limit 15 desc silent");
         def.put("tools.tool.mode", "LOOKUP");
@@ -123,7 +123,7 @@ public class Config {
         def.put("tools.toolblock.leftClickBehavior", "TOOL");
         def.put("tools.toolblock.rightClickBehavior", "BLOCK");
         def.put("tools.toolblock.defaultEnabled", true);
-        def.put("tools.toolblock.item", 7);
+        def.put("tools.toolblock.item", Material.BEDROCK.name());
         def.put("tools.toolblock.canDrop", false);
         def.put("tools.toolblock.params", "area 0 all sum none limit 15 desc silent");
         def.put("tools.toolblock.mode", "LOOKUP");
