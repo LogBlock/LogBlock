@@ -9,6 +9,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
+
 import java.util.*;
 
 import static de.diddiz.LogBlock.Session.getSession;
@@ -768,7 +770,7 @@ public final class QueryParams implements Cloneable {
 
     public void setSelection(RegionContainer container) {
         this.sel = container;
-        world = sel.getSelection().getWorld();
+        world = BukkitAdapter.adapt(sel.getSelection().getWorld());
     }
 
     public void setPlayer(String playerName) {

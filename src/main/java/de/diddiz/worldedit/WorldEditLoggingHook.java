@@ -3,17 +3,26 @@ package de.diddiz.worldedit;
 import com.sk89q.worldedit.EditSession;
 import com.sk89q.worldedit.Vector;
 import com.sk89q.worldedit.WorldEdit;
-import com.sk89q.worldedit.blocks.BaseBlock;
+import com.sk89q.worldedit.WorldEditException;
+import com.sk89q.worldedit.bukkit.BukkitAdapter;
 import com.sk89q.worldedit.bukkit.BukkitWorld;
 import com.sk89q.worldedit.event.extent.EditSessionEvent;
 import com.sk89q.worldedit.extension.platform.Actor;
-import com.sk89q.worldedit.extent.logging.AbstractLoggingExtent;
+import com.sk89q.worldedit.extent.AbstractDelegateExtent;
 import com.sk89q.worldedit.util.eventbus.Subscribe;
+import com.sk89q.worldedit.world.block.BlockStateHolder;
+
 import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.LogBlock.Logging;
 import de.diddiz.LogBlock.config.Config;
 import org.bukkit.Bukkit;
+import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
+import org.bukkit.block.Block;
+import org.bukkit.block.BlockState;
+import org.bukkit.block.Sign;
+import org.bukkit.block.data.BlockData;
 
 import java.util.logging.Level;
 
@@ -75,41 +84,34 @@ public class WorldEditLoggingHook {
                     return;
                 }
 
-                event.setExtent(new AbstractLoggingExtent(event.getExtent()) {
+                event.setExtent(new AbstractDelegateExtent(event.getExtent()) {
                     @Override
-                    protected void onBlockChange(Vector pt, BaseBlock block) {
+                    public final boolean setBlock(Vector position, @SuppressWarnings("rawtypes") BlockStateHolder block) throws WorldEditException {
+                        onBlockChange(position, block);
+                        return super.setBlock(position, block);
+                    }
+                    
+                    protected void onBlockChange(Vector pt, BlockStateHolder<?> block) {
 
                         if (event.getStage() != EditSession.Stage.BEFORE_CHANGE) {
                             return;
                         }
 
-                        // FIXME wait for updated worldedit
-                        // Location location = new Location(world, pt.getBlockX(), pt.getBlockY(), pt.getBlockZ());
-                        // Block origin = location.getBlock();
-                        // Material typeBefore = origin.getType();
-                        // byte dataBefore = origin.getData();
-                        // // If we're dealing with a sign, store the block state to read the text off
-                        // BlockState stateBefore = null;
-                        // if (typeBefore == Material.SIGN || typeBefore == Material.WALL_SIGN) {
-                        // stateBefore = origin.getState();
-                        // }
-                        //
-                        // // Check to see if we've broken a sign
-                        // if (Config.isLogging(location.getWorld().getName(), Logging.SIGNTEXT) && (typeBefore == Material.SIGN || typeBefore == Material.WALL_SIGN)) {
-                        // plugin.getConsumer().queueSignBreak(lbActor, (Sign) stateBefore);
-                        // if (block.getType() != Material.AIR.getId()) {
-                        // plugin.getConsumer().queueBlockPlace(lbActor, location, block.getType(), (byte) block.getData());
-                        // }
-                        // } else {
-                        // if (dataBefore != 0) {
-                        // plugin.getConsumer().queueBlockBreak(lbActor, location, typeBefore, dataBefore);
-                        // if (block.getType() != Material.AIR.getId()) {
-                        // plugin.getConsumer().queueBlockPlace(lbActor, location, block.getType(), (byte) block.getData());
-                        // }
-                        // } else {
-                        // plugin.getConsumer().queueBlock(lbActor, location, typeBefore, block.getType(), (byte) block.getData());
-                        // }
-                        // }
+                        Location location = new Location(world, pt.getBlockX(), pt.getBlockY(), pt.getBlockZ());
+                        Block origin = location.getBlock();
+                        Material typeBefore = origin.getType();
+
+                        // Check to see if we've broken a sign
+                        if (Config.isLogging(location.getWorld().getName(), Logging.SIGNTEXT) && (typeBefore == Material.SIGN || typeBefore == Material.WALL_SIGN)) {
+                            BlockState stateBefore = origin.getState();
+                            plugin.getConsumer().queueSignBreak(lbActor, (Sign) stateBefore);
+                        } else if (!origin.isEmpty()) {
+                            plugin.getConsumer().queueBlockBreak(lbActor, location, origin.getBlockData());
+                        }
+                        BlockData newBlock = BukkitAdapter.adapt(block);
+                        if (newBlock != null && newBlock.getMaterial() != Material.AIR) {
+                            plugin.getConsumer().queueBlockPlace(lbActor, location, newBlock);
+                        }
                     }
                 });
             }
