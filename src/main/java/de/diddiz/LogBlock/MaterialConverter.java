@@ -31,11 +31,11 @@ public class MaterialConverter {
         }
     }
 
-    public synchronized static int getOrAddMaterialId(NamespacedKey nameSpaceKey) {
+    public static int getOrAddMaterialId(NamespacedKey nameSpaceKey) {
         return getOrAddMaterialId(nameSpaceKey.toString());
     }
 
-    public synchronized static int getOrAddMaterialId(String blockDataString) {
+    public static int getOrAddMaterialId(String blockDataString) {
         String materialString = blockDataString;
         int dataPart = blockDataString.indexOf("[");
         if (dataPart >= 0) {
@@ -58,7 +58,7 @@ public class MaterialConverter {
         return key.intValue();
     }
 
-    public synchronized static int getOrAddBlockStateId(String blockDataString) {
+    public static int getOrAddBlockStateId(String blockDataString) {
         int dataPart = blockDataString.indexOf("[");
         if (dataPart < 0) {
             return -1;
@@ -81,7 +81,7 @@ public class MaterialConverter {
         return key.intValue();
     }
 
-    public synchronized static BlockData getBlockData(int materialId, int blockStateId) {
+    public static BlockData getBlockData(int materialId, int blockStateId) {
         String material = idToMaterial[materialId];
         if (blockStateId >= 0) {
             material = material + idToBlockState[blockStateId];

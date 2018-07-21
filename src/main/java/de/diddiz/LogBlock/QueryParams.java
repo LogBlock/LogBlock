@@ -29,6 +29,7 @@ public final class QueryParams implements Cloneable {
     public RegionContainer sel = null;
     public SummarizationMode sum = SummarizationMode.NONE;
     public List<Material> types = new ArrayList<Material>();
+    public List<Integer> typeIds = new ArrayList<Integer>();
     public World world = null;
     public String match = null;
     public boolean needCount = false, needId = false, needDate = false, needType = false, needData = false, needPlayer = false, needCoords = false, needSignText = false, needChestAccess = false, needMessage = false, needKiller = false, needVictim = false, needWeapon = false;
@@ -354,13 +355,13 @@ public final class QueryParams implements Cloneable {
         } else {
             switch (blockChangeType) {
                 case ALL:
-                    if (!types.isEmpty()) {
+                    if (!typeIds.isEmpty()) {
                         if (excludeBlocksMode) {
                             where.append("NOT ");
                         }
                         where.append('(');
-                        for (final Material block : types) {
-                            where.append("((type = ").append(MaterialConverter.getOrAddMaterialId(block.getKey())).append(" OR replaced = ").append(MaterialConverter.getOrAddMaterialId(block.getKey()));
+                        for (final Integer block : typeIds) {
+                            where.append("((type = ").append(block).append(" OR replaced = ").append(block);
                             where.append(")");
                             where.append(") OR ");
                         }
@@ -369,13 +370,13 @@ public final class QueryParams implements Cloneable {
                     }
                     break;
                 case BOTH:
-                    if (!types.isEmpty()) {
+                    if (!typeIds.isEmpty()) {
                         if (excludeBlocksMode) {
                             where.append("NOT ");
                         }
                         where.append('(');
-                        for (final Material block : types) {
-                            where.append("((type = ").append(MaterialConverter.getOrAddMaterialId(block.getKey())).append(" OR replaced = ").append(MaterialConverter.getOrAddMaterialId(block.getKey()));
+                        for (final Integer block : typeIds) {
+                            where.append("((type = ").append(block).append(" OR replaced = ").append(block);
                             where.append(")");
                             where.append(") OR ");
                         }
@@ -385,13 +386,13 @@ public final class QueryParams implements Cloneable {
                     where.append("type != replaced AND ");
                     break;
                 case CREATED:
-                    if (!types.isEmpty()) {
+                    if (!typeIds.isEmpty()) {
                         if (excludeBlocksMode) {
                             where.append("NOT ");
                         }
                         where.append('(');
-                        for (final Material block : types) {
-                            where.append("((type = ").append(MaterialConverter.getOrAddMaterialId(block.getKey()));
+                        for (final Integer block : typeIds) {
+                            where.append("((type = ").append(block);
                             where.append(")");
                             where.append(") OR ");
                         }
@@ -401,13 +402,13 @@ public final class QueryParams implements Cloneable {
                     where.append("type != 0 AND type != replaced AND ");
                     break;
                 case DESTROYED:
-                    if (!types.isEmpty()) {
+                    if (!typeIds.isEmpty()) {
                         if (excludeBlocksMode) {
                             where.append("NOT ");
                         }
                         where.append('(');
-                        for (final Material block : types) {
-                            where.append("((replaced = ").append(MaterialConverter.getOrAddMaterialId(block.getKey()));
+                        for (final Integer block : typeIds) {
+                            where.append("((replaced = ").append(block);
                             where.append(")");
                             where.append(") OR ");
                         }
@@ -417,13 +418,13 @@ public final class QueryParams implements Cloneable {
                     where.append("replaced != 0 AND type != replaced AND ");
                     break;
                 case CHESTACCESS:
-                    if (!types.isEmpty()) {
+                    if (!typeIds.isEmpty()) {
                         if (excludeBlocksMode) {
                             where.append("NOT ");
                         }
                         where.append('(');
-                        for (final Material block : types) {
-                            where.append("((itemtype = ").append(MaterialConverter.getOrAddMaterialId(block.getKey()));
+                        for (final Integer block : typeIds) {
+                            where.append("((itemtype = ").append(block);
                             where.append(")");
                             where.append(") OR ");
                         }
@@ -607,6 +608,7 @@ public final class QueryParams implements Cloneable {
                         throw new IllegalArgumentException("No material matching: '" + weaponName + "'");
                     }
                     types.add(mat);
+                    typeIds.add(MaterialConverter.getOrAddMaterialId(mat.getKey()));
                 }
                 needWeapon = true;
             } else if (param.equals("block") || param.equals("type")) {
@@ -620,7 +622,11 @@ public final class QueryParams implements Cloneable {
                     }
 
                     final Material mat = Material.matchMaterial(blockName);
+                    if (mat == null) {
+                        throw new IllegalArgumentException("No material matching: '" + blockName + "'");
+                    }
                     types.add(mat);
+                    typeIds.add(MaterialConverter.getOrAddMaterialId(mat.getKey()));
                 }
             } else if (param.equals("area")) {
                 if (player == null && !prepareToolQuery && loc == null) {
@@ -775,6 +781,7 @@ public final class QueryParams implements Cloneable {
         try {
             final QueryParams params = (QueryParams) super.clone();
             params.players = new ArrayList<String>(players);
+            params.typeIds = new ArrayList<Integer>(typeIds);
             params.types = new ArrayList<Material>(types);
             return params;
         } catch (final CloneNotSupportedException ex) {
@@ -814,6 +821,7 @@ public final class QueryParams implements Cloneable {
     public void merge(QueryParams p) {
         players = p.players;
         excludePlayersMode = p.excludePlayersMode;
+        typeIds = p.typeIds;
         types = p.types;
         loc = p.loc;
         radius = p.radius;
