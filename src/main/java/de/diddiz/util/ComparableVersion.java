@@ -257,6 +257,8 @@ public class ComparableVersion
         extends ArrayList<Item>
         implements Item
     {
+        private static final long serialVersionUID = 5914575811857700009L;
+
         public int getType()
         {
             return LIST_ITEM;

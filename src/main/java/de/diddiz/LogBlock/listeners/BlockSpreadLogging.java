@@ -32,7 +32,7 @@ public class BlockSpreadLogging extends LoggingListener {
                 }
                 name = "GrassGrowth";
                 break;
-            case MYCEL:
+            case MYCELIUM:
                 if (!isLogging(world, Logging.MYCELIUMSPREAD)) {
                     return;
                 }

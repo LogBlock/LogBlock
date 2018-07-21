@@ -6,6 +6,7 @@ website: http://dev.bukkit.org/server-mods/logblock/
 main: de.diddiz.LogBlock.LogBlock
 description: ${project.description}
 softdepend: [LogBlockQuestioner, WorldEdit]
+api-version: 1.13
 commands:
   lb:
     description: 'LogBlock plugin commands'

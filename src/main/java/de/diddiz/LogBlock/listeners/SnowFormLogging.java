@@ -3,6 +3,8 @@ package de.diddiz.LogBlock.listeners;
 import de.diddiz.LogBlock.Actor;
 import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.LogBlock.Logging;
+
+import org.bukkit.Material;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockFormEvent;
@@ -23,8 +25,8 @@ public class SnowFormLogging extends LoggingListener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockForm(BlockFormEvent event) {
         if (isLogging(event.getBlock().getWorld(), Logging.SNOWFORM)) {
-            final int type = event.getNewState().getTypeId();
-            if (type == 78 || type == 79) {
+            final Material type = event.getNewState().getType();
+            if (type == Material.SNOW || type == Material.ICE) {
                 consumer.queueBlockReplace(new Actor("SnowForm"), event.getBlock().getState(), event.getNewState());
             }
         }

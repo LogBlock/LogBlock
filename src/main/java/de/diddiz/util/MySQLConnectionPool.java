@@ -11,7 +11,7 @@ public class MySQLConnectionPool implements Closeable {
 
     private final HikariDataSource ds;
 
-    public MySQLConnectionPool(String url, String user, String password) throws ClassNotFoundException {
+    public MySQLConnectionPool(String url, String user, String password) {
         this.ds = new HikariDataSource();
         ds.setJdbcUrl(url);
         ds.setUsername(user);

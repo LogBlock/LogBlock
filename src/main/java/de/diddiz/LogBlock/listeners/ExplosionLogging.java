@@ -99,10 +99,10 @@ public class ExplosionLogging extends LoggingListener {
                 }
             }
             for (final Block block : event.blockList()) {
-                final int type = block.getTypeId();
-                if (wcfg.isLogging(Logging.SIGNTEXT) & (type == 63 || type == 68)) {
+                final Material type = block.getType();
+                if (wcfg.isLogging(Logging.SIGNTEXT) & (type == Material.SIGN || type == Material.WALL_SIGN)) {
                     consumer.queueSignBreak(actor, (Sign) block.getState());
-                } else if (wcfg.isLogging(Logging.CHESTACCESS) && (getContainerBlocks().contains(Material.getMaterial(type)))) {
+                } else if (wcfg.isLogging(Logging.CHESTACCESS) && (getContainerBlocks().contains(type))) {
                     consumer.queueContainerBreak(actor, block.getState());
                 } else {
                     consumer.queueBlockBreak(actor, block.getState());
@@ -122,10 +122,10 @@ public class ExplosionLogging extends LoggingListener {
                 }
                 Actor actor = new Actor("Explosion");
 
-                final int type = block.getTypeId();
-                if (wcfg.isLogging(Logging.SIGNTEXT) & (type == 63 || type == 68)) {
+                final Material type = block.getType();
+                if (wcfg.isLogging(Logging.SIGNTEXT) & (type == Material.SIGN || type == Material.WALL_SIGN)) {
                     consumer.queueSignBreak(actor, (Sign) block.getState());
-                } else if (wcfg.isLogging(Logging.CHESTACCESS) && (getContainerBlocks().contains(Material.getMaterial(type)))) {
+                } else if (wcfg.isLogging(Logging.CHESTACCESS) && (getContainerBlocks().contains(type))) {
                     consumer.queueContainerBreak(actor, block.getState());
                 } else {
                     consumer.queueBlockBreak(actor, block.getState());

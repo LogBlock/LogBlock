@@ -6,9 +6,11 @@ import de.diddiz.LogBlock.QueryParams.SummarizationMode;
 import de.diddiz.LogBlock.config.Config;
 import de.diddiz.LogBlock.config.WorldConfig;
 import de.diddiz.LogBlockQuestioner.LogBlockQuestioner;
-import de.diddiz.util.Block;
+import de.diddiz.util.Utils;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -17,7 +19,6 @@ import org.bukkit.entity.Player;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.scheduler.BukkitScheduler;
 
-import java.io.Closeable;
 import java.io.File;
 import java.io.FileWriter;
 import java.sql.Connection;
@@ -398,7 +399,7 @@ public class CommandsHandler implements CommandExecutor {
         return true;
     }
 
-    public abstract class AbstractCommand implements Runnable, Closeable {
+    public abstract class AbstractCommand implements Runnable {
         protected CommandSender sender;
         protected QueryParams params;
         protected Connection conn = null;
@@ -409,15 +410,12 @@ public class CommandsHandler implements CommandExecutor {
             this.sender = sender;
             this.params = params;
             if (async) {
-                if (scheduler.scheduleAsyncDelayedTask(logblock, this) == -1) {
-                    throw new Exception("Failed to schedule the command");
-                }
+                scheduler.runTaskAsynchronously(logblock, this);
             } else {
                 run();
             }
         }
 
-        @Override
         public final void close() {
             try {
                 if (conn != null) {
@@ -458,7 +456,7 @@ public class CommandsHandler implements CommandExecutor {
                     params.needType = true;
                     params.needData = true;
                     params.needPlayer = true;
-                    if (params.types.isEmpty() || Block.inList(params.types, 63) || Block.inList(params.types, 68)) {
+                    if (params.types.isEmpty() || params.types.contains(Material.SIGN) || params.types.contains(Material.WALL_SIGN)) {
                         params.needSignText = true;
                     }
                     if (params.bct == BlockChangeType.CHESTACCESS || params.bct == BlockChangeType.ALL) {
@@ -523,7 +521,7 @@ public class CommandsHandler implements CommandExecutor {
                     params.needType = true;
                     params.needData = true;
                     params.needPlayer = true;
-                    if (params.types.isEmpty() || Block.inList(params.types, 63) || Block.inList(params.types, 68)) {
+                    if (params.types.isEmpty() || params.types.contains(Material.SIGN) || params.types.contains(Material.WALL_SIGN)) {
                         params.needSignText = true;
                     }
                     if (params.bct == BlockChangeType.CHESTACCESS || params.bct == BlockChangeType.ALL) {
@@ -671,7 +669,12 @@ public class CommandsHandler implements CommandExecutor {
                 final WorldEditor editor = new WorldEditor(logblock, params.world);
 
                 while (rs.next()) {
-                    editor.queueEdit(rs.getInt("x"), rs.getInt("y"), rs.getInt("z"), rs.getInt("replaced"), rs.getInt("type"), rs.getByte("data"), rs.getString("signtext"), rs.getShort("itemtype"), rs.getShort("itemamount"), rs.getShort("itemdata"));
+                    ChestAccess chestaccess = null;
+                    ItemStack stack = Utils.loadItemStack(rs.getBytes("item"));
+                    if (stack != null) {
+                        chestaccess = new ChestAccess(stack, rs.getBoolean("itemremove"));
+                    }
+                    editor.queueEdit(rs.getInt("x"), rs.getInt("y"), rs.getInt("z"), rs.getInt("replaced"), rs.getInt("replacedData"), rs.getInt("type"), rs.getByte("typeData"), rs.getString("signtext"), chestaccess);
                 }
                 final int changes = editor.getSize();
                 if (changes > 10000) {
@@ -741,7 +744,12 @@ public class CommandsHandler implements CommandExecutor {
                 }
                 final WorldEditor editor = new WorldEditor(logblock, params.world);
                 while (rs.next()) {
-                    editor.queueEdit(rs.getInt("x"), rs.getInt("y"), rs.getInt("z"), rs.getInt("type"), rs.getInt("replaced"), rs.getByte("data"), rs.getString("signtext"), rs.getShort("itemtype"), (short) -rs.getShort("itemamount"), rs.getShort("itemdata"));
+                    ChestAccess chestaccess = null;
+                    ItemStack stack = Utils.loadItemStack(rs.getBytes("item"));
+                    if (stack != null) {
+                        chestaccess = new ChestAccess(stack, !rs.getBoolean("itemremove"));
+                    }
+                    editor.queueEdit(rs.getInt("x"), rs.getInt("y"), rs.getInt("z"), rs.getInt("type"), rs.getInt("typeData"), rs.getInt("replaced"), rs.getByte("replacedData"), rs.getString("signtext"), chestaccess);
                 }
                 final int changes = editor.getSize();
                 if (!params.silent) {
@@ -793,7 +801,7 @@ public class CommandsHandler implements CommandExecutor {
                 int deleted;
                 final String table = params.getTable();
                 final String join = params.players.size() > 0 ? "INNER JOIN `lb-players` USING (playerid) " : "";
-                rs = state.executeQuery("SELECT count(*) FROM `" + table + "` " + join + params.getWhere());
+                rs = state.executeQuery("SELECT count(*) FROM `" + table + "-blocks` " + join + params.getWhere());
                 rs.next();
                 if ((deleted = rs.getInt(1)) > 0) {
                     if (!params.silent && askClearLogs && sender instanceof Player && questioner != null) {
@@ -806,32 +814,32 @@ public class CommandsHandler implements CommandExecutor {
                     }
                     if (dumpDeletedLog) {
                         try {
-                            state.execute("SELECT * FROM `" + table + "` " + join + params.getWhere() + "INTO OUTFILE '" + new File(dumpFolder, time + " " + table + " " + params.getTitle().replace(":", ".") + ".csv").getAbsolutePath().replace("\\", "\\\\") + "' FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"'  LINES TERMINATED BY '\n'");
+                            state.execute("SELECT * FROM `" + table + "-blocks` " + join + params.getWhere() + "INTO OUTFILE '" + new File(dumpFolder, time + " " + table + " " + params.getTitle().replace(":", ".") + ".csv").getAbsolutePath().replace("\\", "\\\\") + "' FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"'  LINES TERMINATED BY '\n'");
                         } catch (final SQLException ex) {
                             sender.sendMessage(ChatColor.RED + "Error while dumping log. Make sure your MySQL user has access to the LogBlock folder, or disable clearlog.dumpDeletedLog");
                             getLogger().log(Level.SEVERE, "[ClearLog] Exception while dumping log: ", ex);
                             return;
                         }
                     }
-                    state.execute("DELETE `" + table + "` FROM `" + table + "` " + join + params.getWhere());
+                    state.execute("DELETE `" + table + "` FROM `" + table + "-blocks` " + join + params.getWhere());
                     sender.sendMessage(ChatColor.GREEN + "Cleared out table " + table + ". Deleted " + deleted + " entries.");
                 }
-                rs = state.executeQuery("SELECT COUNT(*) FROM `" + table + "-sign` LEFT JOIN `" + table + "` USING (id) WHERE `" + table + "`.id IS NULL");
+                rs = state.executeQuery("SELECT COUNT(*) FROM `" + table + "-sign` LEFT JOIN `" + table + "-blocks` USING (id) WHERE `" + table + "-blocks`.id IS NULL");
                 rs.next();
                 if ((deleted = rs.getInt(1)) > 0) {
                     if (dumpDeletedLog) {
-                        state.execute("SELECT id, signtext FROM `" + table + "-sign` LEFT JOIN `" + table + "` USING (id) WHERE `" + table + "`.id IS NULL INTO OUTFILE '" + new File(dumpFolder, time + " " + table + "-sign " + params.getTitle() + ".csv").getAbsolutePath().replace("\\", "\\\\") + "' FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"'  LINES TERMINATED BY '\n'");
+                        state.execute("SELECT id, signtext FROM `" + table + "-sign` LEFT JOIN `" + table + "-blocks` USING (id) WHERE `" + table + "-blocks`.id IS NULL INTO OUTFILE '" + new File(dumpFolder, time + " " + table + "-sign " + params.getTitle() + ".csv").getAbsolutePath().replace("\\", "\\\\") + "' FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"'  LINES TERMINATED BY '\n'");
                     }
-                    state.execute("DELETE `" + table + "-sign` FROM `" + table + "-sign` LEFT JOIN `" + table + "` USING (id) WHERE `" + table + "`.id IS NULL;");
+                    state.execute("DELETE `" + table + "-sign` FROM `" + table + "-sign` LEFT JOIN `" + table + "-blocks` USING (id) WHERE `" + table + "-blocks`.id IS NULL;");
                     sender.sendMessage(ChatColor.GREEN + "Cleared out table " + table + "-sign. Deleted " + deleted + " entries.");
                 }
-                rs = state.executeQuery("SELECT COUNT(*) FROM `" + table + "-chest` LEFT JOIN `" + table + "` USING (id) WHERE `" + table + "`.id IS NULL");
+                rs = state.executeQuery("SELECT COUNT(*) FROM `" + table + "-chestdata` LEFT JOIN `" + table + "-blocks` USING (id) WHERE `" + table + "-blocks`.id IS NULL");
                 rs.next();
                 if ((deleted = rs.getInt(1)) > 0) {
                     if (dumpDeletedLog) {
-                        state.execute("SELECT id, itemtype, itemamount, itemdata FROM `" + table + "-chest` LEFT JOIN `" + table + "` USING (id) WHERE `" + table + "`.id IS NULL INTO OUTFILE '" + new File(dumpFolder, time + " " + table + "-chest " + params.getTitle() + ".csv").getAbsolutePath().replace("\\", "\\\\") + "' FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"'  LINES TERMINATED BY '\n'");
+                        state.execute("SELECT id, item, itemremove FROM `" + table + "-chest` LEFT JOIN `" + table + "-blocks` USING (id) WHERE `" + table + "-blocks`.id IS NULL INTO OUTFILE '" + new File(dumpFolder, time + " " + table + "-chest " + params.getTitle() + ".csv").getAbsolutePath().replace("\\", "\\\\") + "' FIELDS TERMINATED BY ',' OPTIONALLY ENCLOSED BY '\"'  LINES TERMINATED BY '\n'");
                     }
-                    state.execute("DELETE `" + table + "-chest` FROM `" + table + "-chest` LEFT JOIN `" + table + "` USING (id) WHERE `" + table + "`.id IS NULL;");
+                    state.execute("DELETE `" + table + "-chest` FROM `" + table + "-chest` LEFT JOIN `" + table + "-blocks` USING (id) WHERE `" + table + "-blocks`.id IS NULL;");
                     sender.sendMessage(ChatColor.GREEN + "Cleared out table " + table + "-chest. Deleted " + deleted + " entries.");
                 }
             } catch (final Exception ex) {

@@ -74,7 +74,7 @@ public class Actor {
     }
 
     public static Actor actorFromEntity(EntityType entity) {
-        return new Actor(entity.getName());
+        return new Actor(entity.name());
     }
 
     public static Actor actorFromProjectileSource(ProjectileSource psource) {

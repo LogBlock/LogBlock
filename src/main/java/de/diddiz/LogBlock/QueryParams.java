@@ -1,6 +1,5 @@
 package de.diddiz.LogBlock;
 
-import de.diddiz.util.Block;
 import de.diddiz.util.Utils;
 import de.diddiz.worldedit.RegionContainer;
 import org.bukkit.Location;
@@ -15,9 +14,6 @@ import java.util.*;
 import static de.diddiz.LogBlock.Session.getSession;
 import static de.diddiz.LogBlock.config.Config.*;
 import static de.diddiz.util.BukkitUtils.friendlyWorldname;
-import static de.diddiz.util.BukkitUtils.getBlockEquivalents;
-import static de.diddiz.util.MaterialName.materialName;
-import static de.diddiz.util.MaterialName.typeFromName;
 import static de.diddiz.util.Utils.*;
 
 public final class QueryParams implements Cloneable {
@@ -32,7 +28,7 @@ public final class QueryParams implements Cloneable {
     public boolean excludePlayersMode = false, excludeKillersMode = false, excludeVictimsMode = false, excludeBlocksMode = false, prepareToolQuery = false, silent = false;
     public RegionContainer sel = null;
     public SummarizationMode sum = SummarizationMode.NONE;
-    public List<Block> types = new ArrayList<Block>();
+    public List<Material> types = new ArrayList<Material>();
     public World world = null;
     public String match = null;
     public boolean needCount = false, needId = false, needDate = false, needType = false, needData = false, needPlayer = false, needCoords = false, needSignText = false, needChestAccess = false, needMessage = false, needKiller = false, needVictim = false, needWeapon = false;
@@ -129,7 +125,7 @@ public final class QueryParams implements Cloneable {
                 select += "COUNT(*) AS count";
             } else {
                 if (needId) {
-                    select += "`" + getTable() + "`.id, ";
+                    select += "`" + getTable() + "`-blocks.id, ";
                 }
                 if (needDate) {
                     select += "date, ";
@@ -138,7 +134,7 @@ public final class QueryParams implements Cloneable {
                     select += "replaced, type, ";
                 }
                 if (needData) {
-                    select += "data, ";
+                    select += "replacedData, typeData, ";
                 }
                 if (needPlayer) {
                     select += "playername, UUID, ";
@@ -150,11 +146,11 @@ public final class QueryParams implements Cloneable {
                     select += "signtext, ";
                 }
                 if (needChestAccess) {
-                    select += "itemtype, itemamount, itemdata, ";
+                    select += "item, itemremove, ";
                 }
                 select = select.substring(0, select.length() - 2);
             }
-            String from = "FROM `" + getTable() + "` ";
+            String from = "FROM `" + getTable() + "-blocks` ";
             if (needPlayer || players.size() > 0) {
                 from += "INNER JOIN `lb-players` USING (playerid) ";
             }
@@ -165,16 +161,16 @@ public final class QueryParams implements Cloneable {
             // If BlockChangeType is CHESTACCESS, we can use more efficient query
             {
                 if (bct == BlockChangeType.CHESTACCESS) {
-                    from += "RIGHT JOIN `" + getTable() + "-chest` USING (id) ";
+                    from += "RIGHT JOIN `" + getTable() + "-chestdata` USING (id) ";
                 } else {
-                    from += "LEFT JOIN `" + getTable() + "-chest` USING (id) ";
+                    from += "LEFT JOIN `" + getTable() + "-chestdata` USING (id) ";
                 }
             }
             return select + " " + from + getWhere() + "ORDER BY date " + order + ", id " + order + " " + getLimit();
         } else if (sum == SummarizationMode.TYPES) {
-            return "SELECT type, SUM(created) AS created, SUM(destroyed) AS destroyed FROM ((SELECT type, count(*) AS created, 0 AS destroyed FROM `" + getTable() + "` INNER JOIN `lb-players` USING (playerid) " + getWhere(BlockChangeType.CREATED) + "GROUP BY type) UNION (SELECT replaced AS type, 0 AS created, count(*) AS destroyed FROM `" + getTable() + "` INNER JOIN `lb-players` USING (playerid) " + getWhere(BlockChangeType.DESTROYED) + "GROUP BY replaced)) AS t GROUP BY type ORDER BY SUM(created) + SUM(destroyed) " + order + " " + getLimit();
+            return "SELECT type, SUM(created) AS created, SUM(destroyed) AS destroyed FROM ((SELECT type, count(*) AS created, 0 AS destroyed FROM `" + getTable() + "-blocks` INNER JOIN `lb-players` USING (playerid) " + getWhere(BlockChangeType.CREATED) + "GROUP BY type) UNION (SELECT replaced AS type, 0 AS created, count(*) AS destroyed FROM `" + getTable() + "-blocks` INNER JOIN `lb-players` USING (playerid) " + getWhere(BlockChangeType.DESTROYED) + "GROUP BY replaced)) AS t GROUP BY type ORDER BY SUM(created) + SUM(destroyed) " + order + " " + getLimit();
         } else {
-            return "SELECT playername, UUID, SUM(created) AS created, SUM(destroyed) AS destroyed FROM ((SELECT playerid, count(*) AS created, 0 AS destroyed FROM `" + getTable() + "` " + getWhere(BlockChangeType.CREATED) + "GROUP BY playerid) UNION (SELECT playerid, 0 AS created, count(*) AS destroyed FROM `" + getTable() + "` " + getWhere(BlockChangeType.DESTROYED) + "GROUP BY playerid)) AS t INNER JOIN `lb-players` USING (playerid) GROUP BY playerid ORDER BY SUM(created) + SUM(destroyed) " + order + " " + getLimit();
+            return "SELECT playername, UUID, SUM(created) AS created, SUM(destroyed) AS destroyed FROM ((SELECT playerid, count(*) AS created, 0 AS destroyed FROM `" + getTable() + "-blocks` " + getWhere(BlockChangeType.CREATED) + "GROUP BY playerid) UNION (SELECT playerid, 0 AS created, count(*) AS destroyed FROM `" + getTable() + "-blocks` " + getWhere(BlockChangeType.DESTROYED) + "GROUP BY playerid)) AS t INNER JOIN `lb-players` USING (playerid) GROUP BY playerid ORDER BY SUM(created) + SUM(destroyed) " + order + " " + getLimit();
         }
     }
 
@@ -197,7 +193,7 @@ public final class QueryParams implements Cloneable {
                 }
                 final String[] blocknames = new String[types.size()];
                 for (int i = 0; i < types.size(); i++) {
-                    blocknames[i] = materialName(types.get(i).getBlock());
+                    blocknames[i] = types.get(i).name();
                 }
                 title.append(listing(blocknames, ", ", " and ")).append(" ");
             } else {
@@ -363,13 +359,9 @@ public final class QueryParams implements Cloneable {
                             where.append("NOT ");
                         }
                         where.append('(');
-                        for (final Block block : types) {
-                            where.append("((type = ").append(block.getBlock()).append(" OR replaced = ").append(block.getBlock());
-                            if (block.getData() != -1) {
-                                where.append(") AND data = ").append(block.getData());
-                            } else {
-                                where.append(")");
-                            }
+                        for (final Material block : types) {
+                            where.append("((type = ").append(MaterialConverter.getOrAddMaterialId(block.getKey())).append(" OR replaced = ").append(MaterialConverter.getOrAddMaterialId(block.getKey()));
+                            where.append(")");
                             where.append(") OR ");
                         }
                         where.delete(where.length() - 4, where.length() - 1);
@@ -382,13 +374,9 @@ public final class QueryParams implements Cloneable {
                             where.append("NOT ");
                         }
                         where.append('(');
-                        for (final Block block : types) {
-                            where.append("((type = ").append(block.getBlock()).append(" OR replaced = ").append(block.getBlock());
-                            if (block.getData() != -1) {
-                                where.append(") AND data = ").append(block.getData());
-                            } else {
-                                where.append(")");
-                            }
+                        for (final Material block : types) {
+                            where.append("((type = ").append(MaterialConverter.getOrAddMaterialId(block.getKey())).append(" OR replaced = ").append(MaterialConverter.getOrAddMaterialId(block.getKey()));
+                            where.append(")");
                             where.append(") OR ");
                         }
                         where.delete(where.length() - 4, where.length());
@@ -402,13 +390,9 @@ public final class QueryParams implements Cloneable {
                             where.append("NOT ");
                         }
                         where.append('(');
-                        for (final Block block : types) {
-                            where.append("((type = ").append(block.getBlock());
-                            if (block.getData() != -1) {
-                                where.append(") AND data = ").append(block.getData());
-                            } else {
-                                where.append(")");
-                            }
+                        for (final Material block : types) {
+                            where.append("((type = ").append(MaterialConverter.getOrAddMaterialId(block.getKey()));
+                            where.append(")");
                             where.append(") OR ");
                         }
                         where.delete(where.length() - 4, where.length());
@@ -422,13 +406,9 @@ public final class QueryParams implements Cloneable {
                             where.append("NOT ");
                         }
                         where.append('(');
-                        for (final Block block : types) {
-                            where.append("((replaced = ").append(block.getBlock());
-                            if (block.getData() != -1) {
-                                where.append(") AND data = ").append(block.getData());
-                            } else {
-                                where.append(")");
-                            }
+                        for (final Material block : types) {
+                            where.append("((replaced = ").append(MaterialConverter.getOrAddMaterialId(block.getKey()));
+                            where.append(")");
                             where.append(") OR ");
                         }
                         where.delete(where.length() - 4, where.length());
@@ -442,18 +422,16 @@ public final class QueryParams implements Cloneable {
                             where.append("NOT ");
                         }
                         where.append('(');
-                        for (final Block block : types) {
-                            where.append("((itemtype = ").append(block.getBlock());
-                            if (block.getData() != -1) {
-                                where.append(") AND itemdata = ").append(block.getData());
-                            } else {
-                                where.append(")");
-                            }
+                        for (final Material block : types) {
+                            where.append("((itemtype = ").append(MaterialConverter.getOrAddMaterialId(block.getKey()));
+                            where.append(")");
                             where.append(") OR ");
                         }
                         where.delete(where.length() - 4, where.length());
                         where.append(") AND ");
                     }
+                    break;
+                default:
                     break;
             }
             if (loc != null) {
@@ -626,16 +604,9 @@ public final class QueryParams implements Cloneable {
                 for (final String weaponName : values) {
                     Material mat = Material.matchMaterial(weaponName);
                     if (mat == null) {
-                        try {
-                            mat = Material.getMaterial(Integer.parseInt(weaponName));
-                        } catch (NumberFormatException e) {
-                            throw new IllegalArgumentException("Data type not a valid number: '" + weaponName + "'");
-                        }
-                    }
-                    if (mat == null) {
                         throw new IllegalArgumentException("No material matching: '" + weaponName + "'");
                     }
-                    types.add(new Block(mat.getId(), -1));
+                    types.add(mat);
                 }
                 needWeapon = true;
             } else if (param.equals("block") || param.equals("type")) {
@@ -647,29 +618,9 @@ public final class QueryParams implements Cloneable {
                         excludeBlocksMode = true;
                         blockName = blockName.substring(1);
                     }
-                    if (blockName.contains(":")) {
-                        String[] blockNameSplit = blockName.split(":");
-                        if (blockNameSplit.length > 2) {
-                            throw new IllegalArgumentException("No material matching: '" + blockName + "'");
-                        }
-                        final int data;
-                        try {
-                            data = Integer.parseInt(blockNameSplit[1]);
-                        } catch (NumberFormatException e) {
-                            throw new IllegalArgumentException("Data type not a valid number: '" + blockNameSplit[1] + "'");
-                        }
-                        if (data > 255 || data < 0) {
-                            throw new IllegalArgumentException("Data type out of range (0-255): '" + data + "'");
-                        }
-                        final Material mat = Material.matchMaterial(blockNameSplit[0]);
-                        if (mat == null) {
-                            throw new IllegalArgumentException("No material matching: '" + blockName + "'");
-                        }
-                        types.add(new Block(mat.getId(), data));
-                    } else {
-                        final Material mat = Material.matchMaterial(blockName);
-                        types.add(new Block(typeFromName(blockName), -1));
-                    }
+
+                    final Material mat = Material.matchMaterial(blockName);
+                    types.add(mat);
                 }
             } else if (param.equals("area")) {
                 if (player == null && !prepareToolQuery && loc == null) {
@@ -791,24 +742,6 @@ public final class QueryParams implements Cloneable {
                 throw new IllegalArgumentException("Kill logging not enabled for world '" + world.getName() + "'");
             }
         }
-        if (types.size() > 0) {
-            for (final Set<Integer> equivalent : getBlockEquivalents()) {
-                boolean found = false;
-                for (final Block block : types) {
-                    if (equivalent.contains(block.getBlock())) {
-                        found = true;
-                        break;
-                    }
-                }
-                if (found) {
-                    for (final Integer type : equivalent) {
-                        if (!Block.inList(types, type)) {
-                            types.add(new Block(type, -1));
-                        }
-                    }
-                }
-            }
-        }
         if (!prepareToolQuery && bct != BlockChangeType.CHAT) {
             if (world == null) {
                 throw new IllegalArgumentException("No world specified");
@@ -842,7 +775,7 @@ public final class QueryParams implements Cloneable {
         try {
             final QueryParams params = (QueryParams) super.clone();
             params.players = new ArrayList<String>(players);
-            params.types = new ArrayList<Block>(types);
+            params.types = new ArrayList<Material>(types);
             return params;
         } catch (final CloneNotSupportedException ex) {
         }

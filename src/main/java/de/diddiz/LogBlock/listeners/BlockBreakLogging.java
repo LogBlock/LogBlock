@@ -5,6 +5,8 @@ import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.LogBlock.Logging;
 import de.diddiz.LogBlock.config.WorldConfig;
 import de.diddiz.util.BukkitUtils;
+
+import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -34,10 +36,9 @@ public class BlockBreakLogging extends LoggingListener {
 
             final Actor actor = Actor.actorFromEntity(event.getPlayer());
             final Block origin = event.getBlock();
-            final int typeId = origin.getTypeId();
             final Material type = origin.getType();
 
-            if (wcfg.isLogging(Logging.SIGNTEXT) && (typeId == 63 || typeId == 68)) {
+            if (wcfg.isLogging(Logging.SIGNTEXT) && (type == Material.SIGN || type == Material.WALL_SIGN)) {
                 consumer.queueSignBreak(actor, (Sign) origin.getState());
             } else if (wcfg.isLogging(Logging.CHESTACCESS) && BukkitUtils.getContainerBlocks().contains(type)) {
                 consumer.queueContainerBreak(actor, origin.getState());
@@ -46,7 +47,7 @@ public class BlockBreakLogging extends LoggingListener {
                 if (event.getPlayer().getGameMode().equals(GameMode.CREATIVE)) {
                     consumer.queueBlockBreak(actor, origin.getState());
                 } else {
-                    consumer.queueBlockReplace(actor, origin.getState(), 9, (byte) 0);
+                    consumer.queueBlockReplace(actor, origin.getState(), Bukkit.createBlockData(Material.WATER));
                 }
             } else {
                 smartLogBlockBreak(consumer, actor, origin);

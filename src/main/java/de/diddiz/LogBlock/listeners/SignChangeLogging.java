@@ -17,7 +17,7 @@ public class SignChangeLogging extends LoggingListener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onSignChange(SignChangeEvent event) {
         if (isLogging(event.getBlock().getWorld(), Logging.SIGNTEXT)) {
-            consumer.queueSignPlace(Actor.actorFromEntity(event.getPlayer()), event.getBlock().getLocation(), event.getBlock().getTypeId(), event.getBlock().getData(), event.getLines());
+            consumer.queueSignPlace(Actor.actorFromEntity(event.getPlayer()), event.getBlock().getLocation(), event.getBlock().getBlockData(), event.getLines());
         }
     }
 }

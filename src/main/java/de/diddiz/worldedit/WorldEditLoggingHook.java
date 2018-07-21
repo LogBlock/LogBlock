@@ -13,12 +13,7 @@ import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.LogBlock.Logging;
 import de.diddiz.LogBlock.config.Config;
 import org.bukkit.Bukkit;
-import org.bukkit.Location;
-import org.bukkit.Material;
 import org.bukkit.World;
-import org.bukkit.block.Block;
-import org.bukkit.block.BlockState;
-import org.bukkit.block.Sign;
 
 import java.util.logging.Level;
 
@@ -88,32 +83,33 @@ public class WorldEditLoggingHook {
                             return;
                         }
 
-                        Location location = new Location(world, pt.getBlockX(), pt.getBlockY(), pt.getBlockZ());
-                        Block origin = location.getBlock();
-                        int typeBefore = origin.getTypeId();
-                        byte dataBefore = origin.getData();
-                        // If we're dealing with a sign, store the block state to read the text off
-                        BlockState stateBefore = null;
-                        if (typeBefore == Material.SIGN_POST.getId() || typeBefore == Material.SIGN.getId()) {
-                            stateBefore = origin.getState();
-                        }
-
-                        // Check to see if we've broken a sign
-                        if (Config.isLogging(location.getWorld().getName(), Logging.SIGNTEXT) && (typeBefore == Material.SIGN_POST.getId() || typeBefore == Material.SIGN.getId())) {
-                            plugin.getConsumer().queueSignBreak(lbActor, (Sign) stateBefore);
-                            if (block.getType() != Material.AIR.getId()) {
-                                plugin.getConsumer().queueBlockPlace(lbActor, location, block.getType(), (byte) block.getData());
-                            }
-                        } else {
-                            if (dataBefore != 0) {
-                                plugin.getConsumer().queueBlockBreak(lbActor, location, typeBefore, dataBefore);
-                                if (block.getType() != Material.AIR.getId()) {
-                                    plugin.getConsumer().queueBlockPlace(lbActor, location, block.getType(), (byte) block.getData());
-                                }
-                            } else {
-                                plugin.getConsumer().queueBlock(lbActor, location, typeBefore, block.getType(), (byte) block.getData());
-                            }
-                        }
+                        // FIXME wait for updated worldedit
+                        // Location location = new Location(world, pt.getBlockX(), pt.getBlockY(), pt.getBlockZ());
+                        // Block origin = location.getBlock();
+                        // Material typeBefore = origin.getType();
+                        // byte dataBefore = origin.getData();
+                        // // If we're dealing with a sign, store the block state to read the text off
+                        // BlockState stateBefore = null;
+                        // if (typeBefore == Material.SIGN || typeBefore == Material.WALL_SIGN) {
+                        // stateBefore = origin.getState();
+                        // }
+                        //
+                        // // Check to see if we've broken a sign
+                        // if (Config.isLogging(location.getWorld().getName(), Logging.SIGNTEXT) && (typeBefore == Material.SIGN || typeBefore == Material.WALL_SIGN)) {
+                        // plugin.getConsumer().queueSignBreak(lbActor, (Sign) stateBefore);
+                        // if (block.getType() != Material.AIR.getId()) {
+                        // plugin.getConsumer().queueBlockPlace(lbActor, location, block.getType(), (byte) block.getData());
+                        // }
+                        // } else {
+                        // if (dataBefore != 0) {
+                        // plugin.getConsumer().queueBlockBreak(lbActor, location, typeBefore, dataBefore);
+                        // if (block.getType() != Material.AIR.getId()) {
+                        // plugin.getConsumer().queueBlockPlace(lbActor, location, block.getType(), (byte) block.getData());
+                        // }
+                        // } else {
+                        // plugin.getConsumer().queueBlock(lbActor, location, typeBefore, block.getType(), (byte) block.getData());
+                        // }
+                        // }
                     }
                 });
             }

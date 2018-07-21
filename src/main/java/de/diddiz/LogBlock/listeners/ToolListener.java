@@ -3,6 +3,7 @@ package de.diddiz.LogBlock.listeners;
 import de.diddiz.LogBlock.*;
 import de.diddiz.worldedit.RegionContainer;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.entity.Player;
@@ -34,7 +35,7 @@ public class ToolListener implements Listener {
     public void onPlayerInteract(PlayerInteractEvent event) {
         if (event.getMaterial() != null) {
             final Action action = event.getAction();
-            final int type = event.getMaterial().getId();
+            final Material type = event.getMaterial();
             final Tool tool = toolsByType.get(type);
             final Player player = event.getPlayer();
             if (tool != null && (action == Action.RIGHT_CLICK_BLOCK || action == Action.LEFT_CLICK_BLOCK) && logblock.hasPermission(player, "logblock.tools." + tool.name)) {
@@ -52,12 +53,12 @@ public class ToolListener implements Listener {
                     params.sel = null;
                     if (behavior == ToolBehavior.BLOCK) {
                         params.setLocation(block.getRelative(event.getBlockFace()).getLocation());
-                    } else if ((block.getTypeId() != 54 && block.getTypeId() != 146) || tool.params.radius != 0) {
+                    } else if ((block.getType() != Material.CHEST && block.getType() != Material.TRAPPED_CHEST) || tool.params.radius != 0) {
                         params.setLocation(block.getLocation());
                     } else {
                         if (logblock.getServer().getPluginManager().isPluginEnabled("WorldEdit")) {
                             for (final BlockFace face : new BlockFace[]{BlockFace.NORTH, BlockFace.SOUTH, BlockFace.EAST, BlockFace.WEST}) {
-                                if (block.getRelative(face).getTypeId() == block.getTypeId()) {
+                                if (block.getRelative(face).getType() == block.getType()) {
                                     params.setSelection(RegionContainer.fromCorners(event.getPlayer().getWorld(),
                                             block.getLocation(), block.getRelative(face).getLocation()));
                                 }
@@ -113,7 +114,7 @@ public class ToolListener implements Listener {
             for (final Entry<Tool, ToolData> entry : session.toolData.entrySet()) {
                 final Tool tool = entry.getKey();
                 final ToolData toolData = entry.getValue();
-                final int item = event.getItemDrop().getItemStack().getTypeId();
+                final Material item = event.getItemDrop().getItemStack().getType();
                 if (item == tool.item && toolData.enabled && !tool.canDrop) {
                     player.sendMessage(ChatColor.RED + "You cannot drop this tool.");
                     event.setCancelled(true);

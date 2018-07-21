@@ -18,7 +18,7 @@ public class EndermenLogging extends LoggingListener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityChangeBlock(EntityChangeBlockEvent event) {
         if (event.getEntity() instanceof Enderman && isLogging(event.getBlock().getWorld(), Logging.ENDERMEN)) {
-            consumer.queueBlockReplace(new Actor("Enderman"), event.getBlock().getState(), event.getTo().getId(), (byte) 0); // Figure out how to get the data of the placed block;
+            consumer.queueBlockReplace(new Actor("Enderman"), event.getBlock().getState(), event.getBlockData()); // Figure out how to get the data of the placed block;
         }
     }
 }

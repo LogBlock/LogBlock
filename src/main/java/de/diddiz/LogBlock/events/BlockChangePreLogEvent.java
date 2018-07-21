@@ -3,26 +3,27 @@ package de.diddiz.LogBlock.events;
 import de.diddiz.LogBlock.Actor;
 import de.diddiz.LogBlock.ChestAccess;
 import org.apache.commons.lang.Validate;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
+import org.bukkit.Material;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.event.HandlerList;
 
 public class BlockChangePreLogEvent extends PreLogEvent {
 
     private static final HandlerList handlers = new HandlerList();
     private Location location;
-    private int typeBefore, typeAfter;
-    private byte data;
+    private BlockData typeBefore, typeAfter;
     private String signText;
     private ChestAccess chestAccess;
 
-    public BlockChangePreLogEvent(Actor owner, Location location, int typeBefore, int typeAfter, byte data,
+    public BlockChangePreLogEvent(Actor owner, Location location, BlockData typeBefore, BlockData typeAfter,
                                   String signText, ChestAccess chestAccess) {
 
         super(owner);
         this.location = location;
         this.typeBefore = typeBefore;
         this.typeAfter = typeAfter;
-        this.data = data;
         this.signText = signText;
         this.chestAccess = chestAccess;
     }
@@ -37,34 +38,28 @@ public class BlockChangePreLogEvent extends PreLogEvent {
         this.location = location;
     }
 
-    public int getTypeBefore() {
+    public BlockData getTypeBefore() {
 
         return typeBefore;
     }
 
-    public void setTypeBefore(int typeBefore) {
-
+    public void setTypeBefore(BlockData typeBefore) {
+        if (typeBefore == null) {
+            typeBefore = Bukkit.createBlockData(Material.AIR);
+        }
         this.typeBefore = typeBefore;
     }
 
-    public int getTypeAfter() {
+    public BlockData getTypeAfter() {
 
         return typeAfter;
     }
 
-    public void setTypeAfter(int typeAfter) {
-
+    public void setTypeAfter(BlockData typeAfter) {
+        if (typeAfter == null) {
+            typeAfter = Bukkit.createBlockData(Material.AIR);
+        }
         this.typeAfter = typeAfter;
-    }
-
-    public byte getData() {
-
-        return data;
-    }
-
-    public void setData(byte data) {
-
-        this.data = data;
     }
 
     public String getSignText() {
@@ -90,13 +85,13 @@ public class BlockChangePreLogEvent extends PreLogEvent {
 
     private boolean isValidSign() {
 
-        if ((typeAfter == 63 || typeAfter == 68) && typeBefore == 0) {
+        if ((typeAfter.getMaterial() == Material.SIGN || typeAfter.getMaterial() == Material.WALL_SIGN) && typeBefore.getMaterial() == Material.AIR) {
             return true;
         }
-        if ((typeBefore == 63 || typeBefore == 68) && typeAfter == 0) {
+        if ((typeBefore.getMaterial() == Material.SIGN || typeBefore.getMaterial() == Material.WALL_SIGN) && typeAfter.getMaterial() == Material.AIR) {
             return true;
         }
-        if ((typeAfter == 63 || typeAfter == 68) && typeBefore == typeAfter) {
+        if ((typeAfter.getMaterial() == Material.SIGN || typeAfter.getMaterial() == Material.WALL_SIGN) && typeBefore.equals(typeAfter)) {
             return true;
         }
         return false;

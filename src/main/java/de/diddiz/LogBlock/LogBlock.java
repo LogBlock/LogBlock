@@ -2,9 +2,11 @@ package de.diddiz.LogBlock;
 
 import de.diddiz.LogBlock.config.Config;
 import de.diddiz.LogBlock.listeners.*;
+import de.diddiz.util.BukkitUtils;
 import de.diddiz.util.MySQLConnectionPool;
 import de.diddiz.worldedit.WorldEditLoggingHook;
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
@@ -24,7 +26,6 @@ import java.util.Timer;
 import java.util.logging.Level;
 
 import static de.diddiz.LogBlock.config.Config.*;
-import static de.diddiz.util.MaterialName.materialName;
 import static org.bukkit.Bukkit.getPluginManager;
 
 public class LogBlock extends JavaPlugin {
@@ -77,6 +78,7 @@ public class LogBlock extends JavaPlugin {
                 load(this);
             }
             updater.checkTables();
+            MaterialConverter.initializeMaterials(getConnection());
         } catch (final NullPointerException ex) {
             getLogger().log(Level.SEVERE, "Error while loading: ", ex);
         } catch (final Exception ex) {
@@ -89,7 +91,8 @@ public class LogBlock extends JavaPlugin {
 
     @Override
     public void onEnable() {
-        materialName(0);    // Force static code to run
+        MaterialConverter.getOrAddMaterialId(Material.AIR.getKey()); // AIR must be the first entry
+        BukkitUtils.isDoublePlant(Material.AIR); // Force static code to run
         final PluginManager pm = getPluginManager();
         if (errorAtLoading) {
             pm.disablePlugin(this);
@@ -200,9 +203,6 @@ public class LogBlock extends JavaPlugin {
         }
         if (isLogging(Logging.GRASSGROWTH) || isLogging(Logging.MYCELIUMSPREAD) || isLogging(Logging.VINEGROWTH) || isLogging(Logging.MUSHROOMSPREAD)) {
             pm.registerEvents(new BlockSpreadLogging(this), this);
-        }
-        if (isLogging(Logging.LOCKEDCHESTDECAY)) {
-            pm.registerEvents(new LockedChestDecayLogging(this), this);
         }
     }
 

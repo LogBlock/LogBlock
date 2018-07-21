@@ -5,6 +5,8 @@ import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.LogBlock.Logging;
 import de.diddiz.LogBlock.config.WorldConfig;
 import de.diddiz.util.BukkitUtils;
+
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.BlockFace;
@@ -32,7 +34,7 @@ public class BlockPlaceLogging extends LoggingListener {
             final Actor actor = Actor.actorFromEntity(event.getPlayer());
 
             //Handle falling blocks
-            if (BukkitUtils.getRelativeTopFallables().contains(type)) {
+            if (type.hasGravity()) {
 
                 // Catch placed blocks overwriting something
                 if (before.getType() != Material.AIR) {
@@ -55,9 +57,9 @@ public class BlockPlaceLogging extends LoggingListener {
                     // Run this check to avoid false positives
                     if (!BukkitUtils.getFallingEntityKillers().contains(finalLoc.getBlock().getType())) {
                         if (finalLoc.getBlock().getType() == Material.AIR || finalLoc.equals(event.getBlock().getLocation())) {
-                            consumer.queueBlockPlace(actor, finalLoc, type.getId(), event.getBlock().getData());
+                            consumer.queueBlockPlace(actor, finalLoc, event.getBlock().getBlockData());
                         } else {
-                            consumer.queueBlockReplace(actor, finalLoc, finalLoc.getBlock().getTypeId(), finalLoc.getBlock().getData(), type.getId(), event.getBlock().getData());
+                            consumer.queueBlockReplace(actor, finalLoc, finalLoc.getBlock().getBlockData(), event.getBlock().getBlockData());
                         }
                     }
                 }
@@ -65,7 +67,7 @@ public class BlockPlaceLogging extends LoggingListener {
             }
 
             //Sign logging is handled elsewhere
-            if (wcfg.isLogging(Logging.SIGNTEXT) && (type.getId() == 63 || type.getId() == 68)) {
+            if (wcfg.isLogging(Logging.SIGNTEXT) && (type == Material.SIGN || type == Material.WALL_SIGN)) {
                 return;
             }
 
@@ -73,7 +75,7 @@ public class BlockPlaceLogging extends LoggingListener {
             LogBlock.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(LogBlock.getInstance(), new Runnable() {
                 @Override
                 public void run() {
-                    if (before.getTypeId() == 0) {
+                    if (before.getType() == Material.AIR) {
                         consumer.queueBlockPlace(actor, after);
                     } else {
                         consumer.queueBlockReplace(actor, before, after);
@@ -86,7 +88,7 @@ public class BlockPlaceLogging extends LoggingListener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onPlayerBucketEmpty(PlayerBucketEmptyEvent event) {
         if (isLogging(event.getPlayer().getWorld(), Logging.BLOCKPLACE)) {
-            consumer.queueBlockPlace(Actor.actorFromEntity(event.getPlayer()), event.getBlockClicked().getRelative(event.getBlockFace()).getLocation(), event.getBucket() == Material.WATER_BUCKET ? 9 : 11, (byte) 0);
+            consumer.queueBlockPlace(Actor.actorFromEntity(event.getPlayer()), event.getBlockClicked().getRelative(event.getBlockFace()).getLocation(), Bukkit.createBlockData(event.getBucket() == Material.WATER_BUCKET ? Material.WATER : Material.LAVA));
         }
     }
 }

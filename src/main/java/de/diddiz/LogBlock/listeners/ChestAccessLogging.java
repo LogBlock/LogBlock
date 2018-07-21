@@ -4,6 +4,7 @@ import de.diddiz.LogBlock.Actor;
 import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.LogBlock.Logging;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.DoubleChest;
 import org.bukkit.entity.HumanEntity;
@@ -42,7 +43,9 @@ public class ChestAccessLogging extends LoggingListener {
                 final ItemStack[] diff = compareInventories(before, after);
                 final Location loc = getInventoryHolderLocation(holder);
                 for (final ItemStack item : diff) {
-                    consumer.queueChestAccess(Actor.actorFromEntity(player), loc, loc.getWorld().getBlockTypeIdAt(loc), (short) item.getTypeId(), (short) item.getAmount(), rawData(item));
+                    ItemStack item2 = item.clone();
+                    item2.setAmount(Math.abs(item.getAmount()));
+                    consumer.queueChestAccess(Actor.actorFromEntity(player), loc, loc.getWorld().getBlockAt(loc).getBlockData(), item2, item.getAmount() < 0);
                 }
                 containers.remove(player);
             }
@@ -58,7 +61,7 @@ public class ChestAccessLogging extends LoggingListener {
         if (event.getInventory() != null) {
             InventoryHolder holder = event.getInventory().getHolder();
             if (holder instanceof BlockState || holder instanceof DoubleChest) {
-                if (getInventoryHolderType(holder) != 58) {
+                if (getInventoryHolderType(holder) != Material.CRAFTING_TABLE) {
                     containers.put(event.getPlayer(), compressInventory(event.getInventory().getContents()));
                 }
             }

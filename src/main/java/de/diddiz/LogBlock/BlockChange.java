@@ -2,33 +2,40 @@ package de.diddiz.LogBlock;
 
 import de.diddiz.LogBlock.config.Config;
 import de.diddiz.util.BukkitUtils;
+import de.diddiz.util.Utils;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.block.data.BlockData;
+import org.bukkit.block.data.Openable;
+import org.bukkit.block.data.Powerable;
+import org.bukkit.block.data.type.Switch;
+import org.bukkit.inventory.ItemStack;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import static de.diddiz.util.LoggingUtil.checkText;
-import static de.diddiz.util.MaterialName.materialName;
 
 public class BlockChange implements LookupCacheElement {
     public final long id, date;
     public final Location loc;
     public final Actor actor;
     public final String playerName;
-    public final int replaced, type;
-    public final byte data;
+    // public final BlockData replaced, type;
+    public final int replacedMaterial, replacedData, typeMaterial, typeData;
     public final String signtext;
     public final ChestAccess ca;
 
-    public BlockChange(long date, Location loc, Actor actor, int replaced, int type, byte data, String signtext, ChestAccess ca) {
+    public BlockChange(long date, Location loc, Actor actor, int replaced, int replacedData, int type, int typeData, String signtext, ChestAccess ca) {
         id = 0;
         this.date = date;
         this.loc = loc;
         this.actor = actor;
-        this.replaced = replaced;
-        this.type = type;
-        this.data = data;
+        this.replacedMaterial = replaced;
+        this.replacedData = replacedData;
+        this.typeMaterial = type;
+        this.typeData = typeData;
         this.signtext = checkText(signtext);
         this.ca = ca;
         this.playerName = actor == null ? null : actor.getName();
@@ -40,15 +47,25 @@ public class BlockChange implements LookupCacheElement {
         loc = p.needCoords ? new Location(p.world, rs.getInt("x"), rs.getInt("y"), rs.getInt("z")) : null;
         actor = p.needPlayer ? new Actor(rs) : null;
         playerName = p.needPlayer ? rs.getString("playername") : null;
-        replaced = p.needType ? rs.getInt("replaced") : 0;
-        type = p.needType ? rs.getInt("type") : 0;
-        data = p.needData ? rs.getByte("data") : (byte) 0;
+        replacedMaterial = p.needType ? rs.getInt("replaced") : 0;
+        replacedData = p.needType ? rs.getInt("replacedData") : -1;
+        typeMaterial = p.needType ? rs.getInt("type") : 0;
+        typeData = p.needType ? rs.getInt("typeData") : -1;
         signtext = p.needSignText ? rs.getString("signtext") : null;
-        ca = p.needChestAccess && rs.getShort("itemtype") != 0 && rs.getShort("itemamount") != 0 ? new ChestAccess(rs.getShort("itemtype"), rs.getShort("itemamount"), rs.getShort("itemdata")) : null;
+        ChestAccess catemp = null;
+        if (p.needChestAccess) {
+            ItemStack stack = Utils.loadItemStack(rs.getBytes("item"));
+            if (stack != null) {
+                catemp = new ChestAccess(stack, rs.getBoolean("itemremove"));
+            }
+        }
+        ca = catemp;
     }
 
     @Override
     public String toString() {
+        BlockData type = MaterialConverter.getBlockData(typeMaterial, typeData);
+        BlockData replaced = MaterialConverter.getBlockData(replacedMaterial, replacedData);
         final StringBuilder msg = new StringBuilder();
         if (date > 0) {
             msg.append(Config.formatter.format(date)).append(" ");
@@ -57,58 +74,47 @@ public class BlockChange implements LookupCacheElement {
             msg.append(actor.getName()).append(" ");
         }
         if (signtext != null) {
-            final String action = type == 0 ? "destroyed " : "created ";
+            final String action = type.getMaterial() == Material.AIR ? "destroyed " : "created ";
             if (!signtext.contains("\0")) {
                 msg.append(action).append(signtext);
             } else {
-                msg.append(action).append(materialName(type != 0 ? type : replaced)).append(" [").append(signtext.replace("\0", "] [")).append("]");
+                msg.append(action).append((type.getMaterial() != Material.AIR ? type : replaced).getMaterial().name()).append(" [").append(signtext.replace("\0", "] [")).append("]");
             }
-        } else if (type == replaced) {
-            if (type == 0) {
+        } else if (type.equals(replaced)) {
+            if (type.getMaterial() == Material.AIR) {
                 msg.append("did an unspecified action");
             } else if (ca != null) {
-                if (ca.itemType == 0 || ca.itemAmount == 0) {
-                    msg.append("looked inside ").append(materialName(type));
-                } else if (ca.itemAmount < 0) {
-                    msg.append("took ").append(-ca.itemAmount).append("x ").append(materialName(ca.itemType, ca.itemData)).append(" from ").append(materialName(type));
+                if (ca.itemStack == null) {
+                    msg.append("looked inside ").append(type.getMaterial().name());
+                } else if (ca.remove) {
+                    msg.append("took ").append(ca.itemStack.getAmount()).append("x ").append(ca.itemStack.getType().name()).append(" from ").append(type.getMaterial().name());
                 } else {
-                    msg.append("put ").append(ca.itemAmount).append("x ").append(materialName(ca.itemType, ca.itemData)).append(" into ").append(materialName(type));
+                    msg.append("put ").append(ca.itemStack.getAmount()).append("x ").append(ca.itemStack.getType().name()).append(" into ").append(type.getMaterial().name());
                 }
-            } else if (BukkitUtils.getContainerBlocks().contains(Material.getMaterial(type))) {
-                msg.append("opened ").append(materialName(type));
-            } else if (type == 64 || type == 71)
-            // This is a problem that will have to be addressed in LB 2,
-            // there is no way to tell from the top half of the block if
-            // the door is opened or closed.
-            {
-                msg.append("moved ").append(materialName(type));
+            } else if (BukkitUtils.getContainerBlocks().contains(type.getMaterial())) {
+                msg.append("opened ").append(type.getMaterial().name());
+            } else if (type instanceof Openable) {
+                // Door, Trapdoor, Fence gate
+                msg.append(((Openable)type).isOpen() ? "opened" : "closed").append(" ").append(type.getMaterial().name());
+            } else if (type.getMaterial() == Material.LEVER) {
+                msg.append("switched ").append(type.getMaterial().name());
+            } else if (type instanceof Switch) {
+                msg.append("pressed ").append(type.getMaterial().name());
+            } else if (type.getMaterial() == Material.CAKE) {
+                msg.append("ate a piece of ").append(type.getMaterial().name());
+            } else if (type.getMaterial() == Material.NOTE_BLOCK || type.getMaterial() == Material.REPEATER || type.getMaterial() == Material.COMPARATOR || type.getMaterial() == Material.DAYLIGHT_DETECTOR) {
+                msg.append("changed ").append(type.getMaterial().name());
+            } else if (type instanceof Powerable) {
+                msg.append("stepped on ").append(type.getMaterial().name());
+            } else if (type.getMaterial() == Material.TRIPWIRE) {
+                msg.append("ran into ").append(type.getMaterial().name());
             }
-            // Trapdoor
-            else if (type == 96) {
-                msg.append((data < 8 || data > 11) ? "opened" : "closed").append(" ").append(materialName(type));
-            }
-            // Fence gate
-            else if (type == 107) {
-                msg.append(data > 3 ? "opened" : "closed").append(" ").append(materialName(type));
-            } else if (type == 69) {
-                msg.append("switched ").append(materialName(type));
-            } else if (type == 77 || type == 143) {
-                msg.append("pressed ").append(materialName(type));
-            } else if (type == 92) {
-                msg.append("ate a piece of ").append(materialName(type));
-            } else if (type == 25 || type == 93 || type == 94 || type == 149 || type == 150) {
-                msg.append("changed ").append(materialName(type));
-            } else if (type == 70 || type == 72 || type == 147 || type == 148) {
-                msg.append("stepped on ").append(materialName(type));
-            } else if (type == 132) {
-                msg.append("ran into ").append(materialName(type));
-            }
-        } else if (type == 0) {
-            msg.append("destroyed ").append(materialName(replaced, data));
-        } else if (replaced == 0) {
-            msg.append("created ").append(materialName(type, data));
+        } else if (type.getMaterial() == Material.AIR) {
+            msg.append("destroyed ").append(replaced.getMaterial().name());
+        } else if (replaced.getMaterial() == Material.AIR) {
+            msg.append("created ").append(type.getMaterial().name());
         } else {
-            msg.append("replaced ").append(materialName(replaced, (byte) 0)).append(" with ").append(materialName(type, data));
+            msg.append("replaced ").append(replaced.getMaterial().name()).append(" with ").append(type.getMaterial().name());
         }
         if (loc != null) {
             msg.append(" at ").append(loc.getBlockX()).append(":").append(loc.getBlockY()).append(":").append(loc.getBlockZ());

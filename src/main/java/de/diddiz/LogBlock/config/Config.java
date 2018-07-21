@@ -32,15 +32,15 @@ public class Config {
     public static boolean dumpDeletedLog;
     public static boolean logCreeperExplosionsAsPlayerWhoTriggeredThese, logPlayerInfo;
     public static LogKillsLevel logKillsLevel;
-    public static Set<Integer> dontRollback, replaceAnyway;
+    public static Set<Material> dontRollback, replaceAnyway;
     public static int rollbackMaxTime, rollbackMaxArea;
     public static Map<String, Tool> toolsByName;
-    public static Map<Integer, Tool> toolsByType;
+    public static Map<Material, Tool> toolsByType;
     public static int defaultDist, defaultTime;
     public static int linesPerPage, linesLimit;
     public static boolean askRollbacks, askRedos, askClearLogs, askClearLogAfterRollback, askRollbackAfterBan;
     public static String banPermission;
-    public static Set<Integer> hiddenBlocks;
+    public static Set<Material> hiddenBlocks;
     public static Set<String> hiddenPlayers;
     public static Set<String> ignoredChat;
     public static SimpleDateFormat formatter;
@@ -161,21 +161,37 @@ public class Config {
         for (final String playerName : config.getStringList("logging.hiddenPlayers")) {
             hiddenPlayers.add(playerName.toLowerCase().trim());
         }
-        hiddenBlocks = new HashSet<Integer>();
-        for (final Object blocktype : config.getList("logging.hiddenBlocks")) {
-            final Material mat = Material.matchMaterial(String.valueOf(blocktype));
+        hiddenBlocks = new HashSet<Material>();
+        for (final String blocktype : config.getStringList("logging.hiddenBlocks")) {
+            final Material mat = Material.matchMaterial(blocktype);
             if (mat != null) {
-                hiddenBlocks.add(mat.getId());
+                hiddenBlocks.add(mat);
             } else {
-                throw new DataFormatException("Not a valid material: '" + blocktype + "'");
+                throw new DataFormatException("Not a valid material in hiddenBlocks: '" + blocktype + "'");
             }
         }
         ignoredChat = new HashSet<String>();
         for (String chatCommand : config.getStringList("logging.ignoredChat")) {
             ignoredChat.add(chatCommand);
         }
-        dontRollback = new HashSet<Integer>(config.getIntegerList("rollback.dontRollback"));
-        replaceAnyway = new HashSet<Integer>(config.getIntegerList("rollback.replaceAnyway"));
+        dontRollback = new HashSet<Material>();
+        for (String e : config.getStringList("rollback.dontRollback")) {
+            Material mat = Material.matchMaterial(e);
+            if (mat != null) {
+                dontRollback.add(mat);
+            } else {
+                throw new DataFormatException("Not a valid material in dontRollback: '" + e + "'");
+            }
+        }
+        replaceAnyway = new HashSet<Material>();
+        for (String e : config.getStringList("rollback.replaceAnyway")) {
+            Material mat = Material.matchMaterial(e);
+            if (mat != null) {
+                replaceAnyway.add(mat);
+            } else {
+                throw new DataFormatException("Not a valid material in replaceAnyway: '" + e + "'");
+            }
+        }
         rollbackMaxTime = parseTimeSpec(config.getString("rollback.maxTime").split(" "));
         rollbackMaxArea = config.getInt("rollback.maxArea", 50);
         defaultDist = config.getInt("lookup.defaultDist", 20);
@@ -199,7 +215,7 @@ public class Config {
                 final ToolBehavior leftClickBehavior = ToolBehavior.valueOf(tSec.getString("leftClickBehavior").toUpperCase());
                 final ToolBehavior rightClickBehavior = ToolBehavior.valueOf(tSec.getString("rightClickBehavior").toUpperCase());
                 final boolean defaultEnabled = tSec.getBoolean("defaultEnabled", false);
-                final int item = tSec.getInt("item", 0);
+                final Material item = Material.matchMaterial(tSec.getString("item","OAK_LOG"));
                 final boolean canDrop = tSec.getBoolean("canDrop", false);
                 final QueryParams params = new QueryParams(logblock);
                 params.prepareToolQuery = true;
@@ -212,7 +228,7 @@ public class Config {
             }
         }
         toolsByName = new HashMap<String, Tool>();
-        toolsByType = new HashMap<Integer, Tool>();
+        toolsByType = new HashMap<Material, Tool>();
         for (final Tool tool : tools) {
             toolsByType.put(tool.item, tool);
             toolsByName.put(tool.name.toLowerCase(), tool);

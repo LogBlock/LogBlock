@@ -2,7 +2,7 @@ package de.diddiz.LogBlock;
 
 import de.diddiz.LogBlock.config.Config;
 import org.bukkit.Location;
-import org.bukkit.inventory.ItemStack;
+import org.bukkit.Material;
 
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -41,7 +41,7 @@ public class Kill implements LookupCacheElement {
         if (loc != null) {
             msg.append(" at ").append(loc.getBlockX()).append(":").append(loc.getBlockY()).append(":").append(loc.getBlockZ());
         }
-        String weaponName = prettyItemName(new ItemStack(weapon));
+        String weaponName = prettyItemName(MaterialConverter.getMaterial(weapon));
         msg.append(" with " + weaponName); // + ("aeiou".contains(weaponName.substring(0, 1)) ? "an " : "a " )
         return msg.toString();
     }
@@ -56,11 +56,10 @@ public class Kill implements LookupCacheElement {
         return toString();
     }
 
-    public String prettyItemName(ItemStack i) {
-        String item = i.getType().toString().replace('_', ' ').toLowerCase();
-        if (item.equals("air")) {
-            item = "fist";
+    public String prettyItemName(Material t) {
+        if (t == null || t == Material.AIR) {
+            return "fist";
         }
-        return item;
+        return t.toString().replace('_', ' ').toLowerCase();
     }
 }

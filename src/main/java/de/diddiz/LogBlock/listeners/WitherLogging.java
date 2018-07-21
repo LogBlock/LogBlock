@@ -18,7 +18,7 @@ public class WitherLogging extends LoggingListener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityChangeBlock(EntityChangeBlockEvent event) {
         if (event.getEntity() instanceof Wither && isLogging(event.getBlock().getWorld(), Logging.WITHER)) {
-            consumer.queueBlockReplace(Actor.actorFromEntity(event.getEntity()), event.getBlock().getState(), event.getTo().getId(), event.getData()); // Wither walked through a block.
+            consumer.queueBlockReplace(Actor.actorFromEntity(event.getEntity()), event.getBlock().getState(), event.getBlockData()); // Wither walked through a block.
         }
     }
 }
