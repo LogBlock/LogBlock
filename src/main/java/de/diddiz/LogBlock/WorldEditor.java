@@ -8,9 +8,11 @@ import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Sign;
+import org.bukkit.block.data.Bisected.Half;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Bed;
 import org.bukkit.block.data.type.Bed.Part;
+import org.bukkit.block.data.type.Door;
 import org.bukkit.block.data.type.Piston;
 import org.bukkit.block.data.type.PistonHead;
 import org.bukkit.block.data.type.TechnicalPiston.Type;
@@ -194,6 +196,8 @@ public class WorldEditor implements Runnable {
                             throw new WorldEditorException("Not enough space left in " + block.getType(), block.getLocation());
                         }
                     }
+                } else if (!block.getBlockData().equals(replacedBlock)) {
+                    block.setBlockData(replacedBlock);
                 } else {
                     return PerformResult.NO_ACTION;
                 }
@@ -208,7 +212,7 @@ public class WorldEditor implements Runnable {
             }
             block.setBlockData(replacedBlock);
             BlockData newData = block.getBlockData();
-            
+
             final Material curtype = block.getType();
             if (signtext != null && (curtype == Material.SIGN || curtype == Material.WALL_SIGN)) {
                 final Sign sign = (Sign) block.getState();
@@ -229,6 +233,14 @@ public class WorldEditor implements Runnable {
                     Bed bed2 = (Bed) bed.clone();
                     bed2.setPart(bed.getPart() == Part.HEAD ? Part.FOOT : Part.HEAD);
                     secBlock.setBlockData(bed2);
+                }
+            } else if (newData instanceof Door) {
+                final Door door = (Door) newData;
+                final Block secBlock = door.getHalf() == Half.TOP ? block.getRelative(BlockFace.DOWN) : block.getRelative(BlockFace.UP);
+                if (secBlock.isEmpty()) {
+                    Door door2 = (Door) door.clone();
+                    door2.setHalf(door.getHalf() == Half.TOP ? Half.BOTTOM : Half.TOP);
+                    secBlock.setBlockData(door2);
                 }
             } else if ((curtype == Material.PISTON || curtype == Material.STICKY_PISTON)) {
                 Piston piston = (Piston) newData;
