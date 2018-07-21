@@ -20,6 +20,16 @@ public class MaterialConverter {
     private static String[] idToBlockState = new String[10];
     private static HashMap<String, Integer> blockStateToID = new HashMap<>();
     private static int nextBlockStateId;
+    
+    private static HashMap<String, Material> materialKeyToMaterial = new HashMap<>();
+
+    static {
+        for (Material m : Material.values()) {
+            if (!m.name().startsWith("LEGACY_") && m.getKey() != null) {
+                materialKeyToMaterial.put(m.getKey().toString(), m);
+            }
+        }
+    }
 
     public synchronized static int getOrAddMaterialId(NamespacedKey nameSpaceKey) {
         return getOrAddMaterialId(nameSpaceKey.toString());
@@ -80,7 +90,11 @@ public class MaterialConverter {
     }
 
     public static Material getMaterial(int materialId) {
-        return getBlockData(materialId, -1).getMaterial();
+        String material = idToMaterial[materialId];
+        if (materialId >= 0) {
+            material = material + idToBlockState[materialId];
+        }
+        return materialKeyToMaterial.get(material);
     }
 
     public static void initializeMaterials(Connection connection) throws SQLException {

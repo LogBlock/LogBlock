@@ -158,8 +158,11 @@ public class WorldEditor implements Runnable {
         PerformResult perform() throws WorldEditorException {
             BlockData replacedBlock = MaterialConverter.getBlockData(this.replacedMaterial, replacedData);
             BlockData setBlock = MaterialConverter.getBlockData(this.typeMaterial, typeData);
+            if (replacedBlock == null || setBlock == null) {
+                throw new WorldEditorException("Could not parse the material", loc.clone());
+            }
             // action: set to replaced
-            
+
             if (dontRollback.contains(replacedBlock.getMaterial())) {
                 return PerformResult.BLACKLISTED;
             }
