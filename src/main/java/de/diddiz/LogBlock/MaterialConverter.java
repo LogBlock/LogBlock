@@ -90,11 +90,7 @@ public class MaterialConverter {
     }
 
     public static Material getMaterial(int materialId) {
-        String material = idToMaterial[materialId];
-        if (materialId >= 0) {
-            material = material + idToBlockState[materialId];
-        }
-        return materialKeyToMaterial.get(material);
+        return materialKeyToMaterial.get(idToMaterial[materialId]);
     }
 
     public static void initializeMaterials(Connection connection) throws SQLException {
