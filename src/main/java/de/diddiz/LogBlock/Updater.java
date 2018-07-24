@@ -4,13 +4,18 @@ import de.diddiz.LogBlock.config.Config;
 import de.diddiz.LogBlock.config.WorldConfig;
 import de.diddiz.util.UUIDFetcher;
 import org.bukkit.Bukkit;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
 
+import java.io.BufferedInputStream;
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.sql.*;
 import java.util.*;
+import java.util.jar.JarFile;
 import java.util.logging.Level;
 
 import static de.diddiz.LogBlock.config.Config.getLoggedWorlds;
@@ -405,6 +410,100 @@ class Updater {
             }
             config.set("version", "1.12.0");
         }
+        if (configVersion.compareTo(new ComparableVersion("1.13.0")) < 0) {
+            getLogger().info("Updating tables to 1.13.0 ...");
+            try {
+                MaterialUpdater materialUpdater = null;
+                checkTables(); // we need to create the tables first
+                getLogger().info("Convertig BlockId to BlockData. This can take a while ...");
+                final Connection conn = logblock.getConnection();
+                conn.setAutoCommit(false);
+                final Statement st = conn.createStatement();
+                for (final WorldConfig wcfg : getLoggedWorlds()) {
+                    boolean hadRow = true;
+                    int rowsToConvert = 0;
+                    int done = 0;
+                    try {
+                        ResultSet rs = st.executeQuery("SELECT count(*) as rowcount FROM `" + wcfg.table + "`");
+                        if (rs.next()) {
+                            rowsToConvert = rs.getInt(1);
+                            getLogger().info("Converting " + rowsToConvert + " entries in " + wcfg.table);
+                        }
+                    } catch (SQLException e) {
+                        getLogger().info("Could not convert " + wcfg.table + ": " + e.getMessage());
+                        continue;
+                    }
+
+                    PreparedStatement deleteStatement = conn.prepareStatement("DELETE FROM `" + wcfg.table + "` WHERE id = ?");
+                    PreparedStatement insertStatement = conn.prepareStatement("INSERT INTO `" + wcfg.table + "-blocks` (id, date, playerid, replaced, replacedData, type, typeData, x, y, z) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+
+                    while (hadRow) {
+                        hadRow = false;
+                        ResultSet entries = st.executeQuery("SELECT id, date, playerid, replaced, type, data, x, y, z FROM `" + wcfg.table + "` ORDER BY id ASC LIMIT 10000");
+                        while (entries.next()) {
+                            hadRow = true;
+                            int id = entries.getInt("id");
+                            Timestamp date = entries.getTimestamp("date");
+                            int playerid = entries.getInt("playerid");
+                            int replaced = entries.getInt("replaced");
+                            int type = entries.getInt("type");
+                            int data = entries.getInt("data");
+                            int x = entries.getInt("x");
+                            int y = entries.getInt("y");
+                            int z = entries.getInt("z");
+                            if (data == 16) {
+                                data = 0;
+                            }
+
+                            if (materialUpdater == null) {
+                                materialUpdater = new MaterialUpdater(logblock);
+                            }
+                            try {
+                                String replacedBlockData = materialUpdater.getBlockData(replaced, data).getAsString();
+                                String setBlockData = materialUpdater.getBlockData(type, data).getAsString();
+
+                                int newReplacedId = MaterialConverter.getOrAddMaterialId(replacedBlockData);
+                                int newReplacedData = MaterialConverter.getOrAddBlockStateId(replacedBlockData);
+
+                                int newSetId = MaterialConverter.getOrAddMaterialId(setBlockData);
+                                int newSetData = MaterialConverter.getOrAddBlockStateId(setBlockData);
+
+                                insertStatement.setInt(1, id);
+                                insertStatement.setTimestamp(2, date);
+                                insertStatement.setInt(3, playerid);
+                                insertStatement.setInt(4, newReplacedId);
+                                insertStatement.setInt(5, newReplacedData);
+                                insertStatement.setInt(6, newSetId);
+                                insertStatement.setInt(7, newSetData);
+                                insertStatement.setInt(8, x);
+                                insertStatement.setInt(9, y);
+                                insertStatement.setInt(10, z);
+                                insertStatement.addBatch();
+                            } catch (Exception e) {
+                                getLogger().info("Exception in entry " + id + " (" + replaced + ":" + data + "->" + type + ":" + data + "): " + e.getMessage());
+                            }
+                            deleteStatement.setInt(1, id);
+                            deleteStatement.addBatch();
+
+                            done++;
+                        }
+                        if (hadRow) {
+                            insertStatement.executeBatch();
+                            deleteStatement.executeBatch();
+                        }
+                        conn.commit();
+                        logblock.getConsumer().run(); // force a consumer run
+                        getLogger().info(done + "/" + rowsToConvert);
+                    }
+                }
+                st.close();
+                conn.close();
+            } catch (final SQLException | IOException ex) {
+                Bukkit.getLogger().log(Level.SEVERE, "[Updater] Error: ", ex);
+                return false;
+            }
+            config.set("version", "1.13.0");
+        }
 
         logblock.saveConfig();
         return true;
@@ -495,6 +594,43 @@ class Updater {
             } catch (final SQLException ex) {
                 logblock.getLogger().log(Level.SEVERE, "[Updater] Error: ", ex);
             }
+        }
+    }
+
+    public static class MaterialUpdater {
+        BlockData[][] blockDataMapping;
+        public MaterialUpdater(LogBlock plugin) throws IOException {
+            blockDataMapping = new BlockData[256][16];
+            JarFile file = new JarFile(plugin.getFile());
+            BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(file.getInputStream(file.getJarEntry("blockdata.txt"))), "UTF-8"));
+            while (true) {
+                String line = reader.readLine();
+                if (line == null) {
+                    break;
+                }
+                int splitter1 = line.indexOf(":");
+                int splitter2 = line.indexOf(",");
+                if (splitter1 >= 0 && splitter2 >= 0) {
+                    int blockid = Integer.parseInt(line.substring(0, splitter1));
+                    int blockdata = Integer.parseInt(line.substring(splitter1 + 1, splitter2));
+                    BlockData newBlockData = Bukkit.createBlockData(line.substring(splitter2 + 1));
+
+                    if (blockdata == 0) {
+                        for (int i = 0; i < 16; i++) {
+                            if (blockDataMapping[blockid][i] == null) {
+                                blockDataMapping[blockid][i] = newBlockData;
+                            }
+                        }
+                    } else {
+                        blockDataMapping[blockid][blockdata] = newBlockData;
+                    }
+                }
+            }
+            file.close();
+        }
+
+        public BlockData getBlockData(int id, int data) {
+            return id >= 0 && id < 256 && data >= 0 && data < 16 ? blockDataMapping[id][data] : null;
         }
     }
 }

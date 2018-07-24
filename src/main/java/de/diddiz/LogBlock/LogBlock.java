@@ -14,6 +14,7 @@ import org.bukkit.permissions.Permission;
 import org.bukkit.plugin.PluginManager;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.sql.Connection;
@@ -56,6 +57,7 @@ public class LogBlock extends JavaPlugin {
     @Override
     public void onLoad() {
         logblock = this;
+        consumer = new Consumer(this);
         try {
             updater = new Updater(this);
             Config.load(this);
@@ -74,11 +76,12 @@ public class LogBlock extends JavaPlugin {
                 st.executeQuery("SET NAMES utf8mb4;");
             }
             conn.close();
+            updater.checkTables();
+            MaterialConverter.initializeMaterials(getConnection());
+            MaterialConverter.getOrAddMaterialId(Material.AIR.getKey()); // AIR must be the first entry
             if (updater.update()) {
                 load(this);
             }
-            updater.checkTables();
-            MaterialConverter.initializeMaterials(getConnection());
         } catch (final NullPointerException ex) {
             getLogger().log(Level.SEVERE, "Error while loading: ", ex);
         } catch (final Exception ex) {
@@ -86,12 +89,10 @@ public class LogBlock extends JavaPlugin {
             errorAtLoading = true;
             return;
         }
-        consumer = new Consumer(this);
     }
 
     @Override
     public void onEnable() {
-        MaterialConverter.getOrAddMaterialId(Material.AIR.getKey()); // AIR must be the first entry
         BukkitUtils.isDoublePlant(Material.AIR); // Force static code to run
         final PluginManager pm = getPluginManager();
         if (errorAtLoading) {
@@ -332,5 +333,10 @@ public class LogBlock extends JavaPlugin {
             }
             conn.close();
         }
+    }
+    
+    @Override
+    public File getFile() {
+        return super.getFile();
     }
 }

@@ -674,7 +674,7 @@ public class CommandsHandler implements CommandExecutor {
                     if (stack != null) {
                         chestaccess = new ChestAccess(stack, rs.getBoolean("itemremove"));
                     }
-                    editor.queueEdit(rs.getInt("x"), rs.getInt("y"), rs.getInt("z"), rs.getInt("replaced"), rs.getInt("replacedData"), rs.getInt("type"), rs.getByte("typeData"), rs.getString("signtext"), chestaccess);
+                    editor.queueEdit(rs.getInt("x"), rs.getInt("y"), rs.getInt("z"), rs.getInt("replaced"), rs.getInt("replacedData"), rs.getInt("type"), rs.getInt("typeData"), rs.getString("signtext"), chestaccess);
                 }
                 final int changes = editor.getSize();
                 if (changes > 10000) {
@@ -749,7 +749,7 @@ public class CommandsHandler implements CommandExecutor {
                     if (stack != null) {
                         chestaccess = new ChestAccess(stack, !rs.getBoolean("itemremove"));
                     }
-                    editor.queueEdit(rs.getInt("x"), rs.getInt("y"), rs.getInt("z"), rs.getInt("type"), rs.getInt("typeData"), rs.getInt("replaced"), rs.getByte("replacedData"), rs.getString("signtext"), chestaccess);
+                    editor.queueEdit(rs.getInt("x"), rs.getInt("y"), rs.getInt("z"), rs.getInt("type"), rs.getInt("typeData"), rs.getInt("replaced"), rs.getInt("replacedData"), rs.getString("signtext"), chestaccess);
                 }
                 final int changes = editor.getSize();
                 if (!params.silent) {
