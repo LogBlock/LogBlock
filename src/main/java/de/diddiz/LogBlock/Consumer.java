@@ -309,7 +309,7 @@ public class Consumer extends TimerTask {
         if (victim == null || !isLogged(location.getWorld())) {
             return;
         }
-        queue.add(new KillRow(location, killer == null ? null : killer, victim, MaterialConverter.getOrAddMaterialId(weapon.getType().getKey().toString())));
+        queue.add(new KillRow(location, killer == null ? null : killer, victim, weapon == null ? 0 : MaterialConverter.getOrAddMaterialId(weapon.getType().getKey().toString())));
     }
 
     /**
