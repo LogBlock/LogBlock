@@ -73,7 +73,7 @@
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
-            <version>2.7.4</version>
+            <version>3.2.0</version>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -140,7 +140,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.2</version>
+                <version>3.7.0</version>
                 <configuration>
                     <source>1.8</source>
                     <target>1.8</target>
@@ -149,7 +149,7 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>build-helper-maven-plugin</artifactId>
-                <version>1.9.1</version>
+                <version>3.0.0</version>
                 <executions>
                     <execution>
                         <id>regex-property</id>
@@ -169,7 +169,7 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
-                <version>2.3</version>
+                <version>3.1.1</version>
                 <configuration>
                 </configuration>
                 <executions>
@@ -178,6 +178,18 @@
                         <goals>
                             <goal>shade</goal>
                         </goals>
+                        <configuration>
+							<relocations>
+								<relocation>
+									<pattern>com.zaxxer.hikari</pattern>
+									<shadedPattern>de.diddiz.lib.com.zaxxer.hikari</shadedPattern>
+								</relocation>
+								<relocation>
+									<pattern>org.slf4j</pattern>
+									<shadedPattern>de.diddiz.lib.org.slf4j</shadedPattern>
+								</relocation>
+							</relocations>
+						</configuration>
                     </execution>
                 </executions>
             </plugin>
