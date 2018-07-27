@@ -32,7 +32,7 @@ public class FluidFlowLogging extends LoggingListener {
             
             final Block to = event.getToBlock();
             final Material typeTo = to.getType();
-            final boolean canFlow = typeTo == Material.AIR || BukkitUtils.getNonFluidProofBlocks().contains(typeTo);
+            final boolean canFlow = BukkitUtils.isEmpty(typeTo) || BukkitUtils.getNonFluidProofBlocks().contains(typeTo);
             if (typeFrom == Material.LAVA) {
                 Levelled levelledFrom = (Levelled)blockDataFrom;
                 if (canFlow && wcfg.isLogging(Logging.LAVAFLOW)) {
@@ -41,7 +41,7 @@ public class FluidFlowLogging extends LoggingListener {
                     } else {
                         Levelled newBlock = (Levelled) blockDataFrom.clone();
                         newBlock.setLevel(levelledFrom.getLevel() + 1);
-                        if (typeTo == Material.AIR) {
+                        if (BukkitUtils.isEmpty(typeTo)) {
                             consumer.queueBlockPlace(new Actor("LavaFlow"), to.getLocation(), newBlock);
                         } else {
                             consumer.queueBlockReplace(new Actor("LavaFlow"), to.getState(), newBlock);
@@ -58,7 +58,7 @@ public class FluidFlowLogging extends LoggingListener {
                 Levelled levelledFrom = (Levelled)blockDataFrom;
                 Levelled newBlock = (Levelled) blockDataFrom.clone();
                 newBlock.setLevel(levelledFrom.getLevel() + 1);
-                if (typeTo == Material.AIR) {
+                if (BukkitUtils.isEmpty(typeTo)) {
                     consumer.queueBlockPlace(new Actor("WaterFlow"), to.getLocation(), newBlock);
                 } else if (BukkitUtils.getNonFluidProofBlocks().contains(typeTo)) {
                     consumer.queueBlockReplace(new Actor("WaterFlow"), to.getState(), newBlock);
@@ -70,7 +70,7 @@ public class FluidFlowLogging extends LoggingListener {
                         consumer.queueBlockReplace(new Actor("WaterFlow"), to.getState(), Material.STONE.createBlockData());
                     }
                 }
-                if (typeTo == Material.AIR || BukkitUtils.getNonFluidProofBlocks().contains(typeTo)) {
+                if (BukkitUtils.isEmpty(typeTo) || BukkitUtils.getNonFluidProofBlocks().contains(typeTo)) {
                     for (final BlockFace face : new BlockFace[]{BlockFace.DOWN, BlockFace.NORTH, BlockFace.WEST, BlockFace.EAST, BlockFace.SOUTH}) {
                         final Block lower = to.getRelative(face);
                         if (lower.getType() == Material.LAVA) {

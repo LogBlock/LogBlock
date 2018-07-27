@@ -50,7 +50,7 @@ public class LoggingUtil {
                 // Run this check to avoid false positives
                 if (!BukkitUtils.getFallingEntityKillers().contains(finalLoc.getBlock().getType())) {
                     finalLoc.add(0, up, 0); // Add this here after checking for block breakers
-                    if (finalLoc.getBlock().getType() == Material.AIR) {
+                    if (BukkitUtils.isEmpty(finalLoc.getBlock().getType())) {
                         consumer.queueBlockPlace(actor, finalLoc, checkBlock.getBlockData());
                     } else {
                         consumer.queueBlockReplace(actor, finalLoc, finalLoc.getBlock().getBlockData(), checkBlock.getBlockData());

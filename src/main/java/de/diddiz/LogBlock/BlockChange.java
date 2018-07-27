@@ -74,14 +74,14 @@ public class BlockChange implements LookupCacheElement {
             msg.append(actor.getName()).append(" ");
         }
         if (signtext != null) {
-            final String action = type.getMaterial() == Material.AIR ? "destroyed " : "created ";
+            final String action = BukkitUtils.isEmpty(type.getMaterial()) ? "destroyed " : "created ";
             if (!signtext.contains("\0")) {
                 msg.append(action).append(signtext);
             } else {
-                msg.append(action).append((type.getMaterial() != Material.AIR ? type : replaced).getMaterial().name()).append(" [").append(signtext.replace("\0", "] [")).append("]");
+                msg.append(action).append((!BukkitUtils.isEmpty(type.getMaterial()) ? type : replaced).getMaterial().name()).append(" [").append(signtext.replace("\0", "] [")).append("]");
             }
         } else if (type.equals(replaced)) {
-            if (type.getMaterial() == Material.AIR) {
+            if (BukkitUtils.isEmpty(type.getMaterial())) {
                 msg.append("did an unspecified action");
             } else if (ca != null) {
                 if (ca.itemStack == null) {
@@ -109,9 +109,9 @@ public class BlockChange implements LookupCacheElement {
             } else if (type.getMaterial() == Material.TRIPWIRE) {
                 msg.append("ran into ").append(type.getMaterial().name());
             }
-        } else if (type.getMaterial() == Material.AIR) {
+        } else if (BukkitUtils.isEmpty(type.getMaterial())) {
             msg.append("destroyed ").append(replaced.getMaterial().name());
-        } else if (replaced.getMaterial() == Material.AIR) {
+        } else if (BukkitUtils.isEmpty(replaced.getMaterial())) {
             msg.append("created ").append(type.getMaterial().name());
         } else {
             msg.append("replaced ").append(replaced.getMaterial().name()).append(" with ").append(type.getMaterial().name());

@@ -2,6 +2,8 @@ package de.diddiz.LogBlock.events;
 
 import de.diddiz.LogBlock.Actor;
 import de.diddiz.LogBlock.ChestAccess;
+import de.diddiz.util.BukkitUtils;
+
 import org.apache.commons.lang.Validate;
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
@@ -85,10 +87,10 @@ public class BlockChangePreLogEvent extends PreLogEvent {
 
     private boolean isValidSign() {
 
-        if ((typeAfter.getMaterial() == Material.SIGN || typeAfter.getMaterial() == Material.WALL_SIGN) && typeBefore.getMaterial() == Material.AIR) {
+        if ((typeAfter.getMaterial() == Material.SIGN || typeAfter.getMaterial() == Material.WALL_SIGN) && BukkitUtils.isEmpty(typeBefore.getMaterial())) {
             return true;
         }
-        if ((typeBefore.getMaterial() == Material.SIGN || typeBefore.getMaterial() == Material.WALL_SIGN) && typeAfter.getMaterial() == Material.AIR) {
+        if ((typeBefore.getMaterial() == Material.SIGN || typeBefore.getMaterial() == Material.WALL_SIGN) && BukkitUtils.isEmpty(typeAfter.getMaterial())) {
             return true;
         }
         if ((typeAfter.getMaterial() == Material.SIGN || typeAfter.getMaterial() == Material.WALL_SIGN) && typeBefore.equals(typeAfter)) {

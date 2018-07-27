@@ -67,7 +67,7 @@ public class Consumer extends TimerTask {
     }
 
     /**
-     * Logs a block break. The type afterwards is assumed to be 0 (air).
+     * Logs a block break. The type afterwards is assumed to be air.
      *
      * @param actor
      *            Actor responsible for breaking the block
@@ -79,7 +79,7 @@ public class Consumer extends TimerTask {
     }
 
     /**
-     * Logs a block break. The block type afterwards is assumed to be 0 (air).
+     * Logs a block break. The block type afterwards is assumed to be air.
      *
      * @param actor
      *            Actor responsible for the block break
@@ -95,7 +95,7 @@ public class Consumer extends TimerTask {
     }
 
     /**
-     * Logs a block place. The block type before is assumed to be 0 (air).
+     * Logs a block place. The block type before is assumed to be air.
      *
      * @param actor
      *            Actor responsible for placing the block
@@ -107,7 +107,7 @@ public class Consumer extends TimerTask {
     }
 
     /**
-     * Logs a block place. The block type before is assumed to be 0 (air).
+     * Logs a block place. The block type before is assumed to be air.
      *
      * @param actor
      *            Actor responsible for placing the block
@@ -215,7 +215,7 @@ public class Consumer extends TimerTask {
     }
 
     /**
-     * Logs a container block break. The block type before is assumed to be o (air). All content is assumed to be taken.
+     * Logs a container block break. The block type before is assumed to be air. All content is assumed to be taken.
      *
      * @param actor
      *            The actor breaking the container
@@ -230,7 +230,7 @@ public class Consumer extends TimerTask {
     }
 
     /**
-     * Logs a container block break. The block type before is assumed to be o (air). All content is assumed to be taken.
+     * Logs a container block break. The block type before is assumed to be air. All content is assumed to be taken.
      *
      * @param actor
      *            The actor responsible for breaking the container

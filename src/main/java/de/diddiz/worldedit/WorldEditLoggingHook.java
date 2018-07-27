@@ -15,6 +15,8 @@ import com.sk89q.worldedit.world.block.BlockStateHolder;
 import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.LogBlock.Logging;
 import de.diddiz.LogBlock.config.Config;
+import de.diddiz.util.BukkitUtils;
+
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -109,7 +111,7 @@ public class WorldEditLoggingHook {
                             plugin.getConsumer().queueBlockBreak(lbActor, location, origin.getBlockData());
                         }
                         BlockData newBlock = BukkitAdapter.adapt(block);
-                        if (newBlock != null && newBlock.getMaterial() != Material.AIR) {
+                        if (newBlock != null && !BukkitUtils.isEmpty(newBlock.getMaterial())) {
                             plugin.getConsumer().queueBlockPlace(lbActor, location, newBlock);
                         }
                     }

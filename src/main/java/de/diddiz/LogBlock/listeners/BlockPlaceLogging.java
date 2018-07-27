@@ -37,7 +37,7 @@ public class BlockPlaceLogging extends LoggingListener {
             if (type.hasGravity()) {
 
                 // Catch placed blocks overwriting something
-                if (before.getType() != Material.AIR) {
+                if (!BukkitUtils.isEmpty(before.getType())) {
                     consumer.queueBlockBreak(actor, before);
                 }
 
@@ -46,7 +46,7 @@ public class BlockPlaceLogging extends LoggingListener {
                 int y = loc.getBlockY();
                 int z = loc.getBlockZ();
                 // Blocks only fall if they have a chance to start a velocity
-                if (event.getBlock().getRelative(BlockFace.DOWN).getType() == Material.AIR) {
+                if (BukkitUtils.isEmpty(event.getBlock().getRelative(BlockFace.DOWN).getType())) {
                     while (y > 0 && BukkitUtils.canFall(loc.getWorld(), x, (y - 1), z)) {
                         y--;
                     }
@@ -56,7 +56,7 @@ public class BlockPlaceLogging extends LoggingListener {
                     Location finalLoc = new Location(loc.getWorld(), x, y, z);
                     // Run this check to avoid false positives
                     if (!BukkitUtils.getFallingEntityKillers().contains(finalLoc.getBlock().getType())) {
-                        if (finalLoc.getBlock().getType() == Material.AIR || finalLoc.equals(event.getBlock().getLocation())) {
+                        if (BukkitUtils.isEmpty(finalLoc.getBlock().getType()) || finalLoc.equals(event.getBlock().getLocation())) {
                             consumer.queueBlockPlace(actor, finalLoc, event.getBlock().getBlockData());
                         } else {
                             consumer.queueBlockReplace(actor, finalLoc, finalLoc.getBlock().getBlockData(), event.getBlock().getBlockData());
@@ -75,7 +75,7 @@ public class BlockPlaceLogging extends LoggingListener {
             LogBlock.getInstance().getServer().getScheduler().scheduleSyncDelayedTask(LogBlock.getInstance(), new Runnable() {
                 @Override
                 public void run() {
-                    if (before.getType() == Material.AIR) {
+                    if (BukkitUtils.isEmpty(before.getType())) {
                         consumer.queueBlockPlace(actor, after);
                     } else {
                         consumer.queueBlockReplace(actor, before, after);

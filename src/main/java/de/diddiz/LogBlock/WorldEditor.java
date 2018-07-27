@@ -20,6 +20,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
+import de.diddiz.util.BukkitUtils;
+
 import java.io.File;
 import java.io.PrintWriter;
 import java.text.SimpleDateFormat;
@@ -167,7 +169,7 @@ public class WorldEditor implements Runnable {
                 return PerformResult.BLACKLISTED;
             }
             final Block block = loc.getBlock();
-            if (replacedBlock.getMaterial() == Material.AIR && block.getType() == Material.AIR) {
+            if (BukkitUtils.isEmpty(replacedBlock.getMaterial()) && BukkitUtils.isEmpty(block.getType())) {
                 return PerformResult.NO_ACTION;
             }
             final BlockState state = block.getState();
@@ -175,7 +177,7 @@ public class WorldEditor implements Runnable {
                 world.loadChunk(block.getChunk());
             }
             if (setBlock.equals(replacedBlock)) {
-                if (setBlock.getMaterial() == Material.AIR) {
+                if (BukkitUtils.isEmpty(setBlock.getMaterial())) {
                     block.setType(Material.AIR);
                 } else if (ca != null) {
                     if (state instanceof InventoryHolder) {

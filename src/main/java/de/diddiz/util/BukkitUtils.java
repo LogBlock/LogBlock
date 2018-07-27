@@ -487,4 +487,8 @@ public class BukkitUtils {
     public static boolean isDoublePlant(Material m) {
         return doublePlants.contains(m);
     }
+
+    public static boolean isEmpty(Material m) {
+        return m == Material.AIR || m == Material.CAVE_AIR || m == Material.VOID_AIR;
+    }
 }

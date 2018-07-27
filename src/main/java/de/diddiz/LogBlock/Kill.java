@@ -1,6 +1,8 @@
 package de.diddiz.LogBlock;
 
 import de.diddiz.LogBlock.config.Config;
+import de.diddiz.util.BukkitUtils;
+
 import org.bukkit.Location;
 import org.bukkit.Material;
 
@@ -57,7 +59,7 @@ public class Kill implements LookupCacheElement {
     }
 
     public String prettyItemName(Material t) {
-        if (t == null || t == Material.AIR) {
+        if (t == null || BukkitUtils.isEmpty(t)) {
             return "fist";
         }
         return t.toString().replace('_', ' ').toLowerCase();

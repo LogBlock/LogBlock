@@ -16,7 +16,6 @@ import java.util.regex.Pattern;
 import java.util.zip.GZIPInputStream;
 import java.util.zip.GZIPOutputStream;
 
-import org.bukkit.Material;
 import org.bukkit.configuration.InvalidConfigurationException;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.inventory.ItemStack;
@@ -239,7 +238,7 @@ public class Utils {
     }
 
     public static byte[] saveItemStack(ItemStack stack) {
-        if (stack == null || stack.getType() == Material.AIR) {
+        if (stack == null || BukkitUtils.isEmpty(stack.getType())) {
             return null;
         }
         try {
