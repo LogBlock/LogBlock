@@ -88,7 +88,7 @@ public class Config {
         def.put("logging.logEnvironmentalKills", false);
         def.put("logging.logPlayerInfo", false);
         def.put("logging.hiddenPlayers", new ArrayList<String>());
-        def.put("logging.hiddenBlocks", Arrays.asList(Material.AIR.name(),Material.CAVE_AIR.name(),Material.VOID_AIR.name()));
+        def.put("logging.hiddenBlocks", Arrays.asList(Material.AIR.name(), Material.CAVE_AIR.name(), Material.VOID_AIR.name()));
         def.put("logging.ignoredChat", Arrays.asList("/register", "/login"));
         def.put("rollback.dontRollback", Arrays.asList(Material.LAVA.name(), Material.TNT.name(), Material.FIRE.name()));
         def.put("rollback.replaceAnyway", Arrays.asList(Material.LAVA.name(), Material.WATER.name(), Material.FIRE.name()));
