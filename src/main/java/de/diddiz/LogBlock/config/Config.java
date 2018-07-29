@@ -1,6 +1,8 @@
 package de.diddiz.LogBlock.config;
 
 import de.diddiz.LogBlock.*;
+import de.diddiz.util.ComparableVersion;
+
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.configuration.ConfigurationSection;
@@ -136,6 +138,10 @@ public class Config {
             }
         }
         logblock.saveConfig();
+        
+        ComparableVersion configVersion = new ComparableVersion(config.getString("version"));
+        boolean oldConfig = configVersion.compareTo(new ComparableVersion(logblock.getDescription().getVersion().replace(" (manually compiled)", ""))) < 0;
+        
         url = "jdbc:mysql://" + config.getString("mysql.host") + ":" + config.getInt("mysql.port") + "/" + getStringIncludingInts(config, "mysql.database");
         user = getStringIncludingInts(config, "mysql.user");
         password = getStringIncludingInts(config, "mysql.password");
@@ -166,7 +172,7 @@ public class Config {
             final Material mat = Material.matchMaterial(blocktype);
             if (mat != null) {
                 hiddenBlocks.add(mat);
-            } else {
+            } else if (!oldConfig) {
                 throw new DataFormatException("Not a valid material in hiddenBlocks: '" + blocktype + "'");
             }
         }
@@ -179,7 +185,7 @@ public class Config {
             Material mat = Material.matchMaterial(e);
             if (mat != null) {
                 dontRollback.add(mat);
-            } else {
+            } else if (!oldConfig) {
                 throw new DataFormatException("Not a valid material in dontRollback: '" + e + "'");
             }
         }
@@ -188,7 +194,7 @@ public class Config {
             Material mat = Material.matchMaterial(e);
             if (mat != null) {
                 replaceAnyway.add(mat);
-            } else {
+            } else if (!oldConfig) {
                 throw new DataFormatException("Not a valid material in replaceAnyway: '" + e + "'");
             }
         }
@@ -242,7 +248,7 @@ public class Config {
             throw new DataFormatException("No worlds configured");
         }
         for (final String world : loggedWorlds) {
-            worldConfigs.put(world, new WorldConfig(new File(logblock.getDataFolder(), friendlyWorldname(world) + ".yml")));
+            worldConfigs.put(world, new WorldConfig(world, new File(logblock.getDataFolder(), friendlyWorldname(world) + ".yml")));
         }
         superWorldConfig = new LoggingEnabledMapping();
         for (final WorldConfig wcfg : worldConfigs.values()) {

@@ -10,9 +10,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class WorldConfig extends LoggingEnabledMapping {
+    public final String world;
     public final String table;
 
-    public WorldConfig(File file) throws IOException {
+    public WorldConfig(String world, File file) throws IOException {
+        this.world = world;
         final Map<String, Object> def = new HashMap<String, Object>();
         // "Before MySQL 5.1.6, database and table names cannot contain "/", "\", ".", or characters that are not permitted in file names" - MySQL manual
         // They _can_ contain spaces, but replace them as well
