@@ -25,9 +25,7 @@ public class MaterialConverter {
 
     static {
         for (Material m : Material.values()) {
-            if (!m.name().startsWith("LEGACY_") && m.getKey() != null) {
-                materialKeyToMaterial.put(m.getKey().toString(), m);
-            }
+            materialKeyToMaterial.put(m.getKey().toString(), m);
         }
     }
 
