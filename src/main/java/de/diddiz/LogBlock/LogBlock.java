@@ -85,7 +85,7 @@ public class LogBlock extends JavaPlugin {
         } catch (final NullPointerException ex) {
             getLogger().log(Level.SEVERE, "Error while loading: ", ex);
         } catch (final Exception ex) {
-            getLogger().severe("Error while loading: " + ex.getMessage());
+            getLogger().log(Level.SEVERE, "Error while loading: " + ex.getMessage(), ex);
             errorAtLoading = true;
             return;
         }
@@ -272,7 +272,7 @@ public class LogBlock extends JavaPlugin {
                 getLogger().log(Level.SEVERE, "Error while fetching connection: ", ex);
                 connected = false;
             } else {
-                getLogger().severe("MySQL connection lost");
+                getLogger().log(Level.SEVERE, "MySQL connection lost", ex);
             }
             return null;
         }
