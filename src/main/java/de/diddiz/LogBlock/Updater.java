@@ -3,10 +3,14 @@ package de.diddiz.LogBlock;
 import de.diddiz.LogBlock.config.Config;
 import de.diddiz.LogBlock.config.WorldConfig;
 import de.diddiz.util.UUIDFetcher;
+import de.diddiz.util.Utils;
+
 import org.bukkit.Bukkit;
+import org.bukkit.Material;
 import org.bukkit.block.data.BlockData;
 import org.bukkit.configuration.ConfigurationSection;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.inventory.ItemStack;
 
 import java.io.BufferedInputStream;
 import java.io.BufferedReader;
@@ -23,6 +27,7 @@ import static de.diddiz.LogBlock.config.Config.isLogging;
 import static de.diddiz.util.BukkitUtils.friendlyWorldname;
 import de.diddiz.util.ComparableVersion;
 import java.util.regex.Pattern;
+
 import static org.bukkit.Bukkit.getLogger;
 
 class Updater {
@@ -413,13 +418,14 @@ class Updater {
         if (configVersion.compareTo(new ComparableVersion("1.13.0")) < 0) {
             getLogger().info("Updating tables to 1.13.0 ...");
             try {
-                MaterialUpdater materialUpdater = null;
-                checkTables(); // we need to create the tables first
+                MaterialUpdater1_13 materialUpdater = new MaterialUpdater1_13(logblock);
                 getLogger().info("Convertig BlockId to BlockData. This can take a while ...");
                 final Connection conn = logblock.getConnection();
                 conn.setAutoCommit(false);
                 final Statement st = conn.createStatement();
                 for (final WorldConfig wcfg : getLoggedWorlds()) {
+                    getLogger().info("Processing world " + wcfg.world + "...");
+                    getLogger().info("Processing block changes...");
                     boolean hadRow = true;
                     int rowsToConvert = 0;
                     int done = 0;
@@ -429,75 +435,187 @@ class Updater {
                             rowsToConvert = rs.getInt(1);
                             getLogger().info("Converting " + rowsToConvert + " entries in " + wcfg.table);
                         }
+                        rs.close();
+                        
+                        PreparedStatement deleteStatement = conn.prepareStatement("DELETE FROM `" + wcfg.table + "` WHERE id = ?");
+                        PreparedStatement insertStatement = conn.prepareStatement("INSERT INTO `" + wcfg.table + "-blocks` (id, date, playerid, replaced, replacedData, type, typeData, x, y, z) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
+
+                        while (hadRow) {
+                            hadRow = false;
+                            ResultSet entries = st.executeQuery("SELECT id, date, playerid, replaced, type, data, x, y, z FROM `" + wcfg.table + "` ORDER BY id ASC LIMIT 10000");
+                            while (entries.next()) {
+                                hadRow = true;
+                                int id = entries.getInt("id");
+                                Timestamp date = entries.getTimestamp("date");
+                                int playerid = entries.getInt("playerid");
+                                int replaced = entries.getInt("replaced");
+                                int type = entries.getInt("type");
+                                int data = entries.getInt("data");
+                                int x = entries.getInt("x");
+                                int y = entries.getInt("y");
+                                int z = entries.getInt("z");
+                                if (data == 16) {
+                                    data = 0;
+                                }
+
+                                try {
+                                    String replacedBlockData = materialUpdater.getBlockData(replaced, data).getAsString();
+                                    String setBlockData = materialUpdater.getBlockData(type, data).getAsString();
+
+                                    int newReplacedId = MaterialConverter.getOrAddMaterialId(replacedBlockData);
+                                    int newReplacedData = MaterialConverter.getOrAddBlockStateId(replacedBlockData);
+
+                                    int newSetId = MaterialConverter.getOrAddMaterialId(setBlockData);
+                                    int newSetData = MaterialConverter.getOrAddBlockStateId(setBlockData);
+
+                                    insertStatement.setInt(1, id);
+                                    insertStatement.setTimestamp(2, date);
+                                    insertStatement.setInt(3, playerid);
+                                    insertStatement.setInt(4, newReplacedId);
+                                    insertStatement.setInt(5, newReplacedData);
+                                    insertStatement.setInt(6, newSetId);
+                                    insertStatement.setInt(7, newSetData);
+                                    insertStatement.setInt(8, x);
+                                    insertStatement.setInt(9, y);
+                                    insertStatement.setInt(10, z);
+                                    insertStatement.addBatch();
+                                } catch (Exception e) {
+                                    getLogger().info("Exception in entry " + id + " (" + replaced + ":" + data + "->" + type + ":" + data + "): " + e.getMessage());
+                                }
+                                deleteStatement.setInt(1, id);
+                                deleteStatement.addBatch();
+
+                                done++;
+                            }
+                            entries.close();
+                            if (hadRow) {
+                                insertStatement.executeBatch();
+                                deleteStatement.executeBatch();
+                            }
+                            conn.commit();
+                            logblock.getConsumer().run(); // force a consumer run to save new material mappings
+                            getLogger().info("Done: " + done + "/" + rowsToConvert + " (" + (rowsToConvert > 0 ? (done * 100 / rowsToConvert) : 100) + "%)");
+                        }
+                        insertStatement.close();
+                        deleteStatement.close();
                     } catch (SQLException e) {
                         getLogger().info("Could not convert " + wcfg.table + ": " + e.getMessage());
-                        continue;
                     }
 
-                    PreparedStatement deleteStatement = conn.prepareStatement("DELETE FROM `" + wcfg.table + "` WHERE id = ?");
-                    PreparedStatement insertStatement = conn.prepareStatement("INSERT INTO `" + wcfg.table + "-blocks` (id, date, playerid, replaced, replacedData, type, typeData, x, y, z) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)", Statement.RETURN_GENERATED_KEYS);
-
-                    while (hadRow) {
-                        hadRow = false;
-                        ResultSet entries = st.executeQuery("SELECT id, date, playerid, replaced, type, data, x, y, z FROM `" + wcfg.table + "` ORDER BY id ASC LIMIT 10000");
-                        while (entries.next()) {
-                            hadRow = true;
-                            int id = entries.getInt("id");
-                            Timestamp date = entries.getTimestamp("date");
-                            int playerid = entries.getInt("playerid");
-                            int replaced = entries.getInt("replaced");
-                            int type = entries.getInt("type");
-                            int data = entries.getInt("data");
-                            int x = entries.getInt("x");
-                            int y = entries.getInt("y");
-                            int z = entries.getInt("z");
-                            if (data == 16) {
-                                data = 0;
-                            }
-
-                            if (materialUpdater == null) {
-                                materialUpdater = new MaterialUpdater(logblock);
-                            }
-                            try {
-                                String replacedBlockData = materialUpdater.getBlockData(replaced, data).getAsString();
-                                String setBlockData = materialUpdater.getBlockData(type, data).getAsString();
-
-                                int newReplacedId = MaterialConverter.getOrAddMaterialId(replacedBlockData);
-                                int newReplacedData = MaterialConverter.getOrAddBlockStateId(replacedBlockData);
-
-                                int newSetId = MaterialConverter.getOrAddMaterialId(setBlockData);
-                                int newSetData = MaterialConverter.getOrAddBlockStateId(setBlockData);
-
-                                insertStatement.setInt(1, id);
-                                insertStatement.setTimestamp(2, date);
-                                insertStatement.setInt(3, playerid);
-                                insertStatement.setInt(4, newReplacedId);
-                                insertStatement.setInt(5, newReplacedData);
-                                insertStatement.setInt(6, newSetId);
-                                insertStatement.setInt(7, newSetData);
-                                insertStatement.setInt(8, x);
-                                insertStatement.setInt(9, y);
-                                insertStatement.setInt(10, z);
-                                insertStatement.addBatch();
-                            } catch (Exception e) {
-                                getLogger().info("Exception in entry " + id + " (" + replaced + ":" + data + "->" + type + ":" + data + "): " + e.getMessage());
-                            }
-                            deleteStatement.setInt(1, id);
-                            deleteStatement.addBatch();
-
-                            done++;
+                    getLogger().info("Processing chests...");
+                    rowsToConvert = 0;
+                    done = 0;
+                    try {
+                        ResultSet rs = st.executeQuery("SELECT count(*) as rowcount FROM `" + wcfg.table + "-chest`");
+                        if (rs.next()) {
+                            rowsToConvert = rs.getInt(1);
+                            getLogger().info("Converting " + rowsToConvert + " entries in " + wcfg.table + "-chest");
                         }
-                        if (hadRow) {
-                            insertStatement.executeBatch();
-                            deleteStatement.executeBatch();
+                        rs.close();
+                        
+                        PreparedStatement insertChestData = conn.prepareStatement("INSERT INTO `" + wcfg.table + "-chestdata` (id, item, itemremove) VALUES (?, ?, ?)");
+                        PreparedStatement deleteChest = conn.prepareStatement("DELETE FROM `" + wcfg.table + "-chest` WHERE id = ?");
+                        while (true) {
+                            rs = st.executeQuery("SELECT id, itemtype, itemamount, itemdata FROM `" + wcfg.table + "-chest` ORDER BY id ASC LIMIT 10000");
+                            boolean anyRow = false;
+                            while (rs.next()) {
+                                anyRow = true;
+                                int id = rs.getInt("id");
+                                int itemtype = rs.getInt("itemtype");
+                                int itemdata = rs.getInt("itemdata");
+                                int amount = rs.getInt("itemamount");
+                                Material weaponMaterial = materialUpdater.getMaterial(itemtype, itemdata);
+                                if (weaponMaterial == null) {
+                                    weaponMaterial = Material.AIR;
+                                }
+                                ItemStack stack = weaponMaterial.getMaxDurability() > 0 ? new ItemStack(weaponMaterial, Math.abs(amount), (short)itemdata) : new ItemStack(weaponMaterial, Math.abs(amount));
+                                insertChestData.setInt(1, id);
+                                insertChestData.setBytes(2, Utils.saveItemStack(stack));
+                                insertChestData.setInt(3, amount >= 0 ? 0 : 1);
+                                insertChestData.addBatch();
+                                
+                                deleteChest.setInt(1, id);
+                                deleteChest.addBatch();
+                                done++;
+                            }
+                            rs.close();
+                            if (!anyRow) {
+                                break;
+                            }
+                            insertChestData.executeBatch();
+                            deleteChest.executeBatch();
+                            conn.commit();
+                            getLogger().info("Done: " + done + "/" + rowsToConvert + " (" + (rowsToConvert > 0 ? (done * 100 / rowsToConvert) : 100) + "%)");
                         }
-                        conn.commit();
-                        logblock.getConsumer().run(); // force a consumer run
-                        getLogger().info(done + "/" + rowsToConvert);
+                        insertChestData.close();
+                        deleteChest.close();
+                    } catch (SQLException e) {
+                        getLogger().info("Could not convert " + wcfg.table + "-chest: " + e.getMessage());
+                    }
+
+                    if (wcfg.isLogging(Logging.KILL)) {
+                        getLogger().info("Processing kills...");
+                        rowsToConvert = 0;
+                        done = 0;
+                        try {
+                            ResultSet rs = st.executeQuery("SELECT count(*) as rowcount FROM `" + wcfg.table + "-kills`");
+                            if (rs.next()) {
+                                rowsToConvert = rs.getInt(1);
+                                getLogger().info("Converting " + rowsToConvert + " entries in " + wcfg.table + "-kills");
+                            }
+                            rs.close();
+                            
+                            PreparedStatement updateWeaponStatement = conn.prepareStatement("UPDATE `" + wcfg.table + "`-kills SET weapon = ? WHERE id = ?");
+                            for (int start = 0;; start += 10000) {
+                                rs = st.executeQuery("SELECT id, weapon FROM `" + wcfg.table + "-kills` ORDER BY id ASC LIMIT " + start + ",10000");
+                                boolean anyUpdate = false;
+                                boolean anyRow = false;
+                                while (rs.next()) {
+                                    anyRow = true;
+                                    int id = rs.getInt("id");
+                                    int weapon = rs.getInt("weapon");
+                                    Material weaponMaterial = materialUpdater.getMaterial(weapon, 0);
+                                    if (weaponMaterial == null) {
+                                        weaponMaterial = Material.AIR;
+                                    }
+                                    int newWeapon = MaterialConverter.getOrAddMaterialId(weaponMaterial.getKey());
+                                    if (newWeapon != weapon) {
+                                        anyUpdate = true;
+                                        updateWeaponStatement.setInt(1, newWeapon);
+                                        updateWeaponStatement.setInt(2, id);
+                                        updateWeaponStatement.addBatch();
+                                    }
+                                    done++;
+                                }
+                                rs.close();
+                                if (anyUpdate) {
+                                    updateWeaponStatement.executeBatch();
+                                    conn.commit();
+                                    logblock.getConsumer().run(); // force a consumer run to save new material mappings
+                                }
+                                getLogger().info("Done: " + done + "/" + rowsToConvert + " (" + (rowsToConvert > 0 ? (done * 100 / rowsToConvert) : 100) + "%)");
+                                if (!anyRow) {
+                                    break;
+                                }
+                            }
+                            updateWeaponStatement.close();
+                        } catch (SQLException e) {
+                            getLogger().info("Could not convert " + wcfg.table + "-kills: " + e.getMessage());
+                        }
                     }
                 }
                 st.close();
                 conn.close();
+
+                getLogger().info("Updating config to 1.13.0 ...");
+                config.set("logging.hiddenBlocks", materialUpdater.convertMaterials(config.getStringList("logging.hiddenBlocks")));
+                config.set("rollback.dontRollback", materialUpdater.convertMaterials(config.getStringList("rollback.dontRollback")));
+                config.set("rollback.replaceAnyway", materialUpdater.convertMaterials(config.getStringList("rollback.replaceAnyway")));
+                final ConfigurationSection toolsSec = config.getConfigurationSection("tools");
+                for (final String toolName : toolsSec.getKeys(false)) {
+                    final ConfigurationSection tSec = toolsSec.getConfigurationSection(toolName);
+                    tSec.set("item", materialUpdater.convertMaterial(tSec.getString("item", "OAK_LOG")));
+                }
             } catch (final SQLException | IOException ex) {
                 Bukkit.getLogger().log(Level.SEVERE, "[Updater] Error: ", ex);
                 return false;
@@ -597,40 +715,141 @@ class Updater {
         }
     }
 
-    public static class MaterialUpdater {
+    public static class MaterialUpdater1_13 {
         BlockData[][] blockDataMapping;
-        public MaterialUpdater(LogBlock plugin) throws IOException {
+        Material[][] itemMapping = new Material[10][];
+        public MaterialUpdater1_13(LogBlock plugin) throws IOException {
             blockDataMapping = new BlockData[256][16];
-            JarFile file = new JarFile(plugin.getFile());
-            BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(file.getInputStream(file.getJarEntry("blockdata.txt"))), "UTF-8"));
-            while (true) {
-                String line = reader.readLine();
-                if (line == null) {
-                    break;
-                }
-                int splitter1 = line.indexOf(":");
-                int splitter2 = line.indexOf(",");
-                if (splitter1 >= 0 && splitter2 >= 0) {
-                    int blockid = Integer.parseInt(line.substring(0, splitter1));
-                    int blockdata = Integer.parseInt(line.substring(splitter1 + 1, splitter2));
-                    BlockData newBlockData = Bukkit.createBlockData(line.substring(splitter2 + 1));
+            try (JarFile file = new JarFile(plugin.getFile())) {
+                BufferedReader reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(file.getInputStream(file.getJarEntry("blockdata.txt"))), "UTF-8"));
+                while (true) {
+                    String line = reader.readLine();
+                    if (line == null) {
+                        break;
+                    }
+                    int splitter1 = line.indexOf(":");
+                    int splitter2 = line.indexOf(",");
+                    if (splitter1 >= 0 && splitter2 >= 0) {
+                        int blockid = Integer.parseInt(line.substring(0, splitter1));
+                        int blockdata = Integer.parseInt(line.substring(splitter1 + 1, splitter2));
+                        BlockData newBlockData = Bukkit.createBlockData(line.substring(splitter2 + 1));
 
-                    if (blockdata == 0) {
-                        for (int i = 0; i < 16; i++) {
-                            if (blockDataMapping[blockid][i] == null) {
-                                blockDataMapping[blockid][i] = newBlockData;
+                        if (blockdata == 0) {
+                            for (int i = 0; i < 16; i++) {
+                                if (blockDataMapping[blockid][i] == null) {
+                                    blockDataMapping[blockid][i] = newBlockData;
+                                }
                             }
+                        } else {
+                            blockDataMapping[blockid][blockdata] = newBlockData;
                         }
-                    } else {
-                        blockDataMapping[blockid][blockdata] = newBlockData;
                     }
                 }
+                reader.close();
+
+                HashMap<String, Material> materialKeysToMaterial = new HashMap<>();
+                for (Material material : Material.values()) {
+                    materialKeysToMaterial.put(material.getKey().toString(), material);
+                }
+
+                reader = new BufferedReader(new InputStreamReader(new BufferedInputStream(file.getInputStream(file.getJarEntry("itemdata.txt"))), "UTF-8"));
+                while (true) {
+                    String line = reader.readLine();
+                    if (line == null) {
+                        break;
+                    }
+                    int splitter1 = line.indexOf(":");
+                    int splitter2 = line.indexOf(",");
+                    if (splitter1 >= 0 && splitter2 >= 0) {
+                        int itemid = Integer.parseInt(line.substring(0, splitter1));
+                        int itemdata = Integer.parseInt(line.substring(splitter1 + 1, splitter2));
+                        Material newMaterial = materialKeysToMaterial.get(line.substring(splitter2 + 1));
+                        if (newMaterial == null) {
+                            throw new IOException("Unknown item: " + line.substring(splitter2 + 1));
+                        }
+                        if (itemid >= itemMapping.length) {
+                            itemMapping = Arrays.copyOf(itemMapping, Math.max(itemMapping.length * 3 / 2, itemid + 1));
+                        }
+
+                        Material[] itemValues = itemMapping[itemid];
+                        if (itemValues == null) {
+                            itemValues = new Material[itemdata + 1];
+                            itemMapping[itemid] = itemValues;
+                        } else if (itemValues.length <= itemdata) {
+                            itemValues = Arrays.copyOf(itemValues, itemdata + 1);
+                            itemMapping[itemid] = itemValues;
+                        }
+                        itemValues[itemdata] = newMaterial;
+                    }
+                }
+                reader.close();
             }
-            file.close();
         }
 
         public BlockData getBlockData(int id, int data) {
             return id >= 0 && id < 256 && data >= 0 && data < 16 ? blockDataMapping[id][data] : null;
+        }
+
+        public Material getMaterial(int id, int data) {
+            Material[] materials = id >= 0 && id < itemMapping.length ? itemMapping[id] : null;
+            if (materials != null && materials.length > 0) {
+                if (materials[0] != null && materials[0].getMaxDurability() == 0 && data >= 0 && data < materials.length && materials[data] != null) {
+                    return materials[data];
+                }
+                return materials[0];
+            }
+            return null;
+        }
+
+        public Material getMaterial(String id) {
+            int item = 0;
+            int data = 0;
+            int seperator = id.indexOf(':');
+            if (seperator < 0) {
+                item = Integer.parseInt(id);
+            } else {
+                item = Integer.parseInt(id.substring(0, seperator));
+                data = Integer.parseInt(id.substring(seperator + 1));
+            }
+            return getMaterial(item, data);
+        }
+
+        public String convertMaterial(String oldEntry) {
+            if (oldEntry == null) {
+                return null;
+            }
+            try {
+                Material newMaterial = getMaterial(oldEntry);
+                if (newMaterial != null) {
+                    return newMaterial.name();
+                }
+            } catch (Exception e) {
+                Material newMaterial = Material.matchMaterial(oldEntry, true);
+                if (newMaterial != null) {
+                    return newMaterial.name();
+                } else {
+                    newMaterial = Material.matchMaterial(oldEntry);
+                    if (newMaterial != null) {
+                        return newMaterial.name();
+                    }
+                }
+            }
+            return null;
+        }
+
+        public List<String> convertMaterials(Collection<String> oldEntries) {
+            Set<String> newEntries = new LinkedHashSet<>();
+            for (String oldEntry : oldEntries) {
+                String newEntry = convertMaterial(oldEntry);
+                if (newEntry != null) {
+                    newEntries.add(newEntry);
+                    if (newEntry.equals(Material.AIR.name())) {
+                        newEntries.add(Material.CAVE_AIR.name());
+                        newEntries.add(Material.VOID_AIR.name());
+                    }
+                }
+            }
+            return new ArrayList<>(newEntries);
         }
     }
 }
