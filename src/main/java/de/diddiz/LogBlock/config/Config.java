@@ -25,6 +25,7 @@ public class Config {
     private static LoggingEnabledMapping superWorldConfig;
     private static Map<String, WorldConfig> worldConfigs;
     public static String url, user, password;
+    public static boolean mysqlUseSSL;
     public static boolean mysqlRequireSSL;
     public static int delayBetweenRuns, forceToProcessAtLeast, timePerRun;
     public static boolean fireCustomEvents;
@@ -82,6 +83,7 @@ public class Config {
         def.put("mysql.database", "minecraft");
         def.put("mysql.user", "username");
         def.put("mysql.password", "pass");
+        def.put("mysql.useSSL", true);
         def.put("mysql.requireSSL", false);
         def.put("consumer.delayBetweenRuns", 2);
         def.put("consumer.forceToProcessAtLeast", 200);
@@ -167,6 +169,7 @@ public class Config {
         url = "jdbc:mysql://" + config.getString("mysql.host") + ":" + config.getInt("mysql.port") + "/" + getStringIncludingInts(config, "mysql.database");
         user = getStringIncludingInts(config, "mysql.user");
         password = getStringIncludingInts(config, "mysql.password");
+        mysqlUseSSL = config.getBoolean("mysql.useSSL", true);
         mysqlRequireSSL = config.getBoolean("mysql.requireSSL", false);
         delayBetweenRuns = config.getInt("consumer.delayBetweenRuns", 2);
         forceToProcessAtLeast = config.getInt("consumer.forceToProcessAtLeast", 0);
