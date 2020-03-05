@@ -73,7 +73,7 @@ public class LogBlock extends JavaPlugin {
         }
         try {
             getLogger().info("Connecting to " + user + "@" + url + "...");
-            Class.forName("com.mysql.jdbc.Driver");
+            Class.forName("com.mysql.cj.jdbc.Driver");
             pool = new MySQLConnectionPool(url, user, password, mysqlUseSSL, mysqlRequireSSL);
             final Connection conn = getConnection(true);
             if (conn == null) {
