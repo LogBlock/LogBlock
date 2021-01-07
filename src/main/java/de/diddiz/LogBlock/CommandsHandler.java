@@ -177,6 +177,7 @@ public class CommandsHandler implements CommandExecutor {
                                 toolData.enabled = false;
                                 if (tool.removeOnDisable && logblock.hasPermission(player, "logblock.spawnTools")) {
                                     player.getInventory().removeItem(new ItemStack(tool.item, 1));
+                                    if (player.getInventory().getItemInOffHand().equals(new ItemStack(tool.item, 1))) player.getInventory().getItemInOffHand().setAmount(0);
                                 }
                                 player.sendMessage(ChatColor.GREEN + "Tool disabled.");
                             } else if (args[1].equalsIgnoreCase("mode")) {
