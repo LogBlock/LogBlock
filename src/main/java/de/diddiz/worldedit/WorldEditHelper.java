@@ -4,8 +4,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.AbstractMap;
 import java.util.Arrays;
-import java.util.LinkedHashMap;
+import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -17,15 +18,6 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.BlockVector;
-import com.sk89q.jnbt.CompoundTag;
-import com.sk89q.jnbt.DoubleTag;
-import com.sk89q.jnbt.FloatTag;
-import com.sk89q.jnbt.ListTag;
-import com.sk89q.jnbt.NBTInputStream;
-import com.sk89q.jnbt.NBTOutputStream;
-import com.sk89q.jnbt.NamedTag;
-import com.sk89q.jnbt.ShortTag;
-import com.sk89q.jnbt.Tag;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -33,6 +25,12 @@ import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.entity.BaseEntity;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.Region;
+import com.sk89q.worldedit.util.concurrency.LazyReference;
+import com.sk89q.worldedit.util.nbt.BinaryTag;
+import com.sk89q.worldedit.util.nbt.BinaryTagIO;
+import com.sk89q.worldedit.util.nbt.CompoundBinaryTag;
+import com.sk89q.worldedit.util.nbt.DoubleBinaryTag;
+import com.sk89q.worldedit.util.nbt.ListBinaryTag;
 import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.util.CuboidRegion;
 
@@ -107,16 +105,14 @@ public class WorldEditHelper {
             com.sk89q.worldedit.world.entity.EntityType weType = BukkitAdapter.adapt(type);
             com.sk89q.worldedit.util.Location weLocation = BukkitAdapter.adapt(location);
             try {
-                NBTInputStream nbtis = new NBTInputStream(new ByteArrayInputStream(serialized));
-                NamedTag namedTag = nbtis.readNamedTag();
-                nbtis.close();
+                Entry<String, CompoundBinaryTag> namedTag = BinaryTagIO.unlimitedReader().readNamed(new ByteArrayInputStream(serialized));
                 UUID newUUID = null;
-                if (namedTag.getName().equals("entity") && namedTag.getTag() instanceof CompoundTag) {
-                    CompoundTag serializedState = (CompoundTag) namedTag.getTag();
-                    BaseEntity state = new BaseEntity(weType, serializedState);
+                if (namedTag.getKey().equals("entity")) {
+                    CompoundBinaryTag serializedState = namedTag.getValue();
+                    BaseEntity state = new BaseEntity(weType, LazyReference.computed(serializedState));
                     com.sk89q.worldedit.entity.Entity weEntity = weLocation.getExtent().createEntity(weLocation, state);
                     if (weEntity != null) {
-                        CompoundTag newNbt = weEntity.getState().getNbtData();
+                        CompoundBinaryTag newNbt = weEntity.getState().getNbt();
                         int[] uuidInts = newNbt.getIntArray("UUID");
                         if (uuidInts != null && uuidInts.length >= 4) {
                             newUUID = new UUID(((long) uuidInts[0] << 32) | (uuidInts[1] & 0xFFFFFFFFL), ((long) uuidInts[2] << 32) | (uuidInts[3] & 0xFFFFFFFFL));
@@ -136,16 +132,14 @@ public class WorldEditHelper {
             BaseEntity state = weEntity.getState();
             if (state != null) {
                 try {
+                    CompoundBinaryTag nbt = state.getNbt();
+                    nbt = nbt.putFloat("Health", 20.0f);
+                    nbt = nbt.put("Motion", ListBinaryTag.from(Arrays.asList(new BinaryTag[] { DoubleBinaryTag.of(0.0), DoubleBinaryTag.of(0.0), DoubleBinaryTag.of(0.0) })));
+                    nbt = nbt.putShort("Fire", (short) -20);
+                    nbt = nbt.putShort("HurtTime", (short) 0);
+
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    NBTOutputStream nbtos = new NBTOutputStream(baos);
-                    CompoundTag nbt = state.getNbtData();
-                    LinkedHashMap<String, Tag> value = new LinkedHashMap<>(nbt.getValue());
-                    value.put("Health", new FloatTag(20.0f));
-                    value.put("Motion", new ListTag(DoubleTag.class, Arrays.asList(new DoubleTag[] { new DoubleTag(0), new DoubleTag(0), new DoubleTag(0) })));
-                    value.put("Fire", new ShortTag((short) -20));
-                    value.put("HurtTime", new ShortTag((short) 0));
-                    nbtos.writeNamedTag("entity", new CompoundTag(value));
-                    nbtos.close();
+                    BinaryTagIO.writer().writeNamed(new AbstractMap.SimpleImmutableEntry<>("entity", nbt), baos);
                     return baos.toByteArray();
                 } catch (IOException e) {
                     throw new RuntimeException("This IOException should be impossible", e);
