@@ -37,6 +37,8 @@ import de.diddiz.util.CuboidRegion;
 public class WorldEditHelper {
     private static boolean checkedForWorldEdit;
     private static boolean hasWorldEdit;
+    private static boolean checkedForFullWorldEdit;
+    private static boolean hasFullWorldEdit;
 
     public static boolean hasWorldEdit() {
         if (!checkedForWorldEdit) {
@@ -51,7 +53,20 @@ public class WorldEditHelper {
     }
 
     public static boolean hasFullWorldEdit() {
-        return hasWorldEdit && Internal.hasBukkitImplAdapter();
+        if (!checkedForFullWorldEdit) {
+            checkedForFullWorldEdit = true;
+            if (hasWorldEdit()) {
+                if (Internal.hasBukkitImplAdapter()) {
+                    try {
+                        Class.forName("com.sk89q.worldedit.util.nbt.CompoundBinaryTag");
+                        hasFullWorldEdit = true;
+                    } catch (ClassNotFoundException e1) {
+                        LogBlock.getInstance().getLogger().log(Level.SEVERE, "Incompatible version of WorldEdit found. Please update to WorldEdit 7.3 or newer.");
+                    }
+                }
+            }
+        }
+        return hasFullWorldEdit;
     }
 
     public static byte[] serializeEntity(Entity entity) {
@@ -62,7 +77,7 @@ public class WorldEditHelper {
     }
 
     public static Entity restoreEntity(Location location, EntityType type, byte[] serialized) {
-        if (!hasWorldEdit()) {
+        if (!hasFullWorldEdit()) {
             return null;
         }
         return Internal.restoreEntity(location, type, serialized);
