@@ -299,14 +299,25 @@ public class CommandsHandler implements CommandExecutor {
                 } else if (command.equals("me")) {
                     if (sender instanceof Player) {
                         if (logblock.hasPermission(sender, "logblock.me")) {
+
                             final Player player = (Player) sender;
                             if (Config.isLogged(player.getWorld())) {
-                                final QueryParams params = new QueryParams(logblock);
-                                params.setPlayer(player.getName());
-                                params.world = player.getWorld();
-                                player.sendMessage("Total block changes: " + logblock.getCount(params));
-                                params.sum = SummarizationMode.TYPES;
-                                new CommandLookup(sender, params, true);
+                                scheduler.runTaskAsynchronously(logblock, new Runnable(){
+
+                                    public void run(){
+                                    try{
+                                    final QueryParams params = new QueryParams(logblock);
+                                    params.setPlayer(player.getName());
+                                    params.world = player.getWorld();
+                                    player.sendMessage("Total block changes: " + logblock.getCount(params));
+                                    params.sum = SummarizationMode.TYPES;
+                                    new CommandLookup(sender, params, true);}
+                                    catch (final Exception ex) {
+                                        sender.sendMessage(ChatColor.RED + "Error, check server.log");
+                                        logblock.getLogger().log(Level.WARNING, "Exception in commands handler: ", ex);
+                                    }
+                                }});
+
                             } else {
                                 sender.sendMessage(ChatColor.RED + "This world isn't logged");
                             }
