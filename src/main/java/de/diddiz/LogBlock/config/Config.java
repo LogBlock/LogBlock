@@ -25,6 +25,7 @@ public class Config {
     private static LoggingEnabledMapping superWorldConfig;
     private static Map<String, WorldConfig> worldConfigs;
     public static String url, user, password;
+    public static String mysqlDatabase;
     public static boolean mysqlUseSSL;
     public static boolean mysqlRequireSSL;
     public static int delayBetweenRuns, forceToProcessAtLeast, timePerRun;
@@ -175,7 +176,8 @@ public class Config {
         ComparableVersion configVersion = new ComparableVersion(config.getString("version"));
         boolean oldConfig = configVersion.compareTo(new ComparableVersion(CURRENT_CONFIG_VERSION)) < 0;
 
-        url = "jdbc:mysql://" + config.getString("mysql.host") + ":" + config.getInt("mysql.port") + "/" + getStringIncludingInts(config, "mysql.database");
+        mysqlDatabase = getStringIncludingInts(config, "mysql.database");
+        url = "jdbc:mysql://" + config.getString("mysql.host") + ":" + config.getInt("mysql.port") + "/" + mysqlDatabase;
         user = getStringIncludingInts(config, "mysql.user");
         password = getStringIncludingInts(config, "mysql.password");
         mysqlUseSSL = config.getBoolean("mysql.useSSL", true);

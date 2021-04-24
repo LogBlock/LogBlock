@@ -808,9 +808,8 @@ class Updater {
             throw new SQLException("No connection");
         }
         final Statement state = conn.createStatement();
-        final DatabaseMetaData dbm = conn.getMetaData();
         conn.setAutoCommit(true);
-        createTable(dbm, state, "lb-players", "(playerid INT UNSIGNED NOT NULL AUTO_INCREMENT, UUID varchar(36) NOT NULL, playername varchar(32) NOT NULL, firstlogin DATETIME NOT NULL, lastlogin DATETIME NOT NULL, onlinetime INT UNSIGNED NOT NULL, ip varchar(255) NOT NULL, PRIMARY KEY (playerid), INDEX (UUID), INDEX (playername)) DEFAULT CHARSET " + charset);
+        createTable(state, "lb-players", "(playerid INT UNSIGNED NOT NULL AUTO_INCREMENT, UUID varchar(36) NOT NULL, playername varchar(32) NOT NULL, firstlogin DATETIME NOT NULL, lastlogin DATETIME NOT NULL, onlinetime INT UNSIGNED NOT NULL, ip varchar(255) NOT NULL, PRIMARY KEY (playerid), INDEX (UUID), INDEX (playername)) DEFAULT CHARSET " + charset);
         // Players table must not be empty or inserts won't work - bug #492
         final ResultSet rs = state.executeQuery("SELECT NULL FROM `lb-players` LIMIT 1;");
         if (!rs.next()) {
@@ -818,35 +817,39 @@ class Updater {
         }
         if (isLogging(Logging.CHAT) || isLogging(Logging.PLAYER_COMMANDS) || isLogging(Logging.CONSOLE_COMMANDS) || isLogging(Logging.COMMANDBLOCK_COMMANDS)) {
             try {
-                createTable(dbm, state, "lb-chat", "(id INT UNSIGNED NOT NULL AUTO_INCREMENT, date DATETIME NOT NULL, playerid INT UNSIGNED NOT NULL, message VARCHAR(256) NOT NULL, PRIMARY KEY (id), KEY playerid (playerid), FULLTEXT message (message)) DEFAULT CHARSET " + charset);
+                createTable(state, "lb-chat", "(id INT UNSIGNED NOT NULL AUTO_INCREMENT, date DATETIME NOT NULL, playerid INT UNSIGNED NOT NULL, message VARCHAR(256) NOT NULL, PRIMARY KEY (id), KEY playerid (playerid), FULLTEXT message (message)) DEFAULT CHARSET " + charset);
             } catch (SQLException e) {
-                createTable(dbm, state, "lb-chat", "(id INT UNSIGNED NOT NULL AUTO_INCREMENT, date DATETIME NOT NULL, playerid INT UNSIGNED NOT NULL, message VARCHAR(256) NOT NULL, PRIMARY KEY (id), KEY playerid (playerid)) DEFAULT CHARSET " + charset);
+                createTable(state, "lb-chat", "(id INT UNSIGNED NOT NULL AUTO_INCREMENT, date DATETIME NOT NULL, playerid INT UNSIGNED NOT NULL, message VARCHAR(256) NOT NULL, PRIMARY KEY (id), KEY playerid (playerid)) DEFAULT CHARSET " + charset);
             }
         }
-        createTable(dbm, state, "lb-materials", "(id INT UNSIGNED NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY (id)) DEFAULT CHARSET " + charset);
-        createTable(dbm, state, "lb-blockstates", "(id INT UNSIGNED NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY (id)) DEFAULT CHARSET " + charset);
-        createTable(dbm, state, "lb-entitytypes", "(id INT UNSIGNED NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY (id)) DEFAULT CHARSET " + charset);
+        createTable(state, "lb-materials", "(id INT UNSIGNED NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY (id)) DEFAULT CHARSET " + charset);
+        createTable(state, "lb-blockstates", "(id INT UNSIGNED NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY (id)) DEFAULT CHARSET " + charset);
+        createTable(state, "lb-entitytypes", "(id INT UNSIGNED NOT NULL, name VARCHAR(255) NOT NULL, PRIMARY KEY (id)) DEFAULT CHARSET " + charset);
 
         for (final WorldConfig wcfg : getLoggedWorlds()) {
-            createTable(dbm, state, wcfg.table + "-blocks", "(id INT UNSIGNED NOT NULL AUTO_INCREMENT, date DATETIME NOT NULL, playerid INT UNSIGNED NOT NULL, replaced SMALLINT UNSIGNED NOT NULL, replacedData SMALLINT NOT NULL, type SMALLINT UNSIGNED NOT NULL, typeData SMALLINT NOT NULL, x MEDIUMINT NOT NULL, y SMALLINT UNSIGNED NOT NULL, z MEDIUMINT NOT NULL, PRIMARY KEY (id), KEY coords (x, z, y), KEY date (date), KEY playerid (playerid))");
-            createTable(dbm, state, wcfg.table + "-chestdata", "(id INT UNSIGNED NOT NULL, item MEDIUMBLOB, itemremove TINYINT, itemtype SMALLINT NOT NULL DEFAULT '0', PRIMARY KEY (id))");
-            createTable(dbm, state, wcfg.table + "-state", "(id INT UNSIGNED NOT NULL, replacedState MEDIUMBLOB NULL, typeState MEDIUMBLOB NULL, PRIMARY KEY (id))");
+            createTable(state, wcfg.table + "-blocks", "(id INT UNSIGNED NOT NULL AUTO_INCREMENT, date DATETIME NOT NULL, playerid INT UNSIGNED NOT NULL, replaced SMALLINT UNSIGNED NOT NULL, replacedData SMALLINT NOT NULL, type SMALLINT UNSIGNED NOT NULL, typeData SMALLINT NOT NULL, x MEDIUMINT NOT NULL, y SMALLINT UNSIGNED NOT NULL, z MEDIUMINT NOT NULL, PRIMARY KEY (id), KEY coords (x, z, y), KEY date (date), KEY playerid (playerid))");
+            createTable(state, wcfg.table + "-chestdata", "(id INT UNSIGNED NOT NULL, item MEDIUMBLOB, itemremove TINYINT, itemtype SMALLINT NOT NULL DEFAULT '0', PRIMARY KEY (id))");
+            createTable(state, wcfg.table + "-state", "(id INT UNSIGNED NOT NULL, replacedState MEDIUMBLOB NULL, typeState MEDIUMBLOB NULL, PRIMARY KEY (id))");
             if (wcfg.isLogging(Logging.KILL)) {
-                createTable(dbm, state, wcfg.table + "-kills", "(id INT UNSIGNED NOT NULL AUTO_INCREMENT, date DATETIME NOT NULL, killer INT UNSIGNED, victim INT UNSIGNED NOT NULL, weapon SMALLINT UNSIGNED NOT NULL, x MEDIUMINT NOT NULL, y SMALLINT NOT NULL, z MEDIUMINT NOT NULL, PRIMARY KEY (id))");
+                createTable(state, wcfg.table + "-kills", "(id INT UNSIGNED NOT NULL AUTO_INCREMENT, date DATETIME NOT NULL, killer INT UNSIGNED, victim INT UNSIGNED NOT NULL, weapon SMALLINT UNSIGNED NOT NULL, x MEDIUMINT NOT NULL, y SMALLINT NOT NULL, z MEDIUMINT NOT NULL, PRIMARY KEY (id))");
             }
-            createTable(dbm, state, wcfg.table + "-entityids", "(entityid INT UNSIGNED NOT NULL AUTO_INCREMENT, entityuuid VARCHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL, PRIMARY KEY (entityid), UNIQUE KEY (entityuuid))");
-            createTable(dbm, state, wcfg.table + "-entities", "(id INT UNSIGNED NOT NULL AUTO_INCREMENT, date DATETIME NOT NULL, playerid INT UNSIGNED NOT NULL, entityid INT UNSIGNED NOT NULL, entitytypeid INT UNSIGNED NOT NULL, x MEDIUMINT NOT NULL, y SMALLINT NOT NULL, z MEDIUMINT NOT NULL, action TINYINT UNSIGNED NOT NULL, data MEDIUMBLOB NULL, PRIMARY KEY (id), KEY coords (x, z, y), KEY date (date), KEY playerid (playerid), KEY entityid (entityid))");
+            createTable(state, wcfg.table + "-entityids", "(entityid INT UNSIGNED NOT NULL AUTO_INCREMENT, entityuuid VARCHAR(36) CHARACTER SET ascii COLLATE ascii_bin NOT NULL, PRIMARY KEY (entityid), UNIQUE KEY (entityuuid))");
+            createTable(state, wcfg.table + "-entities", "(id INT UNSIGNED NOT NULL AUTO_INCREMENT, date DATETIME NOT NULL, playerid INT UNSIGNED NOT NULL, entityid INT UNSIGNED NOT NULL, entitytypeid INT UNSIGNED NOT NULL, x MEDIUMINT NOT NULL, y SMALLINT NOT NULL, z MEDIUMINT NOT NULL, action TINYINT UNSIGNED NOT NULL, data MEDIUMBLOB NULL, PRIMARY KEY (id), KEY coords (x, z, y), KEY date (date), KEY playerid (playerid), KEY entityid (entityid))");
         }
         state.close();
         conn.close();
     }
 
-    private void createTable(DatabaseMetaData dbm, Statement state, String table, String query) throws SQLException {
-        if (!dbm.getTables(null, null, table, null).next()) {
-            logblock.getLogger().log(Level.INFO, "Creating table " + table + ".");
-            state.execute("CREATE TABLE `" + table + "` " + query);
-            if (!dbm.getTables(null, null, table, null).next()) {
-                throw new SQLException("Table " + table + " not found and failed to create");
+    private void createTable(Statement state, String table, String query) throws SQLException {
+        try (ResultSet tableResult = state.executeQuery("SHOW TABLES LIKE '" + table + "'")) {
+            if (!tableResult.next()) {
+                logblock.getLogger().log(Level.INFO, "Creating table " + table + ".");
+                state.execute("CREATE TABLE `" + table + "` " + query);
+                try (ResultSet tableResultNew = state.executeQuery("SHOW TABLES LIKE '" + table + "'")) {
+                    if (!tableResultNew.next()) {
+                        throw new SQLException("Table " + table + " not found and failed to create");
+                    }
+                }
             }
         }
     }

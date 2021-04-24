@@ -517,13 +517,12 @@ public class CommandsHandler implements CommandExecutor {
                 state = conn.createStatement();
                 rs = executeQuery(state, params.getQuery());
                 sender.sendMessage(ChatColor.DARK_AQUA + params.getTitle() + ":");
-                if (rs.next()) {
-                    rs.beforeFirst();
-                    final List<LookupCacheElement> blockchanges = new ArrayList<>();
-                    final LookupCacheElementFactory factory = new LookupCacheElementFactory(params, sender instanceof Player ? 2 / 3f : 1);
-                    while (rs.next()) {
-                        blockchanges.add(factory.getLookupCacheElement(rs));
-                    }
+                final List<LookupCacheElement> blockchanges = new ArrayList<>();
+                final LookupCacheElementFactory factory = new LookupCacheElementFactory(params, sender instanceof Player ? 2 / 3f : 1);
+                while (rs.next()) {
+                    blockchanges.add(factory.getLookupCacheElement(rs));
+                }
+                if (!blockchanges.isEmpty()) {
                     LookupCacheElement[] blockChangeArray = blockchanges.toArray(new LookupCacheElement[blockchanges.size()]);
                     if (!params.noCache) {
                         getSession(sender).lookupCache = blockChangeArray;
