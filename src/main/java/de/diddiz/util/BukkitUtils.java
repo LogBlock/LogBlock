@@ -762,7 +762,10 @@ public class BukkitUtils {
         TextComponent msg = MessagingUtil.createTextComponentWithColor(stack.getAmount() + "x ", TypeColor.DEFAULT.getColor());
         msg.addExtra(prettyMaterial(stack.getType()));
 
-        String itemJson = convertItemStackToJson(stack);
+        ItemStack copy = stack.clone();
+        copy.setAmount(1);
+
+        String itemJson = convertItemStackToJson(copy);
 
         BaseComponent[] hoverEventComponents = new BaseComponent[]{
                 new TextComponent(itemJson)
