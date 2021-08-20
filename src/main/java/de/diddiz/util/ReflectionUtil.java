@@ -1,10 +1,7 @@
 package de.diddiz.util;
 
 import org.bukkit.Bukkit;
-import org.bukkit.entity.Player;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
 public class ReflectionUtil {
@@ -20,75 +17,17 @@ public class ReflectionUtil {
         return versionString;
     }
 
-    public static Class<?> getMinecraftClass(String minecraftClassName) {
+    public static Class<?> getMinecraftClass(String minecraftClassName) throws ClassNotFoundException {
         String clazzName = "net.minecraft." + minecraftClassName;
-        Class<?> clazz;
-
-        try {
-            clazz = Class.forName(clazzName);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
-        }
-        return clazz;
+        return Class.forName(clazzName);
     }
 
-    public static Class<?> getOBCClass(String obcClassName) {
-
-        String clazzName = "org.bukkit.craftbukkit." + getVersion() + obcClassName;
-        Class<?> clazz;
-
-        try {
-            clazz = Class.forName(clazzName);
-        } catch (Throwable t) {
-            t.printStackTrace();
-            return null;
-        }
-
-        return clazz;
+    public static Class<?> getCraftBukkitClass(String craftBukkitClassName) throws ClassNotFoundException {
+        String clazzName = "org.bukkit.craftbukkit." + getVersion() + craftBukkitClassName;
+        return Class.forName(clazzName);
     }
 
-    public static Object getConnection(Player player) {
-        Method getHandleMethod = getMethod(player.getClass(), "getHandle");
-
-        if (getHandleMethod != null) {
-            try {
-                Object nmsPlayer = getHandleMethod.invoke(player);
-                Field playerConField = getField(nmsPlayer.getClass(), "playerConnection");
-                return playerConField.get(nmsPlayer);
-            } catch (Exception e) {
-                e.printStackTrace();
-            }
-        }
-
-        return null;
-    }
-
-    public static Constructor<?> getConstructor(Class<?> clazz, Class<?>... params) {
-        try {
-            return clazz.getConstructor(params);
-        } catch (NoSuchMethodException e) {
-            return null;
-        }
-    }
-
-    public static Method getMethod(Class<?> clazz, String methodName, Class<?>... params) {
-        try {
-            Method method = clazz.getMethod(methodName, params);
-            return method;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    public static Field getField(Class<?> clazz, String fieldName) {
-        try {
-            Field field = clazz.getField(fieldName);
-            return field;
-        } catch (Exception e) {
-            e.printStackTrace();
-            return null;
-        }
+    public static Method getMethod(Class<?> clazz, String methodName, Class<?>... params) throws NoSuchMethodException {
+        return clazz.getMethod(methodName, params);
     }
 }
