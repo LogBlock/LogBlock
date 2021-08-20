@@ -33,7 +33,7 @@ public class ReflectionUtil {
         return clazz;
     }
 
-    public synchronized static Class<?> getOBCClass(String obcClassName) {
+    public static Class<?> getOBCClass(String obcClassName) {
 
         String clazzName = "org.bukkit.craftbukkit." + getVersion() + obcClassName;
         Class<?> clazz;
