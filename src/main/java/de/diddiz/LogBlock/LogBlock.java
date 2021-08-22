@@ -210,6 +210,9 @@ public class LogBlock extends JavaPlugin {
         if (isLogging(Logging.OXIDIZATION)) {
             pm.registerEvents(new OxidizationLogging(this), this);
         }
+        if(isLogging(Logging.REPEATER)) {
+            pm.registerEvents(new RedstoneStateLogging(this), this);
+        }
         if (Config.isLoggingAnyEntities()) {
             if (!WorldEditHelper.hasFullWorldEdit()) {
                 getLogger().severe("No compatible WorldEdit found, entity logging will not work!");
