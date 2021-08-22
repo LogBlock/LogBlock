@@ -52,9 +52,8 @@ public enum Logging {
     SHULKER_BOX_CONTENT,
     PLAYER_COMMANDS,
     COMMANDBLOCK_COMMANDS,
-    REPEATER,
-    CONSOLE_COMMANDS;
-
+    CONSOLE_COMMANDS,
+    REPEATER;
     public static final int length = Logging.values().length;
     private final boolean defaultEnabled;
 
