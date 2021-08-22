@@ -52,7 +52,7 @@ public class RedstoneRepeaterLogging extends LoggingListener {
             final Block newBlock = world.getBlockAt(clickedBlock.getLocation());
             final BlockData newBlockData = newBlock.getBlockData();
 
-            if(!newBlockData.equals(oldBlockData)) {
+            if (!newBlockData.equals(oldBlockData)) {
                 consumer.queueBlock(Actor.actorFromEntity(player), location, oldBlockData, newBlockData);
             }
         }, 1);
