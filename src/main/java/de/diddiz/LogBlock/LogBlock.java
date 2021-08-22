@@ -211,7 +211,7 @@ public class LogBlock extends JavaPlugin {
             pm.registerEvents(new OxidizationLogging(this), this);
         }
         if(isLogging(Logging.REPEATER)) {
-            pm.registerEvents(new RedstoneStateLogging(this), this);
+            pm.registerEvents(new RedstoneRepeaterLogging(this), this);
         }
         if (Config.isLoggingAnyEntities()) {
             if (!WorldEditHelper.hasFullWorldEdit()) {

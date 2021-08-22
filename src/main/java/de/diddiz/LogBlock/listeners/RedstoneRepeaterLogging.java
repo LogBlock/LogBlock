@@ -15,10 +15,10 @@ import org.bukkit.event.player.PlayerInteractEvent;
 
 import static de.diddiz.LogBlock.config.Config.getWorldConfig;
 
-public class RedstoneStateLogging extends LoggingListener {
+public class RedstoneRepeaterLogging extends LoggingListener {
     private final LogBlock logBlock;
 
-    public RedstoneStateLogging(LogBlock logBlock) {
+    public RedstoneRepeaterLogging(LogBlock logBlock) {
         super(logBlock);
         this.logBlock = logBlock;
     }
