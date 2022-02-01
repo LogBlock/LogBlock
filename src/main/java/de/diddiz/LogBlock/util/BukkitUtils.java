@@ -734,11 +734,11 @@ public class BukkitUtils {
         final int x = loc.getBlockX(), z = loc.getBlockZ();
         int y = loc.getBlockY();
         boolean lower = world.getBlockAt(x, y, z).isEmpty(), upper = world.getBlockAt(x, y + 1, z).isEmpty();
-        while ((!lower || !upper) && y != 127) {
+        while ((!lower || !upper) && y != world.getMaxHeight()) {
             lower = upper;
             upper = world.getBlockAt(x, ++y, z).isEmpty();
         }
-        while (world.getBlockAt(x, y - 1, z).isEmpty() && y != 0) {
+        while (world.getBlockAt(x, y - 1, z).isEmpty() && y != world.getMinHeight()) {
             y--;
         }
         return y;
