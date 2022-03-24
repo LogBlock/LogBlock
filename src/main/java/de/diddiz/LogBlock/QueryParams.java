@@ -78,6 +78,7 @@ public final class QueryParams implements Cloneable {
     public World world = null;
     public String match = null;
     public boolean needCount = false, needId = false, needDate = false, needType = false, needData = false, needPlayerId = false, needPlayer = false, needCoords = false, needChestAccess = false, needMessage = false, needKiller = false, needVictim = false, needWeapon = false;
+    public String playerRegex = "[^a-zA-Z0-9_\\\\.]";
     private final LogBlock logblock;
 
     public QueryParams(LogBlock logblock) {
@@ -697,10 +698,10 @@ public final class QueryParams implements Cloneable {
                             excludePlayersMode = true;
                         }
                         if (playerName.contains("\"")) {
-                            players.add(playerName.replaceAll("[^a-zA-Z0-9_]", ""));
+                            players.add(playerName.replaceAll(playerRegex, ""));
                         } else {
                             final Player matches = logblock.getServer().getPlayerExact(playerName);
-                            players.add(matches != null ? matches.getName() : playerName.replaceAll("[^a-zA-Z0-9_]", ""));
+                            players.add(matches != null ? matches.getName() : playerName.replaceAll(playerRegex, ""));
                         }
                     }
                 }
@@ -715,13 +716,13 @@ public final class QueryParams implements Cloneable {
                             excludeVictimsMode = true;
                         }
                         if (killerName.contains("\"")) {
-                            killers.add(killerName.replaceAll("[^a-zA-Z0-9_]", ""));
+                            killers.add(killerName.replaceAll(playerRegex, ""));
                         } else {
                             final List<Player> matches = logblock.getServer().matchPlayer(killerName);
                             if (matches.size() > 1) {
                                 throw new IllegalArgumentException("Ambiguous victimname '" + param + "'");
                             }
-                            killers.add(matches.size() == 1 ? matches.get(0).getName() : killerName.replaceAll("[^a-zA-Z0-9_]", ""));
+                            killers.add(matches.size() == 1 ? matches.get(0).getName() : killerName.replaceAll(playerRegex, ""));
                         }
                     }
                 }
@@ -736,13 +737,13 @@ public final class QueryParams implements Cloneable {
                             excludeVictimsMode = true;
                         }
                         if (victimName.contains("\"")) {
-                            victims.add(victimName.replaceAll("[^a-zA-Z0-9_]", ""));
+                            victims.add(victimName.replaceAll(playerRegex, ""));
                         } else {
                             final List<Player> matches = logblock.getServer().matchPlayer(victimName);
                             if (matches.size() > 1) {
                                 throw new IllegalArgumentException("Ambiguous victimname '" + param + "'");
                             }
-                            victims.add(matches.size() == 1 ? matches.get(0).getName() : victimName.replaceAll("[^a-zA-Z0-9_]", ""));
+                            victims.add(matches.size() == 1 ? matches.get(0).getName() : victimName.replaceAll(playerRegex, ""));
                         }
                     }
                 }
