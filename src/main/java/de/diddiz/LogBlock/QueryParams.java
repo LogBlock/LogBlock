@@ -436,19 +436,19 @@ public final class QueryParams implements Cloneable {
                 if (!excludePlayersMode) {
                     where.append('(');
                     for (final String killerName : players) {
-                        where.append("killers.playername = '").append(SqlUtil.escapeString(killerName)).append("' OR ");
+                        where.append("killers.playername = '").append(SqlUtil.escapeString(killerName, true)).append("' OR ");
                     }
                     for (final String victimName : players) {
-                        where.append("victims.playername = '").append(SqlUtil.escapeString(victimName)).append("' OR ");
+                        where.append("victims.playername = '").append(SqlUtil.escapeString(victimName, true)).append("' OR ");
                     }
                     where.delete(where.length() - 4, where.length());
                     where.append(") AND ");
                 } else {
                     for (final String killerName : players) {
-                        where.append("killers.playername != '").append(SqlUtil.escapeString(killerName)).append("' AND ");
+                        where.append("killers.playername != '").append(SqlUtil.escapeString(killerName, true)).append("' AND ");
                     }
                     for (final String victimName : players) {
-                        where.append("victims.playername != '").append(SqlUtil.escapeString(victimName)).append("' AND ");
+                        where.append("victims.playername != '").append(SqlUtil.escapeString(victimName, true)).append("' AND ");
                     }
                 }
             }
@@ -614,13 +614,13 @@ public final class QueryParams implements Cloneable {
             if (!excludePlayersMode) {
                 where.append('(');
                 for (final String playerName : players) {
-                    where.append("playername = '").append(SqlUtil.escapeString(playerName)).append("' OR ");
+                    where.append("playername = '").append(SqlUtil.escapeString(playerName, true)).append("' OR ");
                 }
                 where.delete(where.length() - 4, where.length());
                 where.append(") AND ");
             } else {
                 for (final String playerName : players) {
-                    where.append("playername != '").append(SqlUtil.escapeString(playerName)).append("' AND ");
+                    where.append("playername != '").append(SqlUtil.escapeString(playerName, true)).append("' AND ");
                 }
             }
         }
@@ -691,16 +691,20 @@ public final class QueryParams implements Cloneable {
                 if (values.length < 1) {
                     throw new IllegalArgumentException("No or wrong count of arguments for '" + param + "'");
                 }
-                for (final String playerName : values) {
+                for (String playerName : values) {
                     if (playerName.length() > 0) {
-                        if (playerName.contains("!")) {
+                        if (playerName.startsWith("!")) {
+                            playerName = playerName.substring(1);
                             excludePlayersMode = true;
+                            if (playerName.isEmpty()) {
+                                continue;
+                            }
                         }
                         if (playerName.contains("\"")) {
-                            players.add(playerName.replaceAll("[^a-zA-Z0-9_]", ""));
+                            players.add(playerName.replace("\"", ""));
                         } else {
                             final Player matches = logblock.getServer().getPlayerExact(playerName);
-                            players.add(matches != null ? matches.getName() : playerName.replaceAll("[^a-zA-Z0-9_]", ""));
+                            players.add(matches != null ? matches.getName() : playerName.replace("\\\"", ""));
                         }
                     }
                 }
