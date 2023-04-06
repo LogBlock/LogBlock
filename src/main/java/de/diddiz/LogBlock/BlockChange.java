@@ -132,7 +132,9 @@ public class BlockChange implements LookupCacheElement {
         String typeDetails = getTypeDetails(type, typeState, replaced, replacedState);
         String replacedDetails = getTypeDetails(replaced, replacedState);
 
-        if (type.getMaterial().equals(replaced.getMaterial()) || (type.getMaterial() == Material.CAKE && BukkitUtils.isCandleCake(replaced.getMaterial()))) {
+        boolean isTypeEqualsReplaced = type.getMaterial().equals(replaced.getMaterial());
+        boolean isCakeWithCandle = (type.getMaterial() == Material.CAKE && BukkitUtils.isCandleCake(replaced.getMaterial()));
+        if (isTypeEqualsReplaced || isCakeWithCandle) {
             if (BukkitUtils.isEmpty(type.getMaterial())) {
                 msg.addExtra(createTextComponentWithColor("did an unspecified action", INTERACT.getColor()));
             } else if (ca != null) {
@@ -232,15 +234,18 @@ public class BlockChange implements LookupCacheElement {
                 msg.addExtra(prettyMaterial(type));
                 msg.addExtra(prettyState(typeDetails));
             }
-        } else if (BukkitUtils.isEmpty(type.getMaterial())) {
+        }
+        else if (BukkitUtils.isEmpty(type.getMaterial())) {
             msg.addExtra(createTextComponentWithColor("destroyed ", DESTROY.getColor()));
             msg.addExtra(prettyMaterial(replaced));
             msg.addExtra(prettyState(replacedDetails));
-        } else if (BukkitUtils.isEmpty(replaced.getMaterial())) {
+        }
+        else if (BukkitUtils.isEmpty(replaced.getMaterial())) {
             msg.addExtra(createTextComponentWithColor("created ", CREATE.getColor()));
             msg.addExtra(prettyMaterial(type));
             msg.addExtra(prettyState(typeDetails));
-        } else {
+        }
+        else {
             msg.addExtra(createTextComponentWithColor("replaced ", CREATE.getColor()));
             msg.addExtra(prettyMaterial(replaced));
             msg.addExtra(prettyState(replacedDetails));
