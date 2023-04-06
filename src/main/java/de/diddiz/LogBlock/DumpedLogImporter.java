@@ -2,7 +2,7 @@ package de.diddiz.LogBlock;
 
 import static de.diddiz.LogBlock.util.Utils.newline;
 
-import de.diddiz.LogBlock.util.Utils.ExtensionFilenameFilter;
+import de.diddiz.LogBlock.util.ExtensionFilenameFilter;
 import java.io.*;
 import java.sql.Connection;
 import java.sql.SQLException;

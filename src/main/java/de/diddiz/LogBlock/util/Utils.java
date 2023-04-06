@@ -193,18 +193,7 @@ public class Utils {
         return newArguments;
     }
 
-    public static class ExtensionFilenameFilter implements FilenameFilter {
-        private final String ext;
 
-        public ExtensionFilenameFilter(String ext) {
-            this.ext = "." + ext;
-        }
-
-        @Override
-        public boolean accept(File dir, String name) {
-            return name.toLowerCase().endsWith(ext);
-        }
-    }
 
     private final static char[] hexArray = "0123456789ABCDEF".toCharArray();
 
