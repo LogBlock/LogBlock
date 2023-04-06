@@ -152,7 +152,7 @@ public class BlockChange implements LookupCacheElement {
                     msg.addExtra(createTextComponentWithColor(" into ", CREATE.getColor()));
                     msg.addExtra(prettyMaterial(type));
                 }
-            } else if (type instanceof Waterlogged && ((Waterlogged) type).isWaterlogged() != ((Waterlogged) replaced).isWaterlogged()) {
+            } else if (isWaterlogged(type, (Waterlogged) replaced)) {
                 if (((Waterlogged) type).isWaterlogged()) {
                     msg.addExtra(createTextComponentWithColor("waterlogged ", CREATE.getColor()));
                     msg.addExtra(prettyMaterial(type));
@@ -258,6 +258,10 @@ public class BlockChange implements LookupCacheElement {
             msg.addExtra(prettyLocation(loc, entry));
         }
         return new BaseComponent[] { msg };
+    }
+
+    private static boolean isWaterlogged(BlockData type, Waterlogged replaced) {
+        return type instanceof Waterlogged && ((Waterlogged) type).isWaterlogged() != replaced.isWaterlogged();
     }
 
     public BlockData getBlockReplaced() {
