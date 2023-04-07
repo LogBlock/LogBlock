@@ -214,7 +214,6 @@ public class WorldEditor implements Runnable {
     public interface Edit {
         PerformResult perform() throws WorldEditorException;
 
-        public long getTime();
     }
 
     public class EntityEdit extends EntityChange implements Edit {
@@ -225,7 +224,6 @@ public class WorldEditor implements Runnable {
             this.rollback = rollback;
         }
 
-        @Override
         public long getTime() {
             return date;
         }
@@ -343,7 +341,6 @@ public class WorldEditor implements Runnable {
             super(time, loc, actor, replaced, replaceData, replacedState, type, typeData, typeState, ca);
         }
 
-        @Override
         public long getTime() {
             return date;
         }
@@ -460,9 +457,10 @@ public class WorldEditor implements Runnable {
 
         @Override
         public int compare(Edit edit1, Edit edit2) {
-            long time1 = edit1.getTime();
+            /*long time1 = edit1.getTime();
             long time2 = edit2.getTime();
-            return time1 > time2 ? mult : time1 < time2 ? -mult : 0;
+            return time1 > time2 ? mult : time1 < time2 ? -mult : 0;*/
+            return 0;
         }
     }
 
