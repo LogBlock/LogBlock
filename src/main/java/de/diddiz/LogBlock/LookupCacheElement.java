@@ -4,6 +4,7 @@ import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Location;
 
 public interface LookupCacheElement {
+
     public Location getLocation();
 
     public default BaseComponent[] getLogMessage() {
@@ -15,4 +16,6 @@ public interface LookupCacheElement {
     public default int getNumChanges() {
         return 1;
     }
+
+    public String toString();
 }
