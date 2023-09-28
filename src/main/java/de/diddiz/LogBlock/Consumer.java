@@ -521,8 +521,9 @@ public class Consumer extends Thread {
         final long time = System.currentTimeMillis();
         final Set<Actor> insertedPlayers = new HashSet<>();
         int counter = 0;
-        new File("plugins/LogBlock/import/").mkdirs();
-        PrintWriter writer = new PrintWriter(new File("plugins/LogBlock/import/queue-" + time + "-0.sql"));
+        final File importDir = new File(logblock.getDataFolder(), "import");
+        importDir.mkdirs();
+        PrintWriter writer = new PrintWriter(new File(importDir, "queue-" + time + "-0.sql"));
         while (!isQueueEmpty()) {
             final Row r = pollQueueFirst();
             if (r == null) {
@@ -541,7 +542,7 @@ public class Consumer extends Thread {
             counter++;
             if (counter % 1000 == 0) {
                 writer.close();
-                writer = new PrintWriter(new File("plugins/LogBlock/import/queue-" + time + "-" + counter / 1000 + ".sql"));
+                writer = new PrintWriter(new File(importDir, "queue-" + time + "-" + counter / 1000 + ".sql"));
             }
         }
         writer.close();
