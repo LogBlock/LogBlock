@@ -6,8 +6,8 @@ import de.diddiz.LogBlock.LogBlock;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
+import java.util.EnumMap;
+import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -28,6 +28,7 @@ import org.bukkit.Chunk;
 import org.bukkit.DyeColor;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Tag;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
@@ -57,7 +58,6 @@ import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 public class BukkitUtils {
-    private static final Set<Set<Integer>> blockEquivalents;
     private static final Set<Material> relativeBreakable;
     private static final Set<Material> relativeTopBreakable;
     private static final Set<Material> fallingEntityKillers;
@@ -74,217 +74,69 @@ public class BukkitUtils {
     private static final Set<Material> bedBlocks;
 
     private static final Map<EntityType, Material> projectileItems;
-    private static final HashSet<Material> signs;
-    private static final HashSet<Material> wallSigns;
-    private static final HashSet<Material> hangingSigns;
-    private static final HashSet<Material> hangingWallSigns;
-    private static final HashSet<Material> allSigns;
-    private static final Set<Material> unmodifiableSigns;
-    private static final HashSet<Material> buttons;
-    private static final HashSet<Material> pressurePlates;
-    private static final HashSet<Material> woodenDoors;
-    private static final HashSet<Material> slabs;
-    private static final HashSet<Material> concreteBlocks;
-    private static final HashMap<Material, DyeColor> dyes;
-    private static final HashSet<Material> alwaysWaterlogged;
-    private static final HashSet<Material> candles;
-    private static final HashSet<Material> candleCakes;
-    private static final HashSet<Material> fenceGates;
-    private static final HashSet<Material> woodenTrapdoors;
+    private static final Set<Material> signs;
+    private static final Set<Material> wallSigns;
+    private static final Set<Material> hangingSigns;
+    private static final Set<Material> allSigns;
+    private static final Set<Material> buttons;
+    private static final Set<Material> pressurePlates;
+    private static final Set<Material> woodenDoors;
+    private static final Set<Material> slabs;
+    private static final Set<Material> concreteBlocks;
+    private static final Map<Material, DyeColor> dyes;
+    private static final Set<Material> alwaysWaterlogged;
+    private static final Set<Material> candles;
+    private static final Set<Material> candleCakes;
+    private static final Set<Material> fenceGates;
+    private static final Set<Material> woodenTrapdoors;
 
     static {
-        fenceGates = new HashSet<>();
-        fenceGates.add(Material.OAK_FENCE_GATE);
-        fenceGates.add(Material.SPRUCE_FENCE_GATE);
-        fenceGates.add(Material.BIRCH_FENCE_GATE);
-        fenceGates.add(Material.JUNGLE_FENCE_GATE);
-        fenceGates.add(Material.ACACIA_FENCE_GATE);
-        fenceGates.add(Material.DARK_OAK_FENCE_GATE);
-        fenceGates.add(Material.WARPED_FENCE_GATE);
-        fenceGates.add(Material.CRIMSON_FENCE_GATE);
-        fenceGates.add(Material.MANGROVE_FENCE_GATE);
-        fenceGates.add(Material.BAMBOO_FENCE_GATE);
-        fenceGates.add(Material.CHERRY_FENCE_GATE);
+        // https://minecraft.fandom.com/wiki/Tag#blocks_fence_gates
+        fenceGates = Tag.FENCE_GATES.getValues();
 
-        woodenTrapdoors = new HashSet<>();
-        woodenTrapdoors.add(Material.OAK_TRAPDOOR);
-        woodenTrapdoors.add(Material.SPRUCE_TRAPDOOR);
-        woodenTrapdoors.add(Material.BIRCH_TRAPDOOR);
-        woodenTrapdoors.add(Material.JUNGLE_TRAPDOOR);
-        woodenTrapdoors.add(Material.ACACIA_TRAPDOOR);
-        woodenTrapdoors.add(Material.DARK_OAK_TRAPDOOR);
-        woodenTrapdoors.add(Material.WARPED_TRAPDOOR);
-        woodenTrapdoors.add(Material.CRIMSON_TRAPDOOR);
-        woodenTrapdoors.add(Material.MANGROVE_TRAPDOOR);
-        woodenTrapdoors.add(Material.BAMBOO_TRAPDOOR);
-        woodenTrapdoors.add(Material.CHERRY_TRAPDOOR);
+        // https://minecraft.fandom.com/wiki/Tag#blocks_wooden_trapdoors
+        woodenTrapdoors = Tag.WOODEN_TRAPDOORS.getValues();
 
-        pressurePlates = new HashSet<>();
-        pressurePlates.add(Material.OAK_PRESSURE_PLATE);
-        pressurePlates.add(Material.SPRUCE_PRESSURE_PLATE);
-        pressurePlates.add(Material.BIRCH_PRESSURE_PLATE);
-        pressurePlates.add(Material.JUNGLE_PRESSURE_PLATE);
-        pressurePlates.add(Material.ACACIA_PRESSURE_PLATE);
-        pressurePlates.add(Material.DARK_OAK_PRESSURE_PLATE);
-        pressurePlates.add(Material.WARPED_PRESSURE_PLATE);
-        pressurePlates.add(Material.CRIMSON_PRESSURE_PLATE);
-        pressurePlates.add(Material.MANGROVE_PRESSURE_PLATE);
-        pressurePlates.add(Material.BAMBOO_PRESSURE_PLATE);
-        pressurePlates.add(Material.CHERRY_PRESSURE_PLATE);
-        pressurePlates.add(Material.STONE_PRESSURE_PLATE);
-        pressurePlates.add(Material.LIGHT_WEIGHTED_PRESSURE_PLATE);
-        pressurePlates.add(Material.HEAVY_WEIGHTED_PRESSURE_PLATE);
+        // https://minecraft.fandom.com/wiki/Tag#blocks_pressure_plates
+        pressurePlates = Tag.PRESSURE_PLATES.getValues();
 
-        woodenDoors = new HashSet<>();
-        woodenDoors.add(Material.OAK_DOOR);
-        woodenDoors.add(Material.SPRUCE_DOOR);
-        woodenDoors.add(Material.BIRCH_DOOR);
-        woodenDoors.add(Material.JUNGLE_DOOR);
-        woodenDoors.add(Material.ACACIA_DOOR);
-        woodenDoors.add(Material.DARK_OAK_DOOR);
-        woodenDoors.add(Material.WARPED_DOOR);
-        woodenDoors.add(Material.CRIMSON_DOOR);
-        woodenDoors.add(Material.MANGROVE_DOOR);
-        woodenDoors.add(Material.BAMBOO_DOOR);
-        woodenDoors.add(Material.CHERRY_DOOR);
+        // https://minecraft.fandom.com/wiki/Tag#blocks_wooden_doors
+        woodenDoors = Tag.WOODEN_DOORS.getValues();
 
-        HashSet<Material> saplings = new HashSet<>();
-        saplings.add(Material.OAK_SAPLING);
-        saplings.add(Material.SPRUCE_SAPLING);
-        saplings.add(Material.BIRCH_SAPLING);
-        saplings.add(Material.JUNGLE_SAPLING);
-        saplings.add(Material.ACACIA_SAPLING);
-        saplings.add(Material.DARK_OAK_SAPLING);
-        saplings.add(Material.CHERRY_SAPLING);
-        saplings.add(Material.WARPED_FUNGUS);
-        saplings.add(Material.CRIMSON_FUNGUS);
-        saplings.add(Material.MANGROVE_PROPAGULE);
+        // https://minecraft.fandom.com/wiki/Tag#blocks_saplings
+        var saplings = Tag.SAPLINGS.getValues();
 
-        HashSet<Material> carpets = new HashSet<>();
-        carpets.add(Material.BLACK_CARPET);
-        carpets.add(Material.BLUE_CARPET);
-        carpets.add(Material.LIGHT_GRAY_CARPET);
-        carpets.add(Material.BROWN_CARPET);
-        carpets.add(Material.CYAN_CARPET);
-        carpets.add(Material.GRAY_CARPET);
-        carpets.add(Material.GREEN_CARPET);
-        carpets.add(Material.LIGHT_BLUE_CARPET);
-        carpets.add(Material.MAGENTA_CARPET);
-        carpets.add(Material.LIME_CARPET);
-        carpets.add(Material.ORANGE_CARPET);
-        carpets.add(Material.PINK_CARPET);
-        carpets.add(Material.PURPLE_CARPET);
-        carpets.add(Material.RED_CARPET);
-        carpets.add(Material.WHITE_CARPET);
-        carpets.add(Material.YELLOW_CARPET);
+        // https://minecraft.fandom.com/wiki/Tag#blocks_wool_carpets
+        var carpets = Tag.WOOL_CARPETS.getValues();
 
-        slabs = new HashSet<>();
-        slabs.add(Material.OAK_SLAB);
-        slabs.add(Material.SPRUCE_SLAB);
-        slabs.add(Material.BIRCH_SLAB);
-        slabs.add(Material.JUNGLE_SLAB);
-        slabs.add(Material.ACACIA_SLAB);
-        slabs.add(Material.DARK_OAK_SLAB);
-        slabs.add(Material.WARPED_SLAB);
-        slabs.add(Material.CRIMSON_SLAB);
-        slabs.add(Material.STONE_SLAB);
-        slabs.add(Material.STONE_BRICK_SLAB);
-        slabs.add(Material.COBBLESTONE_SLAB);
-        slabs.add(Material.PETRIFIED_OAK_SLAB);
-        slabs.add(Material.SANDSTONE_SLAB);
-        slabs.add(Material.RED_SANDSTONE_SLAB);
-        slabs.add(Material.NETHER_BRICK_SLAB);
-        slabs.add(Material.PURPUR_SLAB);
-        slabs.add(Material.QUARTZ_SLAB);
-        slabs.add(Material.BRICK_SLAB);
-        slabs.add(Material.PRISMARINE_SLAB);
-        slabs.add(Material.DARK_PRISMARINE_SLAB);
-        slabs.add(Material.PRISMARINE_BRICK_SLAB);
-        slabs.add(Material.BLACKSTONE_SLAB);
-        slabs.add(Material.POLISHED_BLACKSTONE_SLAB);
-        slabs.add(Material.DEEPSLATE_BRICK_SLAB);
-        slabs.add(Material.DEEPSLATE_TILE_SLAB);
-        slabs.add(Material.COBBLED_DEEPSLATE_SLAB);
-        slabs.add(Material.POLISHED_DEEPSLATE_SLAB);
-        slabs.add(Material.MANGROVE_SLAB);
-        slabs.add(Material.BAMBOO_SLAB);
-        slabs.add(Material.CHERRY_SLAB);
+        // https://minecraft.fandom.com/wiki/Tag#blocks_slabs
+        slabs = Tag.SLABS.getValues();
 
-        buttons = new HashSet<>();
-        buttons.add(Material.STONE_BUTTON);
-        buttons.add(Material.OAK_BUTTON);
-        buttons.add(Material.SPRUCE_BUTTON);
-        buttons.add(Material.BIRCH_BUTTON);
-        buttons.add(Material.JUNGLE_BUTTON);
-        buttons.add(Material.ACACIA_BUTTON);
-        buttons.add(Material.DARK_OAK_BUTTON);
-        buttons.add(Material.WARPED_BUTTON);
-        buttons.add(Material.CRIMSON_BUTTON);
-        buttons.add(Material.MANGROVE_BUTTON);
-        buttons.add(Material.BAMBOO_BUTTON);
-        buttons.add(Material.CHERRY_BUTTON);
-        buttons.add(Material.POLISHED_BLACKSTONE_BUTTON);
+        // https://minecraft.fandom.com/wiki/Tag#blocks_buttons
+        buttons = Tag.BUTTONS.getValues();
 
-        signs = new HashSet<>();
-        signs.add(Material.OAK_SIGN);
-        signs.add(Material.SPRUCE_SIGN);
-        signs.add(Material.BIRCH_SIGN);
-        signs.add(Material.JUNGLE_SIGN);
-        signs.add(Material.DARK_OAK_SIGN);
-        signs.add(Material.ACACIA_SIGN);
-        signs.add(Material.WARPED_SIGN);
-        signs.add(Material.CRIMSON_SIGN);
-        signs.add(Material.MANGROVE_SIGN);
-        signs.add(Material.BAMBOO_SIGN);
-        signs.add(Material.CHERRY_SIGN);
+        // https://minecraft.fandom.com/wiki/Tag#blocks_standing_signs
+        signs = Tag.STANDING_SIGNS.getValues();
 
-        wallSigns = new HashSet<>();
-        wallSigns.add(Material.OAK_WALL_SIGN);
-        wallSigns.add(Material.SPRUCE_WALL_SIGN);
-        wallSigns.add(Material.BIRCH_WALL_SIGN);
-        wallSigns.add(Material.JUNGLE_WALL_SIGN);
-        wallSigns.add(Material.DARK_OAK_WALL_SIGN);
-        wallSigns.add(Material.ACACIA_WALL_SIGN);
-        wallSigns.add(Material.WARPED_WALL_SIGN);
-        wallSigns.add(Material.CRIMSON_WALL_SIGN);
-        wallSigns.add(Material.MANGROVE_WALL_SIGN);
-        wallSigns.add(Material.BAMBOO_WALL_SIGN);
-        wallSigns.add(Material.CHERRY_WALL_SIGN);
+        // https://minecraft.fandom.com/wiki/Tag#blocks_wall_signs
+        wallSigns = Tag.WALL_SIGNS.getValues();
 
-        hangingSigns = new HashSet<>();
-        hangingSigns.add(Material.OAK_HANGING_SIGN);
-        hangingSigns.add(Material.SPRUCE_HANGING_SIGN);
-        hangingSigns.add(Material.BIRCH_HANGING_SIGN);
-        hangingSigns.add(Material.JUNGLE_HANGING_SIGN);
-        hangingSigns.add(Material.DARK_OAK_HANGING_SIGN);
-        hangingSigns.add(Material.ACACIA_HANGING_SIGN);
-        hangingSigns.add(Material.WARPED_HANGING_SIGN);
-        hangingSigns.add(Material.CRIMSON_HANGING_SIGN);
-        hangingSigns.add(Material.MANGROVE_HANGING_SIGN);
-        hangingSigns.add(Material.BAMBOO_HANGING_SIGN);
-        hangingSigns.add(Material.CHERRY_HANGING_SIGN);
+        // https://minecraft.fandom.com/wiki/Tag#blocks_ceiling_hanging_signs
+        hangingSigns = Tag.CEILING_HANGING_SIGNS.getValues();
 
-        hangingWallSigns = new HashSet<>();
-        hangingWallSigns.add(Material.OAK_WALL_HANGING_SIGN);
-        hangingWallSigns.add(Material.SPRUCE_WALL_HANGING_SIGN);
-        hangingWallSigns.add(Material.BIRCH_WALL_HANGING_SIGN);
-        hangingWallSigns.add(Material.JUNGLE_WALL_HANGING_SIGN);
-        hangingWallSigns.add(Material.DARK_OAK_WALL_HANGING_SIGN);
-        hangingWallSigns.add(Material.ACACIA_WALL_HANGING_SIGN);
-        hangingWallSigns.add(Material.WARPED_WALL_HANGING_SIGN);
-        hangingWallSigns.add(Material.CRIMSON_WALL_HANGING_SIGN);
-        hangingWallSigns.add(Material.MANGROVE_WALL_HANGING_SIGN);
-        hangingWallSigns.add(Material.BAMBOO_WALL_HANGING_SIGN);
-        hangingWallSigns.add(Material.CHERRY_WALL_HANGING_SIGN);
+        // https://minecraft.fandom.com/wiki/Tag#blocks_signs
+        allSigns = Tag.SIGNS.getValues();
 
-        allSigns = new HashSet<>();
-        allSigns.addAll(signs);
-        allSigns.addAll(wallSigns);
-        allSigns.addAll(hangingSigns);
-        allSigns.addAll(hangingWallSigns);
-        unmodifiableSigns = Collections.unmodifiableSet(allSigns);
+        // https://minecraft.fandom.com/wiki/Tag#blocks_candles
+        candles = Tag.CANDLES.getValues();
 
-        singleBlockPlants = new HashSet<>();
+        // https://minecraft.fandom.com/wiki/Tag#blocks_candle_cakes
+        candleCakes = Tag.CANDLE_CAKES.getValues();
+
+        var standing_torch = Set.of(Material.TORCH, Material.SOUL_TORCH, Material.REDSTONE_TORCH);
+        var wall_torch = Set.of(Material.WALL_TORCH, Material.SOUL_WALL_TORCH, Material.REDSTONE_WALL_TORCH);
+
+        singleBlockPlants = EnumSet.noneOf(Material.class);
         singleBlockPlants.add(Material.GRASS);
         singleBlockPlants.add(Material.FERN);
         singleBlockPlants.add(Material.DEAD_BUSH);
@@ -315,7 +167,7 @@ public class BukkitUtils {
         singleBlockPlants.add(Material.TORCHFLOWER);
         singleBlockPlants.add(Material.PITCHER_CROP);
 
-        doublePlants = new HashSet<>();
+        doublePlants = EnumSet.noneOf(Material.class);
         doublePlants.add(Material.TALL_GRASS);
         doublePlants.add(Material.LARGE_FERN);
         doublePlants.add(Material.TALL_SEAGRASS);
@@ -326,23 +178,13 @@ public class BukkitUtils {
         doublePlants.add(Material.SMALL_DRIPLEAF);
         doublePlants.add(Material.PITCHER_PLANT);
 
-        blockEquivalents = new HashSet<>(7);
-        blockEquivalents.add(new HashSet<>(Arrays.asList(2, 3, 60)));
-        blockEquivalents.add(new HashSet<>(Arrays.asList(8, 9, 79)));
-        blockEquivalents.add(new HashSet<>(Arrays.asList(10, 11)));
-        blockEquivalents.add(new HashSet<>(Arrays.asList(61, 62)));
-        blockEquivalents.add(new HashSet<>(Arrays.asList(73, 74)));
-        blockEquivalents.add(new HashSet<>(Arrays.asList(75, 76)));
-        blockEquivalents.add(new HashSet<>(Arrays.asList(93, 94)));
-
         // Blocks that break when they are attached to a block
-        relativeBreakable = new HashSet<>();
+        relativeBreakable = EnumSet.noneOf(Material.class);
         relativeBreakable.addAll(wallSigns);
         relativeBreakable.add(Material.LADDER);
         relativeBreakable.addAll(buttons);
-        relativeBreakable.add(Material.REDSTONE_WALL_TORCH);
+        relativeBreakable.addAll(wall_torch);
         relativeBreakable.add(Material.LEVER);
-        relativeBreakable.add(Material.WALL_TORCH);
         relativeBreakable.add(Material.TRIPWIRE_HOOK);
         relativeBreakable.add(Material.COCOA);
         relativeBreakable.add(Material.BELL);
@@ -352,7 +194,7 @@ public class BukkitUtils {
         relativeBreakable.add(Material.LARGE_AMETHYST_BUD);
 
         // Blocks that break when they are on top of a block
-        relativeTopBreakable = new HashSet<>();
+        relativeTopBreakable = EnumSet.noneOf(Material.class);
         relativeTopBreakable.addAll(saplings);
         relativeTopBreakable.addAll(singleBlockPlants);
         relativeTopBreakable.add(Material.WHEAT);
@@ -372,9 +214,7 @@ public class BukkitUtils {
         relativeTopBreakable.add(Material.SNOW);
         relativeTopBreakable.add(Material.REPEATER);
         relativeTopBreakable.add(Material.COMPARATOR);
-        relativeTopBreakable.add(Material.TORCH);
-        relativeTopBreakable.add(Material.SOUL_TORCH);
-        relativeTopBreakable.add(Material.REDSTONE_TORCH);
+        relativeTopBreakable.addAll(standing_torch);
         relativeTopBreakable.addAll(woodenDoors);
         relativeTopBreakable.add(Material.IRON_DOOR);
         relativeTopBreakable.addAll(carpets);
@@ -385,17 +225,12 @@ public class BukkitUtils {
         relativeTopBreakable.add(Material.TWISTING_VINES_PLANT);
         relativeTopBreakable.add(Material.BIG_DRIPLEAF);
         relativeTopBreakable.add(Material.BIG_DRIPLEAF_STEM);
-        for (Material m : Material.values()) {
-            if (m.name().startsWith("POTTED_")) {
-                relativeTopBreakable.add(m);
-            }
-            if (m.name().endsWith("CANDLE_CAKE")) {
-                relativeTopBreakable.add(m);
-            }
-        }
+        relativeTopBreakable.addAll(candles);
+        relativeTopBreakable.addAll(candleCakes);
+        relativeTopBreakable.addAll(Tag.FLOWER_POTS.getValues());
 
         // Blocks that break falling entities
-        fallingEntityKillers = new HashSet<>();
+        fallingEntityKillers = EnumSet.noneOf(Material.class);
         fallingEntityKillers.addAll(signs);
         fallingEntityKillers.addAll(wallSigns);
         fallingEntityKillers.addAll(pressurePlates);
@@ -411,10 +246,8 @@ public class BukkitUtils {
         fallingEntityKillers.add(Material.NETHER_WART);
         fallingEntityKillers.add(Material.COCOA);
         fallingEntityKillers.addAll(slabs);
-        fallingEntityKillers.add(Material.TORCH);
-        fallingEntityKillers.add(Material.WALL_TORCH);
-        fallingEntityKillers.add(Material.SOUL_TORCH);
-        fallingEntityKillers.add(Material.SOUL_WALL_TORCH);
+        fallingEntityKillers.addAll(standing_torch);
+        fallingEntityKillers.addAll(wall_torch);
         fallingEntityKillers.add(Material.FLOWER_POT);
         fallingEntityKillers.add(Material.POWERED_RAIL);
         fallingEntityKillers.add(Material.DETECTOR_RAIL);
@@ -422,8 +255,6 @@ public class BukkitUtils {
         fallingEntityKillers.add(Material.RAIL);
         fallingEntityKillers.add(Material.LEVER);
         fallingEntityKillers.add(Material.REDSTONE_WIRE);
-        fallingEntityKillers.add(Material.REDSTONE_TORCH);
-        fallingEntityKillers.add(Material.REDSTONE_WALL_TORCH);
         fallingEntityKillers.add(Material.REPEATER);
         fallingEntityKillers.add(Material.COMPARATOR);
         fallingEntityKillers.add(Material.DAYLIGHT_DETECTOR);
@@ -440,44 +271,17 @@ public class BukkitUtils {
         fallingEntityKillers.add(Material.SKELETON_WALL_SKULL);
         fallingEntityKillers.add(Material.WITHER_SKELETON_SKULL);
         fallingEntityKillers.add(Material.WITHER_SKELETON_WALL_SKULL);
-        for (Material m : Material.values()) {
-            if (m.name().contains("CANDLE")) {
-                fallingEntityKillers.add(m);
-            }
-        }
+        fallingEntityKillers.addAll(candles);
+        fallingEntityKillers.addAll(candleCakes);
 
-        // Crop Blocks
-        cropBlocks = new HashSet<>();
-        cropBlocks.add(Material.WHEAT);
-        cropBlocks.add(Material.MELON_STEM);
-        cropBlocks.add(Material.PUMPKIN_STEM);
-        cropBlocks.add(Material.CARROT);
-        cropBlocks.add(Material.POTATO);
-        cropBlocks.add(Material.BEETROOT);
-        cropBlocks.add(Material.TORCHFLOWER_CROP);
+        // https://minecraft.fandom.com/wiki/Tag#blocks_crops
+        cropBlocks = Tag.CROPS.getValues();
 
-        // Shulker Boxes
-        shulkerBoxBlocks = new HashSet<>();
-        shulkerBoxBlocks.add(Material.SHULKER_BOX);
-        shulkerBoxBlocks.add(Material.BLACK_SHULKER_BOX);
-        shulkerBoxBlocks.add(Material.BLUE_SHULKER_BOX);
-        shulkerBoxBlocks.add(Material.LIGHT_GRAY_SHULKER_BOX);
-        shulkerBoxBlocks.add(Material.BROWN_SHULKER_BOX);
-        shulkerBoxBlocks.add(Material.CYAN_SHULKER_BOX);
-        shulkerBoxBlocks.add(Material.GRAY_SHULKER_BOX);
-        shulkerBoxBlocks.add(Material.GREEN_SHULKER_BOX);
-        shulkerBoxBlocks.add(Material.LIGHT_BLUE_SHULKER_BOX);
-        shulkerBoxBlocks.add(Material.MAGENTA_SHULKER_BOX);
-        shulkerBoxBlocks.add(Material.LIME_SHULKER_BOX);
-        shulkerBoxBlocks.add(Material.ORANGE_SHULKER_BOX);
-        shulkerBoxBlocks.add(Material.PINK_SHULKER_BOX);
-        shulkerBoxBlocks.add(Material.PURPLE_SHULKER_BOX);
-        shulkerBoxBlocks.add(Material.RED_SHULKER_BOX);
-        shulkerBoxBlocks.add(Material.WHITE_SHULKER_BOX);
-        shulkerBoxBlocks.add(Material.YELLOW_SHULKER_BOX);
+        // https://minecraft.fandom.com/wiki/Tag#blocks_shulker_boxes
+        shulkerBoxBlocks = Tag.SHULKER_BOXES.getValues();
 
         // Container Blocks
-        containerBlocks = new HashSet<>();
+        containerBlocks = EnumSet.noneOf(Material.class);
         containerBlocks.add(Material.CHEST);
         containerBlocks.add(Material.TRAPPED_CHEST);
         containerBlocks.add(Material.DISPENSER);
@@ -510,21 +314,15 @@ public class BukkitUtils {
         nonFluidProofBlocks = new HashSet<>();
         nonFluidProofBlocks.addAll(singleBlockPlants);
         nonFluidProofBlocks.addAll(doublePlants);
-        nonFluidProofBlocks.add(Material.REDSTONE_WALL_TORCH);
+        nonFluidProofBlocks.addAll(wall_torch);
+        nonFluidProofBlocks.addAll(standing_torch);
         nonFluidProofBlocks.add(Material.LEVER);
-        nonFluidProofBlocks.add(Material.WALL_TORCH);
-        nonFluidProofBlocks.add(Material.SOUL_WALL_TORCH);
         nonFluidProofBlocks.add(Material.TRIPWIRE_HOOK);
         nonFluidProofBlocks.add(Material.COCOA);
         nonFluidProofBlocks.addAll(pressurePlates);
         nonFluidProofBlocks.addAll(saplings);
-        nonFluidProofBlocks.add(Material.WHEAT);
-        nonFluidProofBlocks.add(Material.CARROT);
-        nonFluidProofBlocks.add(Material.POTATO);
-        nonFluidProofBlocks.add(Material.BEETROOT);
+        nonFluidProofBlocks.addAll(cropBlocks);
         nonFluidProofBlocks.add(Material.NETHER_WART);
-        nonFluidProofBlocks.add(Material.TORCH);
-        nonFluidProofBlocks.add(Material.SOUL_TORCH);
         nonFluidProofBlocks.add(Material.FLOWER_POT);
         // nonFluidProofBlocks.add(Material.POWERED_RAIL);
         // nonFluidProofBlocks.add(Material.DETECTOR_RAIL);
@@ -532,7 +330,6 @@ public class BukkitUtils {
         // nonFluidProofBlocks.add(Material.RAIL);
         nonFluidProofBlocks.add(Material.LEVER);
         nonFluidProofBlocks.add(Material.REDSTONE_WIRE);
-        nonFluidProofBlocks.add(Material.REDSTONE_TORCH);
         nonFluidProofBlocks.add(Material.REPEATER);
         nonFluidProofBlocks.add(Material.COMPARATOR);
         nonFluidProofBlocks.add(Material.DAYLIGHT_DETECTOR);
@@ -544,23 +341,7 @@ public class BukkitUtils {
         alwaysWaterlogged.add(Material.KELP);
         alwaysWaterlogged.add(Material.KELP_PLANT);
 
-        bedBlocks = new HashSet<>();
-        bedBlocks.add(Material.BLACK_BED);
-        bedBlocks.add(Material.BLUE_BED);
-        bedBlocks.add(Material.LIGHT_GRAY_BED);
-        bedBlocks.add(Material.BROWN_BED);
-        bedBlocks.add(Material.CYAN_BED);
-        bedBlocks.add(Material.GRAY_BED);
-        bedBlocks.add(Material.GREEN_BED);
-        bedBlocks.add(Material.LIGHT_BLUE_BED);
-        bedBlocks.add(Material.MAGENTA_BED);
-        bedBlocks.add(Material.LIME_BED);
-        bedBlocks.add(Material.ORANGE_BED);
-        bedBlocks.add(Material.PINK_BED);
-        bedBlocks.add(Material.PURPLE_BED);
-        bedBlocks.add(Material.RED_BED);
-        bedBlocks.add(Material.WHITE_BED);
-        bedBlocks.add(Material.YELLOW_BED);
+        bedBlocks = Tag.BEDS.getValues();
 
         concreteBlocks = new HashSet<>();
         concreteBlocks.add(Material.BLACK_CONCRETE);
@@ -580,45 +361,7 @@ public class BukkitUtils {
         concreteBlocks.add(Material.WHITE_CONCRETE);
         concreteBlocks.add(Material.YELLOW_CONCRETE);
 
-        candles = new HashSet<>();
-        candles.add(Material.CANDLE);
-        candles.add(Material.BLACK_CANDLE);
-        candles.add(Material.BLUE_CANDLE);
-        candles.add(Material.LIGHT_GRAY_CANDLE);
-        candles.add(Material.BROWN_CANDLE);
-        candles.add(Material.CYAN_CANDLE);
-        candles.add(Material.GRAY_CANDLE);
-        candles.add(Material.GREEN_CANDLE);
-        candles.add(Material.LIGHT_BLUE_CANDLE);
-        candles.add(Material.MAGENTA_CANDLE);
-        candles.add(Material.LIME_CANDLE);
-        candles.add(Material.ORANGE_CANDLE);
-        candles.add(Material.PINK_CANDLE);
-        candles.add(Material.PURPLE_CANDLE);
-        candles.add(Material.RED_CANDLE);
-        candles.add(Material.WHITE_CANDLE);
-        candles.add(Material.YELLOW_CANDLE);
-
-        candleCakes = new HashSet<>();
-        candleCakes.add(Material.CANDLE_CAKE);
-        candleCakes.add(Material.BLACK_CANDLE_CAKE);
-        candleCakes.add(Material.BLUE_CANDLE_CAKE);
-        candleCakes.add(Material.LIGHT_GRAY_CANDLE_CAKE);
-        candleCakes.add(Material.BROWN_CANDLE_CAKE);
-        candleCakes.add(Material.CYAN_CANDLE_CAKE);
-        candleCakes.add(Material.GRAY_CANDLE_CAKE);
-        candleCakes.add(Material.GREEN_CANDLE_CAKE);
-        candleCakes.add(Material.LIGHT_BLUE_CANDLE_CAKE);
-        candleCakes.add(Material.MAGENTA_CANDLE_CAKE);
-        candleCakes.add(Material.LIME_CANDLE_CAKE);
-        candleCakes.add(Material.ORANGE_CANDLE_CAKE);
-        candleCakes.add(Material.PINK_CANDLE_CAKE);
-        candleCakes.add(Material.PURPLE_CANDLE_CAKE);
-        candleCakes.add(Material.RED_CANDLE_CAKE);
-        candleCakes.add(Material.WHITE_CANDLE_CAKE);
-        candleCakes.add(Material.YELLOW_CANDLE_CAKE);
-
-        dyes = new HashMap<>();
+        dyes = new EnumMap<>(Material.class);
         dyes.put(Material.BLACK_DYE, DyeColor.BLACK);
         dyes.put(Material.BLUE_DYE, DyeColor.BLUE);
         dyes.put(Material.LIGHT_GRAY_DYE, DyeColor.LIGHT_GRAY);
@@ -741,24 +484,8 @@ public class BukkitUtils {
         return compressed.toArray(new ItemStack[compressed.size()]);
     }
 
-    public static boolean equalTypes(int type1, int type2) {
-        if (type1 == type2) {
-            return true;
-        }
-        for (final Set<Integer> equivalent : blockEquivalents) {
-            if (equivalent.contains(type1) && equivalent.contains(type2)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public static String friendlyWorldname(String worldName) {
         return new File(worldName).getName();
-    }
-
-    public static Set<Set<Integer>> getBlockEquivalents() {
-        return blockEquivalents;
     }
 
     public static Set<Material> getRelativeBreakables() {
@@ -794,8 +521,8 @@ public class BukkitUtils {
     }
 
     public static String entityName(Entity entity) {
-        if (entity instanceof Player) {
-            return ((Player) entity).getName();
+        if (entity instanceof Player player) {
+            return player.getName();
         }
         if (entity instanceof TNTPrimed) {
             return "TNT";
@@ -1196,7 +923,7 @@ public class BukkitUtils {
     }
 
     public static Set<Material> getAllSignMaterials() {
-        return unmodifiableSigns;
+        return allSigns;
     }
 
     public static boolean isAlwaysWaterlogged(Material m) {
