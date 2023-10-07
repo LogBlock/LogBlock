@@ -1,7 +1,6 @@
 package de.diddiz.LogBlock.blockstate;
 
 import de.diddiz.LogBlock.util.BukkitUtils;
-import de.diddiz.LogBlock.util.Reflections;
 import java.awt.Color;
 import java.util.Arrays;
 import java.util.Collections;
@@ -28,7 +27,7 @@ public class BlockStateCodecSign implements BlockStateCodec {
     public YamlConfiguration serialize(BlockState state) {
         YamlConfiguration conf = null;
         if (state instanceof Sign sign) {
-            boolean waxed = Reflections.isSignWaxed(sign);
+            boolean waxed = sign.isWaxed();
             if (waxed) {
                 conf = new YamlConfiguration();
                 conf.set("waxed", waxed);
@@ -92,7 +91,7 @@ public class BlockStateCodecSign implements BlockStateCodec {
         if (state instanceof Sign) {
             Sign sign = (Sign) state;
             if (conf != null) {
-                sign.setEditable(!conf.getBoolean("waxed"));
+                sign.setWaxed(!conf.getBoolean("waxed"));
                 for (Side side : Side.values()) {
                     ConfigurationSection sideSection = side == Side.FRONT ? conf : conf.getConfigurationSection(side.name().toLowerCase());
                     DyeColor signColor = DyeColor.BLACK;
@@ -120,7 +119,7 @@ public class BlockStateCodecSign implements BlockStateCodec {
                     signSide.setGlowingText(glowing);
                 }
             } else {
-                sign.setEditable(true);
+                sign.setWaxed(true);
                 for (Side side : Side.values()) {
                     SignSide signSide = sign.getSide(side);
                     for (int i = 0; i < 4; i++) {

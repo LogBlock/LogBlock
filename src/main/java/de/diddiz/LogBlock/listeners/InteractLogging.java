@@ -5,7 +5,6 @@ import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.LogBlock.Logging;
 import de.diddiz.LogBlock.config.WorldConfig;
 import de.diddiz.LogBlock.util.BukkitUtils;
-import de.diddiz.LogBlock.util.Reflections;
 import java.util.UUID;
 import org.bukkit.DyeColor;
 import org.bukkit.GameEvent;
@@ -99,8 +98,7 @@ public class InteractLogging extends LoggingListener {
                     if (BukkitUtils.isDye(itemType) || itemType == Material.GLOW_INK_SAC || itemType == Material.INK_SAC || itemType == Material.HONEYCOMB) {
                         final BlockState before = event.getClickedBlock().getState();
                         if (before instanceof Sign signBefore) {
-                            boolean waxed = Reflections.isSignWaxed(signBefore);
-                            if (!waxed) {
+                            if (!signBefore.isWaxed()) {
                                 final Sign signAfter = (Sign) event.getClickedBlock().getState();
                                 Side side = BukkitUtils.getFacingSignSide(player, clicked);
                                 SignSide signSideBefore = signBefore.getSide(side);
@@ -116,7 +114,7 @@ public class InteractLogging extends LoggingListener {
                                         consumer.queueBlockReplace(Actor.actorFromEntity(player), signBefore, signAfter);
                                     }
                                 } else if (itemType == Material.HONEYCOMB) {
-                                    signAfter.setEditable(false);
+                                    signAfter.setWaxed(false);
                                     consumer.queueBlockReplace(Actor.actorFromEntity(player), signBefore, signAfter);
                                 } else if (BukkitUtils.isDye(itemType) && hasText(signSideBefore)) {
                                     DyeColor newColor = BukkitUtils.dyeToDyeColor(itemType);
