@@ -180,7 +180,7 @@ public class InteractLogging extends LoggingListener {
                     consumer.queueBlock(Actor.actorFromEntity(player), loc, blockData, Material.DIRT.createBlockData());
                     // Log the crop on top as being broken
                     Block trampledCrop = clicked.getRelative(BlockFace.UP);
-                    if (BukkitUtils.getCropBlocks().contains(trampledCrop.getType())) {
+                    if (BukkitUtils.isCropBlock(trampledCrop.getType())) {
                         consumer.queueBlockBreak(Actor.actorFromEntity(player), trampledCrop.getState());
                     }
                 }

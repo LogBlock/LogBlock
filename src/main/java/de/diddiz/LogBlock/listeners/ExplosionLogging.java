@@ -25,7 +25,6 @@ import org.bukkit.scheduler.BukkitRunnable;
 
 import static de.diddiz.LogBlock.config.Config.getWorldConfig;
 import static de.diddiz.LogBlock.config.Config.logCreeperExplosionsAsPlayerWhoTriggeredThese;
-import static de.diddiz.LogBlock.util.BukkitUtils.getContainerBlocks;
 
 import java.util.UUID;
 
@@ -117,7 +116,7 @@ public class ExplosionLogging extends LoggingListener {
             }
             for (final Block block : event.blockList()) {
                 final Material type = block.getType();
-                if (wcfg.isLogging(Logging.CHESTACCESS) && getContainerBlocks().contains(type) && !BukkitUtils.getShulkerBoxBlocks().contains(type)) {
+                if (wcfg.isLogging(Logging.CHESTACCESS) && BukkitUtils.isContainerBlock(type) && !BukkitUtils.isShulkerBoxBlock(type)) {
                     consumer.queueContainerBreak(actor, block.getState());
                 } else {
                     consumer.queueBlockBreak(actor, block.getState());
@@ -218,7 +217,7 @@ public class ExplosionLogging extends LoggingListener {
                 }
 
                 final Material type = block.getType();
-                if (wcfg.isLogging(Logging.CHESTACCESS) && getContainerBlocks().contains(type) && !BukkitUtils.getShulkerBoxBlocks().contains(type)) {
+                if (wcfg.isLogging(Logging.CHESTACCESS) && BukkitUtils.isContainerBlock(type) && !BukkitUtils.isShulkerBoxBlock(type)) {
                     consumer.queueContainerBreak(actor, block.getState());
                 } else {
                     consumer.queueBlockBreak(actor, block.getState());

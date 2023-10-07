@@ -45,7 +45,7 @@ public class FluidFlowLogging extends LoggingListener {
             final Block to = event.getToBlock();
             final Material typeTo = to.getType();
             boolean down = event.getFace() == BlockFace.DOWN;
-            final boolean canFlow = BukkitUtils.isEmpty(typeTo) || BukkitUtils.getNonFluidProofBlocks().contains(typeTo);
+            final boolean canFlow = BukkitUtils.isEmpty(typeTo) || BukkitUtils.isNonFluidProofBlock(typeTo);
             if (typeFrom == Material.LAVA && wcfg.isLogging(Logging.LAVAFLOW)) {
                 Levelled levelledFrom = (Levelled) blockDataFrom;
                 if (canFlow) {
@@ -73,7 +73,7 @@ public class FluidFlowLogging extends LoggingListener {
                 newBlock.setLevel(fromWaterlogged || down ? 1 : Math.min(levelledFrom.getLevel() + 1, levelledFrom.getMaximumLevel()));
                 if (BukkitUtils.isEmpty(typeTo)) {
                     consumer.queueBlockPlace(new Actor("WaterFlow", source), to.getLocation(), newBlock);
-                } else if (BukkitUtils.getNonFluidProofBlocks().contains(typeTo)) {
+                } else if (BukkitUtils.isNonFluidProofBlock(typeTo)) {
                     consumer.queueBlockReplace(new Actor("WaterFlow", source), to.getState(), newBlock);
                 } else if (typeTo == Material.LAVA) {
                     int toLevel = ((Levelled) to.getBlockData()).getLevel();
@@ -83,7 +83,7 @@ public class FluidFlowLogging extends LoggingListener {
                         consumer.queueBlockReplace(new Actor("WaterFlow", source), to.getState(), Material.STONE.createBlockData());
                     }
                 }
-                if (BukkitUtils.isEmpty(typeTo) || BukkitUtils.getNonFluidProofBlocks().contains(typeTo)) {
+                if (BukkitUtils.isEmpty(typeTo) || BukkitUtils.isNonFluidProofBlock(typeTo)) {
                     for (final BlockFace face : new BlockFace[] { BlockFace.DOWN, BlockFace.NORTH, BlockFace.WEST, BlockFace.EAST, BlockFace.SOUTH }) {
                         final Block lower = to.getRelative(face);
                         if (lower.getType() == Material.LAVA) {

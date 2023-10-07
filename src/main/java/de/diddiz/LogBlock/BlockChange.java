@@ -160,7 +160,7 @@ public class BlockChange implements LookupCacheElement {
                     msg.addExtra(createTextComponentWithColor("dried ", DESTROY.getColor()));
                     msg.addExtra(prettyMaterial(type));
                 }
-            } else if (BukkitUtils.getContainerBlocks().contains(type.getMaterial())) {
+            } else if (BukkitUtils.isContainerBlock(type.getMaterial())) {
                 msg.addExtra(createTextComponentWithColor("opened ", INTERACT.getColor()));
                 msg.addExtra(prettyMaterial(type));
             } else if (type instanceof Openable && ((Openable) type).isOpen() != ((Openable) replaced).isOpen()) {

@@ -65,7 +65,7 @@ public class LoggingUtil {
         if (y > loc.getWorld().getMinHeight()) {
             // Run this check to avoid false positives
             Location finalLoc = new Location(loc.getWorld(), x, y, z);
-            if (y == initialy || !BukkitUtils.getFallingEntityKillers().contains(finalLoc.getBlock().getType())) {
+            if (y == initialy || !BukkitUtils.isFallingEntityKiller(finalLoc.getBlock().getType())) {
                 if (BukkitUtils.isEmpty(finalLoc.getBlock().getType())) {
                     consumer.queueBlockPlace(actor, finalLoc, placed.getBlockData());
                 } else {
@@ -103,7 +103,7 @@ public class LoggingUtil {
             if (y > loc.getWorld().getMinHeight()) {
                 Location finalLoc = new Location(loc.getWorld(), x, y, z);
                 // Run this check to avoid false positives
-                if (!BukkitUtils.getFallingEntityKillers().contains(finalLoc.getBlock().getType())) {
+                if (!BukkitUtils.isFallingEntityKiller(finalLoc.getBlock().getType())) {
                     finalLoc.add(0, up, 0); // Add this here after checking for block breakers
                     if (BukkitUtils.isEmpty(finalLoc.getBlock().getType())) {
                         consumer.queueBlockPlace(actor, finalLoc, checkBlock.getBlockData());
@@ -155,7 +155,7 @@ public class LoggingUtil {
 
         Block checkBlock = origin.getRelative(BlockFace.UP);
         Material typeAbove = checkBlock.getType();
-        if (BukkitUtils.getRelativeTopBreakabls().contains(typeAbove)) {
+        if (BukkitUtils.isRelativeTopBreakable(typeAbove)) {
             if (typeAbove == Material.IRON_DOOR || BukkitUtils.isWoodenDoor(typeAbove)) {
                 Block doorBlock = checkBlock;
                 // If the doorBlock is the top half a door the player simply punched a door
@@ -185,7 +185,7 @@ public class LoggingUtil {
                 // check next blocks above
                 checkBlock = checkBlock.getRelative(BlockFace.UP);
                 typeAbove = checkBlock.getType();
-                while (BukkitUtils.getRelativeTopBreakabls().contains(typeAbove)) {
+                while (BukkitUtils.isRelativeTopBreakable(typeAbove)) {
                     consumer.queueBlockBreak(actor, checkBlock.getState());
                     checkBlock = checkBlock.getRelative(BlockFace.UP);
                     typeAbove = checkBlock.getType();
@@ -276,7 +276,7 @@ public class LoggingUtil {
         }
 
         List<Location> relativeBreakables = BukkitUtils.getBlocksNearby(origin, BukkitUtils.getRelativeBreakables());
-        if (relativeBreakables.size() != 0) {
+        if (!relativeBreakables.isEmpty()) {
             for (Location location : relativeBreakables) {
                 Block block = location.getBlock();
                 BlockData blockData = block.getBlockData();

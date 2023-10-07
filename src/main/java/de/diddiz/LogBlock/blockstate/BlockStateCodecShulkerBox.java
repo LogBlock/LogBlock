@@ -16,7 +16,7 @@ import org.bukkit.inventory.ItemStack;
 public class BlockStateCodecShulkerBox implements BlockStateCodec {
     @Override
     public Material[] getApplicableMaterials() {
-        return BukkitUtils.getShulkerBoxBlocks().toArray(new Material[BukkitUtils.getShulkerBoxBlocks().size()]);
+        return BukkitUtils.getShulkerBoxBlocks().toArray(Material[]::new);
     }
 
     @Override
