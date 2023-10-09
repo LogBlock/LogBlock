@@ -109,8 +109,8 @@ public class BukkitUtils {
         // https://minecraft.fandom.com/wiki/Tag#blocks_ceiling_hanging_signs
         hangingSigns = Tag.CEILING_HANGING_SIGNS;
 
-        // https://minecraft.fandom.com/wiki/Tag#blocks_signs
-        allSigns = Tag.SIGNS;
+        // https://minecraft.fandom.com/wiki/Tag#blocks_all_signs
+        allSigns = Tag.ALL_SIGNS;
 
         // https://minecraft.fandom.com/wiki/Tag#blocks_candles
         candles = Tag.CANDLES;
@@ -130,27 +130,27 @@ public class BukkitUtils {
         // Local Tags
 
         // https://minecraft.fandom.com/wiki/Tag#blocks_standing_signs
-        var signs = Tag.STANDING_SIGNS.getValues();
+        Set<Material> signs = Tag.STANDING_SIGNS.getValues();
 
         // https://minecraft.fandom.com/wiki/Tag#blocks_wall_signs
-        var wallSigns = Tag.WALL_SIGNS.getValues();
+        Set<Material> wallSigns = Tag.WALL_SIGNS.getValues();
 
         // https://minecraft.fandom.com/wiki/Tag#blocks_wool_carpets
-        var carpets = Tag.WOOL_CARPETS.getValues();
+        Set<Material> carpets = Tag.WOOL_CARPETS.getValues();
 
         // https://minecraft.fandom.com/wiki/Tag#blocks_flower_pots
-        var flowserPots = Tag.FLOWER_POTS.getValues();
+        Set<Material> flowserPots = Tag.FLOWER_POTS.getValues();
 
         // https://minecraft.fandom.com/wiki/Tag#blocks_saplings
-        var saplings = Tag.SAPLINGS.getValues();
+        Set<Material> saplings = Tag.SAPLINGS.getValues();
 
         // https://minecraft.fandom.com/wiki/Tag#blocks_small_flowers
-        var smallFlowers = Tag.SMALL_FLOWERS.getValues();
+        Set<Material> smallFlowers = Tag.SMALL_FLOWERS.getValues();
 
         // https://minecraft.fandom.com/wiki/Tag#blocks_tall_flowers
-        var tallFlowers = Tag.TALL_FLOWERS.getValues();
+        Set<Material> tallFlowers = Tag.TALL_FLOWERS.getValues();
 
-        var bannerStanding = Set.of(Material.WHITE_BANNER,
+        Set<Material> bannerStanding = Set.of(Material.WHITE_BANNER,
             Material.ORANGE_BANNER,
             Material.MAGENTA_BANNER,
             Material.LIGHT_BLUE_BANNER,
@@ -167,7 +167,7 @@ public class BukkitUtils {
             Material.RED_BANNER,
             Material.BLACK_BANNER);
 
-        var bannerWall = Set.of(Material.WHITE_WALL_BANNER,
+        Set<Material> bannerWall = Set.of(Material.WHITE_WALL_BANNER,
             Material.ORANGE_WALL_BANNER,
             Material.MAGENTA_WALL_BANNER,
             Material.LIGHT_BLUE_WALL_BANNER,
@@ -184,9 +184,9 @@ public class BukkitUtils {
             Material.RED_WALL_BANNER,
             Material.BLACK_WALL_BANNER);
 
-        var bannerAll = Tag.BANNERS.getValues();
+        Set<Material> bannerAll = Tag.BANNERS.getValues();
 
-        var headAndSkulls = Set.of(Material.SKELETON_WALL_SKULL,
+        Set<Material> headAndSkulls = Set.of(Material.SKELETON_WALL_SKULL,
             Material.PLAYER_HEAD,
             Material.PLAYER_WALL_HEAD,
             Material.CREEPER_HEAD,
@@ -200,11 +200,11 @@ public class BukkitUtils {
             Material.WITHER_SKELETON_SKULL,
             Material.WITHER_SKELETON_WALL_SKULL);
 
-        var standingTorch = Set.of(Material.TORCH,
+        Set<Material> standingTorch = Set.of(Material.TORCH,
             Material.SOUL_TORCH,
             Material.REDSTONE_TORCH);
 
-        var wallTorch = Set.of(Material.WALL_TORCH,
+        Set<Material> wallTorch = Set.of(Material.WALL_TORCH,
             Material.SOUL_WALL_TORCH,
             Material.REDSTONE_WALL_TORCH);
 
