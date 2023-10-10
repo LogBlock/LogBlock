@@ -114,7 +114,7 @@ public class InteractLogging extends LoggingListener {
                                         consumer.queueBlockReplace(Actor.actorFromEntity(player), signBefore, signAfter);
                                     }
                                 } else if (itemType == Material.HONEYCOMB) {
-                                    signAfter.setWaxed(false);
+                                    signAfter.setWaxed(true);
                                     consumer.queueBlockReplace(Actor.actorFromEntity(player), signBefore, signAfter);
                                 } else if (BukkitUtils.isDye(itemType) && hasText(signSideBefore)) {
                                     DyeColor newColor = BukkitUtils.dyeToDyeColor(itemType);

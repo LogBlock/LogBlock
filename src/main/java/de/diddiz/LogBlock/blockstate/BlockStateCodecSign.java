@@ -91,7 +91,7 @@ public class BlockStateCodecSign implements BlockStateCodec {
         if (state instanceof Sign) {
             Sign sign = (Sign) state;
             if (conf != null) {
-                sign.setWaxed(!conf.getBoolean("waxed"));
+                sign.setWaxed(conf.getBoolean("waxed"));
                 for (Side side : Side.values()) {
                     ConfigurationSection sideSection = side == Side.FRONT ? conf : conf.getConfigurationSection(side.name().toLowerCase());
                     DyeColor signColor = DyeColor.BLACK;
@@ -119,7 +119,7 @@ public class BlockStateCodecSign implements BlockStateCodec {
                     signSide.setGlowingText(glowing);
                 }
             } else {
-                sign.setWaxed(true);
+                sign.setWaxed(false);
                 for (Side side : Side.values()) {
                     SignSide signSide = sign.getSide(side);
                     for (int i = 0; i < 4; i++) {
