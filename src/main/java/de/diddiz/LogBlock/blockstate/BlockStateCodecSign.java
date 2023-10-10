@@ -21,7 +21,7 @@ import org.bukkit.configuration.file.YamlConfiguration;
 public class BlockStateCodecSign implements BlockStateCodec {
     @Override
     public Material[] getApplicableMaterials() {
-        return BukkitUtils.getAllSignMaterials().toArray(new Material[BukkitUtils.getAllSignMaterials().size()]);
+        return BukkitUtils.getAllSignMaterials().toArray(Material[]::new);
     }
 
     @Override
