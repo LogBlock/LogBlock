@@ -186,8 +186,7 @@ public class BukkitUtils {
 
         Set<Material> bannerAll = Tag.BANNERS.getValues();
 
-        Set<Material> headAndSkulls = Set.of(Material.SKELETON_WALL_SKULL,
-            Material.PLAYER_HEAD,
+        Set<Material> headAndSkulls = Set.of(Material.PLAYER_HEAD,
             Material.PLAYER_WALL_HEAD,
             Material.CREEPER_HEAD,
             Material.CREEPER_WALL_HEAD,
@@ -198,7 +197,9 @@ public class BukkitUtils {
             Material.SKELETON_SKULL,
             Material.SKELETON_WALL_SKULL,
             Material.WITHER_SKELETON_SKULL,
-            Material.WITHER_SKELETON_WALL_SKULL);
+            Material.WITHER_SKELETON_WALL_SKULL,
+            Material.PIGLIN_HEAD,
+            Material.PIGLIN_WALL_HEAD);
 
         Set<Material> standingTorch = Set.of(Material.TORCH,
             Material.SOUL_TORCH,
