@@ -341,12 +341,12 @@ public class BukkitUtils {
         projectileItems.put(EntityType.ENDER_PEARL, Material.ENDER_PEARL);
         projectileItems.put(EntityType.SMALL_FIREBALL, Material.FIRE_CHARGE); // Fire charge
         projectileItems.put(EntityType.FIREBALL, Material.FIRE_CHARGE); // Fire charge
-        projectileItems.put(EntityType.FISHING_HOOK, Material.FISHING_ROD);
+        projectileItems.put(EntityType.FISHING_BOBBER, Material.FISHING_ROD);
         projectileItems.put(EntityType.SNOWBALL, Material.SNOWBALL);
-        projectileItems.put(EntityType.SPLASH_POTION, Material.SPLASH_POTION);
-        projectileItems.put(EntityType.THROWN_EXP_BOTTLE, Material.EXPERIENCE_BOTTLE);
+        projectileItems.put(EntityType.POTION, Material.SPLASH_POTION);
+        projectileItems.put(EntityType.EXPERIENCE_BOTTLE, Material.EXPERIENCE_BOTTLE);
         projectileItems.put(EntityType.WITHER_SKULL, Material.WITHER_SKELETON_SKULL);
-        projectileItems.put(EntityType.FIREWORK, Material.FIREWORK_ROCKET);
+        projectileItems.put(EntityType.FIREWORK_ROCKET, Material.FIREWORK_ROCKET);
 
         nonFluidProofBlocks = new HashSet<>();
         nonFluidProofBlocks.addAll(carpets);
