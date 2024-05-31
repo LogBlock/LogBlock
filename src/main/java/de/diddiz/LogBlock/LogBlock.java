@@ -205,11 +205,8 @@ public class LogBlock extends JavaPlugin {
         if (isLogging(Logging.CHAT) || isLogging(Logging.PLAYER_COMMANDS) || isLogging(Logging.CONSOLE_COMMANDS) || isLogging(Logging.COMMANDBLOCK_COMMANDS)) {
             pm.registerEvents(new ChatLogging(this), this);
         }
-        if (isLogging(Logging.ENDERMEN)) {
-            pm.registerEvents(new EndermenLogging(this), this);
-        }
-        if (isLogging(Logging.WITHER)) {
-            pm.registerEvents(new WitherLogging(this), this);
+        if (isLogging(Logging.WITHER) || isLogging(Logging.ENDERMEN)) {
+            pm.registerEvents(new EntityChangeBlockLogging(this), this);
         }
         if (isLogging(Logging.NATURALSTRUCTUREGROW)) {
             pm.registerEvents(new StructureGrowLogging(this), this);

@@ -39,6 +39,8 @@ public enum Logging {
     BAMBOOGROWTH,
     WITHER(true),
     WITHER_SKULL(true),
+    GRASS_EAT,
+    MISCENTITYCHANGEBLOCK(true),
     BONEMEALSTRUCTUREGROW,
     WORLDEDIT,
     TNTMINECARTEXPLOSION(true),
