@@ -4,7 +4,6 @@ import static de.diddiz.LogBlock.util.MessagingUtil.prettyMaterial;
 
 import de.diddiz.LogBlock.LogBlock;
 import java.io.File;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -675,17 +674,18 @@ public class BukkitUtils {
     }
 
     public static String getItemTag(ItemStack itemStack) throws ReflectiveOperationException {
-        Class<?> craftItemStackClazz = ReflectionUtil.getCraftBukkitClass("inventory.CraftItemStack");
-        Method asNMSCopyMethod = craftItemStackClazz.getMethod("asNMSCopy", ItemStack.class);
-
-        Class<?> nmsItemStackClazz = ReflectionUtil.getMinecraftClass("world.item.ItemStack");
-        Method getTagMethod = nmsItemStackClazz.getDeclaredMethod("getTagClone");
-        getTagMethod.setAccessible(true);
-
-        Object nmsItemStack = asNMSCopyMethod.invoke(null, itemStack);
-        Object itemTag = getTagMethod.invoke(nmsItemStack);
-
-        return itemTag != null ? itemTag.toString() : null;
+        return null; // FIXME 
+        //        Class<?> craftItemStackClazz = ReflectionUtil.getCraftBukkitClass("inventory.CraftItemStack");
+        //        Method asNMSCopyMethod = craftItemStackClazz.getMethod("asNMSCopy", ItemStack.class);
+        //
+        //        Class<?> nmsItemStackClazz = ReflectionUtil.getMinecraftClass("world.item.ItemStack");
+        //        Method getTagMethod = nmsItemStackClazz.getDeclaredMethod("getTagClone");
+        //        getTagMethod.setAccessible(true);
+        //
+        //        Object nmsItemStack = asNMSCopyMethod.invoke(null, itemStack);
+        //        Object itemTag = getTagMethod.invoke(nmsItemStack);
+        //
+        //        return itemTag != null ? itemTag.toString() : null;
     }
 
     public static String formatMinecraftKey(String s) {
