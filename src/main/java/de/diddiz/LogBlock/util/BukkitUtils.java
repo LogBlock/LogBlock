@@ -663,7 +663,7 @@ public class BukkitUtils {
         msg.addExtra(prettyMaterial(stack.getType()));
 
         try {
-            String itemTag = getItemTag(stack);
+            String itemTag = stack.getItemMeta().getAsString();
             msg.setHoverEvent(new HoverEvent(Action.SHOW_ITEM, new Item(stack.getType().getKey().toString(), 1, itemTag != null ? ItemTag.ofNbt(itemTag) : null)));
         } catch (Exception e) {
             LogBlock.getInstance().getLogger().log(Level.SEVERE, "Failed to convert Itemstack to JSON", e);
@@ -671,21 +671,6 @@ public class BukkitUtils {
         }
 
         return msg;
-    }
-
-    public static String getItemTag(ItemStack itemStack) throws ReflectiveOperationException {
-        return null; // FIXME 
-        //        Class<?> craftItemStackClazz = ReflectionUtil.getCraftBukkitClass("inventory.CraftItemStack");
-        //        Method asNMSCopyMethod = craftItemStackClazz.getMethod("asNMSCopy", ItemStack.class);
-        //
-        //        Class<?> nmsItemStackClazz = ReflectionUtil.getMinecraftClass("world.item.ItemStack");
-        //        Method getTagMethod = nmsItemStackClazz.getDeclaredMethod("getTagClone");
-        //        getTagMethod.setAccessible(true);
-        //
-        //        Object nmsItemStack = asNMSCopyMethod.invoke(null, itemStack);
-        //        Object itemTag = getTagMethod.invoke(nmsItemStack);
-        //
-        //        return itemTag != null ? itemTag.toString() : null;
     }
 
     public static String formatMinecraftKey(String s) {
