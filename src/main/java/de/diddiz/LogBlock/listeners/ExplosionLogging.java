@@ -49,6 +49,8 @@ public class ExplosionLogging extends LoggingListener {
                 if (!wcfg.isLogging(Logging.MISCEXPLOSION)) {
                     return;
                 }
+            } else if (source instanceof WindCharge) {
+                return;
             } else if (source instanceof TNTPrimed) {
                 if (!wcfg.isLogging(Logging.TNTEXPLOSION)) {
                     return;
