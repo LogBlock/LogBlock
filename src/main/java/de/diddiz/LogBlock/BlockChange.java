@@ -113,7 +113,7 @@ public class BlockChange implements LookupCacheElement {
     }
 
     @Override
-    public BaseComponent[] getLogMessage(int entry) {
+    public BaseComponent getLogMessage(int entry) {
         TextComponent msg = new TextComponent();
         if (date > 0) {
             msg.addExtra(prettyDate(date));
@@ -127,7 +127,7 @@ public class BlockChange implements LookupCacheElement {
         BlockData replaced = getBlockReplaced();
         if (type == null || replaced == null) {
             msg.addExtra("did an unknown block modification");
-            return new BaseComponent[] { msg };
+            return msg;
         }
 
         // Process type details once for later use.
@@ -254,7 +254,7 @@ public class BlockChange implements LookupCacheElement {
             msg.addExtra(" at ");
             msg.addExtra(prettyLocation(loc, entry));
         }
-        return new BaseComponent[] { msg };
+        return msg;
     }
 
     public BlockData getBlockReplaced() {

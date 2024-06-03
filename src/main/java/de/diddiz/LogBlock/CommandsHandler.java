@@ -443,9 +443,7 @@ public class CommandsHandler implements CommandExecutor {
                     if (lookupElements[i].getLocation() != null) {
                         message.addExtra(new TextComponent("(" + (i + 1) + ") "));
                     }
-                    for (BaseComponent component : lookupElements[i].getLogMessage(i + 1)) {
-                        message.addExtra(component);
-                    }
+                    message.addExtra(lookupElements[i].getLogMessage(i + 1));
                     sender.spigot().sendMessage(message);
                 }
                 if (setSessionPage) {

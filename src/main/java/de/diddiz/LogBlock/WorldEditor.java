@@ -486,8 +486,8 @@ public class WorldEditor implements Runnable {
         }
 
         @Override
-        public BaseComponent[] getLogMessage(int entry) {
-            return TextComponent.fromLegacyText(getMessage());
+        public BaseComponent getLogMessage(int entry) {
+            return TextComponent.fromLegacy(getMessage());
         }
     }
 }

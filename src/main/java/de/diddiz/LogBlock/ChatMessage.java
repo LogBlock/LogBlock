@@ -39,7 +39,7 @@ public class ChatMessage implements LookupCacheElement {
     }
 
     @Override
-    public BaseComponent[] getLogMessage(int entry) {
+    public BaseComponent getLogMessage(int entry) {
         TextComponent msg = new TextComponent();
         if (date > 0) {
             msg.addExtra(prettyDate(date));
@@ -50,10 +50,8 @@ public class ChatMessage implements LookupCacheElement {
             msg.addExtra(" ");
         }
         if (message != null) {
-            for (BaseComponent messageComponent : TextComponent.fromLegacyText(message)) {
-                msg.addExtra(messageComponent);
-            }
+            msg.addExtra(TextComponent.fromLegacy(message));
         }
-        return new BaseComponent[] { msg };
+        return msg;
     }
 }

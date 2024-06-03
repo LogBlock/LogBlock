@@ -77,7 +77,7 @@ public class EntityChange implements LookupCacheElement {
     }
 
     @Override
-    public BaseComponent[] getLogMessage(int entry) {
+    public BaseComponent getLogMessage(int entry) {
         TextComponent msg = new TextComponent();
         if (date > 0) {
             msg.addExtra(prettyDate(date));
@@ -128,7 +128,7 @@ public class EntityChange implements LookupCacheElement {
             msg.addExtra(" at ");
             msg.addExtra(prettyLocation(loc, entry));
         }
-        return new BaseComponent[] { msg };
+        return msg;
     }
 
     @Override

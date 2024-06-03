@@ -2,10 +2,10 @@ package de.diddiz.LogBlock.worldedit;
 
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.LinkedHashMap;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -17,15 +17,13 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.Plugin;
 import org.bukkit.util.BlockVector;
-import com.sk89q.jnbt.CompoundTag;
-import com.sk89q.jnbt.DoubleTag;
-import com.sk89q.jnbt.FloatTag;
-import com.sk89q.jnbt.ListTag;
-import com.sk89q.jnbt.NBTInputStream;
-import com.sk89q.jnbt.NBTOutputStream;
-import com.sk89q.jnbt.NamedTag;
-import com.sk89q.jnbt.ShortTag;
-import com.sk89q.jnbt.Tag;
+import org.enginehub.linbus.stream.LinBinaryIO;
+import org.enginehub.linbus.stream.LinStream;
+import org.enginehub.linbus.tree.LinCompoundTag;
+import org.enginehub.linbus.tree.LinDoubleTag;
+import org.enginehub.linbus.tree.LinListTag;
+import org.enginehub.linbus.tree.LinRootEntry;
+import org.enginehub.linbus.tree.LinTagType;
 import com.sk89q.worldedit.IncompleteRegionException;
 import com.sk89q.worldedit.LocalSession;
 import com.sk89q.worldedit.bukkit.BukkitAdapter;
@@ -33,6 +31,7 @@ import com.sk89q.worldedit.bukkit.WorldEditPlugin;
 import com.sk89q.worldedit.entity.BaseEntity;
 import com.sk89q.worldedit.math.BlockVector3;
 import com.sk89q.worldedit.regions.Region;
+import com.sk89q.worldedit.util.concurrency.LazyReference;
 import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.LogBlock.util.CuboidRegion;
 
@@ -107,21 +106,20 @@ public class WorldEditHelper {
             com.sk89q.worldedit.world.entity.EntityType weType = BukkitAdapter.adapt(type);
             com.sk89q.worldedit.util.Location weLocation = BukkitAdapter.adapt(location);
             try {
-                NBTInputStream nbtis = new NBTInputStream(new ByteArrayInputStream(serialized));
-                NamedTag namedTag = nbtis.readNamedTag();
-                nbtis.close();
+                LinStream stream = LinBinaryIO.read(new DataInputStream(new ByteArrayInputStream(serialized)));
+                LinRootEntry namedTag = LinRootEntry.readFrom(stream);
                 UUID newUUID = null;
-                if (namedTag.getName().equals("entity") && namedTag.getTag() instanceof CompoundTag) {
-                    CompoundTag serializedState = (CompoundTag) namedTag.getTag();
-                    BaseEntity state = new BaseEntity(weType, serializedState);
+                if (namedTag.name().equals("entity")) {
+                    LinCompoundTag serializedState = namedTag.value();
+                    BaseEntity state = new BaseEntity(weType, LazyReference.computed(serializedState));
                     com.sk89q.worldedit.entity.Entity weEntity = weLocation.getExtent().createEntity(weLocation, state);
                     if (weEntity != null) {
-                        CompoundTag newNbt = weEntity.getState().getNbtData();
-                        int[] uuidInts = newNbt.getIntArray("UUID");
+                        LinCompoundTag newNbt = weEntity.getState().getNbt();
+                        int[] uuidInts = newNbt.findTag("UUID", LinTagType.intArrayTag()).value();
                         if (uuidInts != null && uuidInts.length >= 4) {
                             newUUID = new UUID(((long) uuidInts[0] << 32) | (uuidInts[1] & 0xFFFFFFFFL), ((long) uuidInts[2] << 32) | (uuidInts[3] & 0xFFFFFFFFL));
                         } else {
-                            newUUID = new UUID(newNbt.getLong("UUIDMost"), newNbt.getLong("UUIDLeast")); // pre 1.16
+                            newUUID = new UUID(newNbt.findTag("UUIDMost", LinTagType.longTag()).valueAsLong(), newNbt.findTag("UUIDLeast", LinTagType.longTag()).valueAsLong()); // pre 1.16
                         }
                     }
                 }
@@ -136,16 +134,18 @@ public class WorldEditHelper {
             BaseEntity state = weEntity.getState();
             if (state != null) {
                 try {
+                    LinCompoundTag.Builder nbt = state.getNbt().toBuilder();
+                    nbt.putFloat("Health", 20.0f);
+                    nbt.put("Motion", LinListTag.builder(LinTagType.doubleTag()).add(LinDoubleTag.of(0)).add(LinDoubleTag.of(0)).add(LinDoubleTag.of(0)).build());
+                    nbt.putShort("Fire", (short) -20);
+                    nbt.putShort("HurtTime", (short) 0);
+
+                    LinRootEntry root = new LinRootEntry("entity", nbt.build());
+
                     ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    NBTOutputStream nbtos = new NBTOutputStream(baos);
-                    CompoundTag nbt = state.getNbtData();
-                    LinkedHashMap<String, Tag<?, ?>> value = new LinkedHashMap<>(nbt.getValue());
-                    value.put("Health", new FloatTag(20.0f));
-                    value.put("Motion", new ListTag(DoubleTag.class, Arrays.asList(new DoubleTag[] { new DoubleTag(0), new DoubleTag(0), new DoubleTag(0) })));
-                    value.put("Fire", new ShortTag((short) -20));
-                    value.put("HurtTime", new ShortTag((short) 0));
-                    nbtos.writeNamedTag("entity", new CompoundTag(value));
-                    nbtos.close();
+                    try (DataOutputStream dos = new DataOutputStream(baos)) {
+                        LinBinaryIO.write(dos, root);
+                    }
                     return baos.toByteArray();
                 } catch (IOException e) {
                     throw new RuntimeException("This IOException should be impossible", e);
@@ -175,7 +175,7 @@ public class WorldEditHelper {
             }
             BlockVector3 min = selection.getMinimumPoint();
             BlockVector3 max = selection.getMaximumPoint();
-            return new CuboidRegion(world, new BlockVector(min.getBlockX(), min.getBlockY(), min.getBlockZ()), new BlockVector(max.getBlockX(), max.getBlockY(), max.getBlockZ()));
+            return new CuboidRegion(world, new BlockVector(min.x(), min.y(), min.z()), new BlockVector(max.x(), max.y(), max.z()));
         }
     }
 }

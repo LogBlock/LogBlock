@@ -182,7 +182,7 @@ public class BlockStateCodecSign implements BlockStateCodec {
                         }
                         tc.addExtra("[");
                         if (line != null && !line.isEmpty()) {
-                            tc.addExtra(new TextComponent(TextComponent.fromLegacyText(line)));
+                            tc.addExtra(TextComponent.fromLegacy(line));
                         }
                         tc.addExtra("]");
                     }

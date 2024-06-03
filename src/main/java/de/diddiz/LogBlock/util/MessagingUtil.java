@@ -18,10 +18,14 @@ import org.bukkit.block.data.BlockData;
 import org.bukkit.entity.EntityType;
 
 public class MessagingUtil {
-    public static BaseComponent[] formatSummarizedChanges(int created, int destroyed, BaseComponent actor, int createdWidth, int destroyedWidth, float spaceFactor) {
+    public static BaseComponent formatSummarizedChanges(int created, int destroyed, BaseComponent actor, int createdWidth, int destroyedWidth, float spaceFactor) {
         TextComponent textCreated = createTextComponentWithColor(created + spaces((int) ((10 - String.valueOf(created).length()) / spaceFactor)), CREATE.getColor());
         TextComponent textDestroyed = createTextComponentWithColor(destroyed + spaces((int) ((10 - String.valueOf(destroyed).length()) / spaceFactor)), DESTROY.getColor());
-        return new BaseComponent[] { textCreated, textDestroyed, actor };
+        TextComponent result = new TextComponent();
+        result.addExtra(textCreated);
+        result.addExtra(textDestroyed);
+        result.addExtra(actor);
+        return result;
     }
 
     public static TextComponent createTextComponentWithColor(String text, ChatColor color) {

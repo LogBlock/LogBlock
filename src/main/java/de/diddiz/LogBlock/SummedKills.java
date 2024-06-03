@@ -25,7 +25,7 @@ public class SummedKills implements LookupCacheElement {
     }
 
     @Override
-    public BaseComponent[] getLogMessage(int entry) {
+    public BaseComponent getLogMessage(int entry) {
         return MessagingUtil.formatSummarizedChanges(kills, killed, new TextComponent(player.getName()), 6, 7, spaceFactor);
     }
 

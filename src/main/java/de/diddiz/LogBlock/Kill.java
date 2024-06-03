@@ -49,7 +49,7 @@ public class Kill implements LookupCacheElement {
     }
 
     @Override
-    public BaseComponent[] getLogMessage(int entry) {
+    public BaseComponent getLogMessage(int entry) {
         TextComponent msg = new TextComponent();
         if (date > 0) {
             msg.addExtra(prettyDate(date));
@@ -65,7 +65,7 @@ public class Kill implements LookupCacheElement {
             msg.addExtra(" with ");
             msg.addExtra(prettyItemName(MaterialConverter.getMaterial(weapon)));
         }
-        return new BaseComponent[] { msg };
+        return msg;
     }
 
     public TextComponent prettyItemName(Material t) {
