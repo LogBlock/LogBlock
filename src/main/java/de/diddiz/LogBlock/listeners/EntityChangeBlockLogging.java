@@ -3,6 +3,7 @@ package de.diddiz.LogBlock.listeners;
 import de.diddiz.LogBlock.Actor;
 import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.LogBlock.Logging;
+import org.bukkit.Material;
 import org.bukkit.entity.Enderman;
 import org.bukkit.entity.Player;
 import org.bukkit.entity.Sheep;
@@ -20,6 +21,10 @@ public class EntityChangeBlockLogging extends LoggingListener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityChangeBlock(EntityChangeBlockEvent event) {
+        Material oldType = event.getBlock().getType();
+        if ((oldType == Material.REDSTONE_ORE || oldType == Material.DEEPSLATE_REDSTONE_ORE) && event.getBlockData().getMaterial() == oldType) {
+            return; // ignore redstone ore activation by stepping on it
+        }
         if (event.getEntity() instanceof Wither) {
             if (isLogging(event.getBlock().getWorld(), Logging.WITHER)) {
                 consumer.queueBlockReplace(Actor.actorFromEntity(event.getEntity()), event.getBlock().getState(), event.getBlockData());
