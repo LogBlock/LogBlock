@@ -7,6 +7,7 @@ import de.diddiz.LogBlock.config.Config;
 import de.diddiz.LogBlock.config.WorldConfig;
 import de.diddiz.LogBlock.util.BukkitUtils;
 import org.bukkit.Bukkit;
+import org.bukkit.ExplosionResult;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -41,6 +42,9 @@ public class ExplosionLogging extends LoggingListener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onEntityExplode(EntityExplodeEvent event) {
+        if (event.getExplosionResult() == ExplosionResult.KEEP || event.getExplosionResult() == ExplosionResult.TRIGGER_BLOCK) {
+            return;
+        }
         final WorldConfig wcfg = getWorldConfig(event.getLocation().getWorld());
         if (wcfg != null) {
             Actor actor = new Actor("Explosion");
@@ -49,8 +53,6 @@ public class ExplosionLogging extends LoggingListener {
                 if (!wcfg.isLogging(Logging.MISCEXPLOSION)) {
                     return;
                 }
-            } else if (source instanceof WindCharge) {
-                return;
             } else if (source instanceof TNTPrimed) {
                 if (!wcfg.isLogging(Logging.TNTEXPLOSION)) {
                     return;
@@ -176,6 +178,9 @@ public class ExplosionLogging extends LoggingListener {
 
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onBlockExplode(BlockExplodeEvent event) {
+        if (event.getExplosionResult() == ExplosionResult.KEEP || event.getExplosionResult() == ExplosionResult.TRIGGER_BLOCK) {
+            return;
+        }
         Player bedCause = null;
         if (lastBedInteractionPlayer != null && lastBedInteractionLocation != null) {
             Location block = event.getBlock().getLocation();
