@@ -35,6 +35,7 @@ import java.io.File;
 import java.io.PrintWriter;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -53,6 +54,8 @@ import static de.diddiz.LogBlock.util.BukkitUtils.*;
 public class WorldEditor implements Runnable {
     private final LogBlock logblock;
     private final ArrayList<Edit> edits = new ArrayList<>();
+    private int rowsCompleted;
+    private int totalRows;
     private final World world;
 
     /**
@@ -135,6 +138,7 @@ public class WorldEditor implements Runnable {
         }
         started = true;
         final long start = System.currentTimeMillis();
+        totalRows = edits.size();
         taskID = logblock.getServer().getScheduler().scheduleSyncRepeatingTask(logblock, this, 0, 1);
         if (taskID == -1) {
             throw new Exception("Failed to schedule task");
@@ -151,8 +155,9 @@ public class WorldEditor implements Runnable {
     public synchronized void run() {
         final List<WorldEditorException> errorList = new ArrayList<>();
         int counter = 0;
-        float size = edits.size();
-        while (!edits.isEmpty() && counter < 100) {
+        long t0 = System.nanoTime();
+        long maxEditTime = 5_000_000; // 5 ms
+        while (!edits.isEmpty() && counter < 10000 && (counter < 100 || counter % 10 != 0 || System.nanoTime() - t0 < maxEditTime)) {
             try {
                 switch (edits.remove(edits.size() - 1).perform()) {
                     case SUCCESS:
@@ -169,11 +174,12 @@ public class WorldEditor implements Runnable {
             } catch (final Exception ex) {
                 logblock.getLogger().log(Level.WARNING, "[WorldEditor] Exeption: ", ex);
             }
+            rowsCompleted++;
             counter++;
             if (sender != null) {
-                float percentage = ((size - edits.size()) / size) * 100.0F;
-                if (percentage % 20 == 0) {
-                    sender.sendMessage(ChatColor.GOLD + "[LogBlock]" + ChatColor.YELLOW + " Rollback progress: " + percentage + "%" +
+                float percentage = rowsCompleted * 100.0f / totalRows;
+                if (rowsCompleted % 10000 == 0) {
+                    sender.sendMessage(ChatColor.GOLD + "[LogBlock]" + ChatColor.YELLOW + " Rollback progress: " + NumberFormat.getNumberInstance().format(percentage) + "%" +
                             " Blocks edited: " + counter);
                 }
             }
