@@ -1,9 +1,12 @@
 package de.diddiz.LogBlock.blockstate;
 
 import java.util.List;
+import java.util.Locale;
 import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
+import org.bukkit.Registry;
 import org.bukkit.block.Banner;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.banner.Pattern;
@@ -30,10 +33,13 @@ public class BlockStateCodecBanner implements BlockStateCodec {
                 YamlConfiguration conf = new YamlConfiguration();
                 ConfigurationSection patternsSection = conf.createSection("patterns");
                 for (Pattern pattern : patterns) {
-                    ConfigurationSection section = patternsSection.createSection(Integer.toString(nr));
-                    section.set("color", pattern.getColor().name());
-                    section.set("pattern", pattern.getPattern().name());
-                    nr++;
+                    NamespacedKey key = pattern.getPattern().getKey();
+                    if (key != null) {
+                        ConfigurationSection section = patternsSection.createSection(Integer.toString(nr));
+                        section.set("color", pattern.getColor().name());
+                        section.set("pattern", key.toString());
+                        nr++;
+                    }
                 }
                 return conf;
             }
@@ -55,8 +61,13 @@ public class BlockStateCodecBanner implements BlockStateCodec {
                     ConfigurationSection section = patternsSection.getConfigurationSection(key);
                     if (section != null) {
                         DyeColor color = DyeColor.valueOf(section.getString("color"));
-                        PatternType type = PatternType.valueOf(section.getString("pattern"));
-                        banner.addPattern(new Pattern(color, type));
+                        NamespacedKey patternKey = NamespacedKey.fromString(section.getString("pattern").toLowerCase(Locale.ROOT));
+                        if (patternKey != null) {
+                            PatternType type = Registry.BANNER_PATTERN.get(patternKey);
+                            if (type != null) {
+                                banner.addPattern(new Pattern(color, type));
+                            }
+                        }
                     }
                 }
             }
