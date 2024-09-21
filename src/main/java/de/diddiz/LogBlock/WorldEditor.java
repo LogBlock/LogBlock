@@ -24,6 +24,7 @@ import org.bukkit.entity.Bee;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.ItemFrame;
 import org.bukkit.inventory.EquipmentSlot;
+import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 
 import de.diddiz.LogBlock.QueryParams.Order;
@@ -374,7 +375,7 @@ public class WorldEditor implements Runnable {
             BlockState state = block.getState();
             if (setBlock.equals(replacedBlock)) {
                 if (ca != null) {
-                    if (state instanceof Container && state.getType() == replacedBlock.getMaterial()) {
+                    if (state instanceof InventoryHolder && state.getType() == replacedBlock.getMaterial()) {
                         int leftover;
                         try {
                             leftover = modifyContainer(state, new ItemStack(ca.itemStack), !ca.remove);

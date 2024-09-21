@@ -330,6 +330,7 @@ public class BukkitUtils {
         containerBlocks.add(Material.BLAST_FURNACE);
         containerBlocks.add(Material.SMOKER);
         containerBlocks.add(Material.CHISELED_BOOKSHELF);
+        containerBlocks.add(Material.DECORATED_POT);
         // Doesn't actually have a block inventory
         // containerBlocks.add(Material.ENDER_CHEST);
 
@@ -602,8 +603,8 @@ public class BukkitUtils {
     }
 
     public static int modifyContainer(BlockState b, ItemStack item, boolean remove) {
-        if (b instanceof InventoryHolder) {
-            final Inventory inv = ((InventoryHolder) b).getInventory();
+        if (b instanceof InventoryHolder c) {
+            final Inventory inv = c.getInventory();
             if (remove) {
                 final ItemStack tmp = inv.removeItem(item).get(0);
                 return tmp != null ? tmp.getAmount() : 0;

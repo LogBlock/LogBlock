@@ -5,19 +5,28 @@ import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.LogBlock.Logging;
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.Tag;
+import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.DecoratedPot;
 import org.bukkit.block.DoubleChest;
+import org.bukkit.block.data.type.ChiseledBookshelf;
 import org.bukkit.entity.HumanEntity;
+import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
+import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.ClickType;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
 import org.bukkit.event.inventory.InventoryOpenEvent;
+import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.util.Vector;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
@@ -295,6 +304,61 @@ public class ChestAccessLogging extends LoggingListener {
                         ItemStack old = container.getItem(slot);
                         int oldAmount = (old == null || old.getType() == Material.AIR) ? 0 : old.getAmount();
                         modifications.addModification(e.getValue(), e.getValue().getAmount() - oldAmount);
+                    }
+                }
+            }
+        }
+    }
+
+    @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
+    public void onPlayerInteract(PlayerInteractEvent event) {
+        final Block clicked = event.getClickedBlock();
+        if (event.getAction() != Action.RIGHT_CLICK_BLOCK || event.getHand() != EquipmentSlot.HAND || !event.hasBlock() || clicked == null) {
+            return;
+        }
+        final Player player = event.getPlayer();
+        if (!isLogging(player.getWorld(), Logging.CHESTACCESS)) {
+            return;
+        }
+        final Material type = clicked.getType();
+        if (type == Material.DECORATED_POT) {
+            ItemStack mainHand = player.getInventory().getItemInMainHand();
+            if (mainHand != null && mainHand.getType() != Material.AIR && clicked.getState() instanceof DecoratedPot pot) {
+                ItemStack currentInPot = pot.getSnapshotInventory().getItem();
+                if (currentInPot == null || currentInPot.getType() == Material.AIR || currentInPot.isSimilar(mainHand) && currentInPot.getAmount() < currentInPot.getMaxStackSize()) {
+                    ItemStack stack = mainHand.clone();
+                    stack.setAmount(1);
+                    consumer.queueChestAccess(Actor.actorFromEntity(player), clicked.getLocation(), clicked.getBlockData(), stack, false);
+                }
+            }
+        } else if (type == Material.CHISELED_BOOKSHELF) {
+            if (clicked.getBlockData() instanceof ChiseledBookshelf blockData && blockData.getFacing() == event.getBlockFace() && clicked.getState() instanceof org.bukkit.block.ChiseledBookshelf bookshelf) {
+                // calculate the slot the same way as minecraft does it
+                Vector pos = event.getClickedPosition();
+                double clickx = switch (blockData.getFacing()) {
+                    case NORTH -> 1 - pos.getX();
+                    case SOUTH -> pos.getX();
+                    case EAST -> 1 - pos.getZ();
+                    case WEST -> pos.getZ();
+                    default -> throw new IllegalArgumentException("Unexpected facing for chiseled bookshelf: " + blockData.getFacing());
+                };
+                int col = clickx < 0.375 ? 0 : (clickx < 0.6875 ? 1 : 2); // 6/16 ; 11/16
+                int row = pos.getY() >= 0.5 ? 0 : 1;
+                int slot = col + row * 3;
+
+                ItemStack currentInSlot = bookshelf.getSnapshotInventory().getItem(slot);
+                if (blockData.isSlotOccupied(slot)) {
+                    // not empty: always take
+                    if (currentInSlot != null && currentInSlot.getType() != Material.AIR) {
+                        consumer.queueChestAccess(Actor.actorFromEntity(player), clicked.getLocation(), clicked.getBlockData(), currentInSlot, true);
+                    }
+                } else {
+                    // empty: put if has tag BOOKSHELF_BOOKS
+                    ItemStack mainHand = player.getInventory().getItemInMainHand();
+                    if (mainHand != null && mainHand.getType() != Material.AIR && Tag.ITEMS_BOOKSHELF_BOOKS.isTagged(mainHand.getType())) {
+                        ItemStack stack = mainHand.clone();
+                        stack.setAmount(1);
+                        consumer.queueChestAccess(Actor.actorFromEntity(player), clicked.getLocation(), clicked.getBlockData(), stack, false);
                     }
                 }
             }
