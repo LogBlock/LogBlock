@@ -21,7 +21,9 @@ import org.enginehub.linbus.stream.LinBinaryIO;
 import org.enginehub.linbus.stream.LinStream;
 import org.enginehub.linbus.tree.LinCompoundTag;
 import org.enginehub.linbus.tree.LinDoubleTag;
+import org.enginehub.linbus.tree.LinIntArrayTag;
 import org.enginehub.linbus.tree.LinListTag;
+import org.enginehub.linbus.tree.LinLongTag;
 import org.enginehub.linbus.tree.LinRootEntry;
 import org.enginehub.linbus.tree.LinTagType;
 import com.sk89q.worldedit.IncompleteRegionException;
@@ -115,11 +117,16 @@ public class WorldEditHelper {
                     com.sk89q.worldedit.entity.Entity weEntity = weLocation.getExtent().createEntity(weLocation, state);
                     if (weEntity != null) {
                         LinCompoundTag newNbt = weEntity.getState().getNbt();
-                        int[] uuidInts = newNbt.findTag("UUID", LinTagType.intArrayTag()).value();
+                        LinIntArrayTag uuidTag = newNbt.findTag("UUID", LinTagType.intArrayTag());
+                        int[] uuidInts = uuidTag == null ? null : uuidTag.value();
                         if (uuidInts != null && uuidInts.length >= 4) {
                             newUUID = new UUID(((long) uuidInts[0] << 32) | (uuidInts[1] & 0xFFFFFFFFL), ((long) uuidInts[2] << 32) | (uuidInts[3] & 0xFFFFFFFFL));
                         } else {
-                            newUUID = new UUID(newNbt.findTag("UUIDMost", LinTagType.longTag()).valueAsLong(), newNbt.findTag("UUIDLeast", LinTagType.longTag()).valueAsLong()); // pre 1.16
+                            LinLongTag uuidMostTag = newNbt.findTag("UUIDMost", LinTagType.longTag());
+                            LinLongTag uuidLeastTag = newNbt.findTag("UUIDLeast", LinTagType.longTag());
+                            if (uuidMostTag != null && uuidLeastTag != null) {
+                                newUUID = new UUID(uuidMostTag.valueAsLong(), uuidLeastTag.valueAsLong()); // pre 1.16
+                            }
                         }
                     }
                 }
