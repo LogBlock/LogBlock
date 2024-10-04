@@ -335,6 +335,9 @@ public class ChestAccessLogging extends LoggingListener {
             if (clicked.getBlockData() instanceof ChiseledBookshelf blockData && blockData.getFacing() == event.getBlockFace() && clicked.getState() instanceof org.bukkit.block.ChiseledBookshelf bookshelf) {
                 // calculate the slot the same way as minecraft does it
                 Vector pos = event.getClickedPosition();
+                if (pos == null) {
+                    return; // some plugins create this event without a clicked pos
+                }
                 double clickx = switch (blockData.getFacing()) {
                     case NORTH -> 1 - pos.getX();
                     case SOUTH -> pos.getX();
