@@ -3,6 +3,7 @@ package de.diddiz.LogBlock.listeners;
 import de.diddiz.LogBlock.Actor;
 import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.LogBlock.Logging;
+import de.diddiz.LogBlock.util.ItemStackAndAmount;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Tag;
@@ -78,9 +79,10 @@ public class ChestAccessLogging extends LoggingListener {
                 for (Entry<ItemStack, Integer> e : modifications.entrySet()) {
                     ItemStack stack = e.getKey();
                     int amount = e.getValue();
-                    stack.setAmount(Math.abs(amount));
-                    // consumer.getLogblock().getLogger().info("Store container: " + stack + " take: " + (amount < 0));
-                    consumer.queueChestAccess(Actor.actorFromEntity(actor), location, location.getWorld().getBlockAt(location).getBlockData(), stack, amount < 0);
+                    if (amount != 0) {
+                        // consumer.getLogblock().getLogger().info("Store container: " + stack + " take: " + (amount < 0));
+                        consumer.queueChestAccess(Actor.actorFromEntity(actor), location, location.getWorld().getBlockAt(location).getBlockData(), new ItemStackAndAmount(stack, Math.abs(amount)), amount < 0);
+                    }
                 }
                 modifications.clear();
             }
@@ -328,7 +330,7 @@ public class ChestAccessLogging extends LoggingListener {
                 if (currentInPot == null || currentInPot.getType() == Material.AIR || currentInPot.isSimilar(mainHand) && currentInPot.getAmount() < currentInPot.getMaxStackSize()) {
                     ItemStack stack = mainHand.clone();
                     stack.setAmount(1);
-                    consumer.queueChestAccess(Actor.actorFromEntity(player), clicked.getLocation(), clicked.getBlockData(), stack, false);
+                    consumer.queueChestAccess(Actor.actorFromEntity(player), clicked.getLocation(), clicked.getBlockData(), ItemStackAndAmount.fromStack(stack), false);
                 }
             }
         } else if (type == Material.CHISELED_BOOKSHELF) {
@@ -353,7 +355,7 @@ public class ChestAccessLogging extends LoggingListener {
                 if (blockData.isSlotOccupied(slot)) {
                     // not empty: always take
                     if (currentInSlot != null && currentInSlot.getType() != Material.AIR) {
-                        consumer.queueChestAccess(Actor.actorFromEntity(player), clicked.getLocation(), clicked.getBlockData(), currentInSlot, true);
+                        consumer.queueChestAccess(Actor.actorFromEntity(player), clicked.getLocation(), clicked.getBlockData(), ItemStackAndAmount.fromStack(currentInSlot), true);
                     }
                 } else {
                     // empty: put if has tag BOOKSHELF_BOOKS
@@ -361,7 +363,7 @@ public class ChestAccessLogging extends LoggingListener {
                     if (mainHand != null && mainHand.getType() != Material.AIR && Tag.ITEMS_BOOKSHELF_BOOKS.isTagged(mainHand.getType())) {
                         ItemStack stack = mainHand.clone();
                         stack.setAmount(1);
-                        consumer.queueChestAccess(Actor.actorFromEntity(player), clicked.getLocation(), clicked.getBlockData(), stack, false);
+                        consumer.queueChestAccess(Actor.actorFromEntity(player), clicked.getLocation(), clicked.getBlockData(), ItemStackAndAmount.fromStack(stack), false);
                     }
                 }
             }

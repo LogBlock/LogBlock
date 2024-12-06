@@ -19,6 +19,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Deque;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -52,6 +53,7 @@ import de.diddiz.LogBlock.config.Config;
 import de.diddiz.LogBlock.events.BlockChangePreLogEvent;
 import de.diddiz.LogBlock.events.EntityChangePreLogEvent;
 import de.diddiz.LogBlock.util.BukkitUtils;
+import de.diddiz.LogBlock.util.ItemStackAndAmount;
 import de.diddiz.LogBlock.util.Utils;
 
 public class Consumer extends Thread {
@@ -208,7 +210,7 @@ public class Consumer extends Thread {
      * @param remove
      *            true if the item was removed
      */
-    public void queueChestAccess(Actor actor, BlockState container, ItemStack itemStack, boolean remove) {
+    public void queueChestAccess(Actor actor, BlockState container, ItemStackAndAmount itemStack, boolean remove) {
         if (!(container instanceof InventoryHolder)) {
             throw new IllegalArgumentException("Container must be instanceof InventoryHolder");
         }
@@ -229,8 +231,8 @@ public class Consumer extends Thread {
      * @param remove
      *            true if the item was removed
      */
-    public void queueChestAccess(Actor actor, Location loc, BlockData type, ItemStack itemStack, boolean remove) {
-        queueBlock(actor, loc, type, type, null, null, new ChestAccess(itemStack, remove, MaterialConverter.getOrAddMaterialId(itemStack.getType())));
+    public void queueChestAccess(Actor actor, Location loc, BlockData type, ItemStackAndAmount itemStack, boolean remove) {
+        queueBlock(actor, loc, type, type, null, null, new ChestAccess(itemStack, remove, MaterialConverter.getOrAddMaterialId(itemStack.stack().getType())));
     }
 
     /**
@@ -261,8 +263,8 @@ public class Consumer extends Thread {
      *            The inventory of the container block
      */
     public void queueContainerBreak(Actor actor, Location loc, BlockData type, Inventory inv) {
-        final ItemStack[] items = compressInventory(inv.getContents());
-        for (final ItemStack item : items) {
+        final Collection<ItemStackAndAmount> items = compressInventory(inv.getContents());
+        for (final ItemStackAndAmount item : items) {
             queueChestAccess(actor, loc, type, item, true);
         }
         queueBlockBreak(actor, loc, type);

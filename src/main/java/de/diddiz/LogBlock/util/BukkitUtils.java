@@ -5,11 +5,13 @@ import static de.diddiz.LogBlock.util.MessagingUtil.prettyMaterial;
 import de.diddiz.LogBlock.LogBlock;
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.Set;
 import java.util.UUID;
@@ -146,8 +148,11 @@ public class BukkitUtils {
         // https://minecraft.fandom.com/wiki/Tag#blocks_small_flowers
         Set<Material> smallFlowers = Tag.SMALL_FLOWERS.getValues();
 
-        // https://minecraft.fandom.com/wiki/Tag#blocks_tall_flowers
-        Set<Material> tallFlowers = Tag.TALL_FLOWERS.getValues();
+        Set<Material> tallFlowers = Set.of(Material.SUNFLOWER,
+                Material.LILAC,
+                Material.PEONY,
+                Material.ROSE_BUSH,
+                Material.PITCHER_PLANT);
 
         Set<Material> bannerStanding = Set.of(Material.WHITE_BANNER,
                 Material.ORANGE_BANNER,
@@ -498,24 +503,22 @@ public class BukkitUtils {
         return diff.toArray(new ItemStack[diff.size()]);
     }
 
-    public static ItemStack[] compressInventory(ItemStack[] items) {
-        final ArrayList<ItemStack> compressed = new ArrayList<>();
+    public static Collection<ItemStackAndAmount> compressInventory(ItemStack[] items) {
+        final HashMap<ItemStack, Integer> compressed = new HashMap<>();
         for (final ItemStack item : items) {
-            if (item != null) {
-                boolean found = false;
-                for (final ItemStack item2 : compressed) {
-                    if (item2.isSimilar(item)) {
-                        item2.setAmount(item2.getAmount() + item.getAmount());
-                        found = true;
-                        break;
-                    }
-                }
-                if (!found) {
-                    compressed.add(item.clone());
-                }
+            if (item != null && item.getType() != Material.AIR && item.getAmount() > 0) {
+                int amount = item.getAmount();
+                ItemStack stack = item.clone();
+                stack.setAmount(1);
+                Integer old = compressed.get(stack);
+                compressed.put(stack, (old == null ? 0 : old) + amount);
             }
         }
-        return compressed.toArray(new ItemStack[compressed.size()]);
+        ArrayList<ItemStackAndAmount> result = new ArrayList<>();
+        for (Entry<ItemStack, Integer> e : compressed.entrySet()) {
+            result.add(new ItemStackAndAmount(e.getKey(), e.getValue()));
+        }
+        return result;
     }
 
     public static String friendlyWorldname(String worldName) {
@@ -602,15 +605,13 @@ public class BukkitUtils {
         return y;
     }
 
-    public static int modifyContainer(BlockState b, ItemStack item, boolean remove) {
-        if (b instanceof InventoryHolder c) {
+    public static int modifyContainer(BlockState b, ItemStackAndAmount item, boolean remove) {
+        if (item.amount() > 0 && b instanceof InventoryHolder c) {
             final Inventory inv = c.getInventory();
             if (remove) {
-                final ItemStack tmp = inv.removeItem(item).get(0);
-                return tmp != null ? tmp.getAmount() : 0;
-            } else if (item.getAmount() > 0) {
-                final ItemStack tmp = inv.addItem(item).get(0);
-                return tmp != null ? tmp.getAmount() : 0;
+                return InventoryUtils.removeFromInventory(inv, item);
+            } else {
+                return InventoryUtils.addToInventory(inv, item);
             }
         }
         return 0;
@@ -656,16 +657,16 @@ public class BukkitUtils {
         return m == Material.AIR || m == Material.CAVE_AIR || m == Material.VOID_AIR;
     }
 
-    public static TextComponent toString(ItemStack stack) {
-        if (stack == null || stack.getAmount() == 0 || isEmpty(stack.getType())) {
+    public static TextComponent toString(ItemStackAndAmount stack) {
+        if (stack == null || stack.stack() == null || stack.amount() == 0 || isEmpty(stack.stack().getType())) {
             return prettyMaterial("nothing");
         }
-        TextComponent msg = MessagingUtil.createTextComponentWithColor(stack.getAmount() + "x ", TypeColor.DEFAULT.getColor());
-        msg.addExtra(prettyMaterial(stack.getType()));
+        TextComponent msg = MessagingUtil.createTextComponentWithColor(stack.amount() + "x ", TypeColor.DEFAULT.getColor());
+        msg.addExtra(prettyMaterial(stack.stack().getType()));
 
         try {
-            String itemTag = stack.getItemMeta().getAsString();
-            msg.setHoverEvent(new HoverEvent(Action.SHOW_ITEM, new Item(stack.getType().getKey().toString(), 1, itemTag != null ? ItemTag.ofNbt(itemTag) : null)));
+            String itemTag = stack.stack().getItemMeta().getAsString();
+            msg.setHoverEvent(new HoverEvent(Action.SHOW_ITEM, new Item(stack.stack().getType().getKey().toString(), 1, itemTag != null ? ItemTag.ofNbt(itemTag) : null)));
         } catch (Exception e) {
             LogBlock.getInstance().getLogger().log(Level.SEVERE, "Failed to convert Itemstack to JSON", e);
             msg.setHoverEvent(new HoverEvent(Action.SHOW_TEXT, new Text(new BaseComponent[] { MessagingUtil.createTextComponentWithColor("Error", TypeColor.ERROR.getColor()) })));

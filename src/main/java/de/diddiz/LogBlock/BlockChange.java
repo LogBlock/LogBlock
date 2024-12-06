@@ -12,6 +12,7 @@ import static de.diddiz.LogBlock.util.TypeColor.DEFAULT;
 
 import de.diddiz.LogBlock.blockstate.BlockStateCodecs;
 import de.diddiz.LogBlock.util.BukkitUtils;
+import de.diddiz.LogBlock.util.ItemStackAndAmount;
 import de.diddiz.LogBlock.util.Utils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -35,7 +36,6 @@ import org.bukkit.block.data.type.Repeater;
 import org.bukkit.block.data.type.Sign;
 import org.bukkit.block.data.type.Switch;
 import org.bukkit.block.data.type.WallSign;
-import org.bukkit.inventory.ItemStack;
 
 public class BlockChange implements LookupCacheElement {
     public final long id, date;
@@ -75,7 +75,7 @@ public class BlockChange implements LookupCacheElement {
         typeState = p.needType ? rs.getBytes("typeState") : null;
         ChestAccess catemp = null;
         if (p.needChestAccess) {
-            ItemStack stack = Utils.loadItemStack(rs.getBytes("item"));
+            ItemStackAndAmount stack = Utils.loadItemStack(rs.getBytes("item"));
             if (stack != null) {
                 catemp = new ChestAccess(stack, rs.getBoolean("itemremove"), rs.getInt("itemtype"));
             }

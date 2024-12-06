@@ -378,7 +378,7 @@ public class WorldEditor implements Runnable {
                     if (state instanceof InventoryHolder && state.getType() == replacedBlock.getMaterial()) {
                         int leftover;
                         try {
-                            leftover = modifyContainer(state, new ItemStack(ca.itemStack), !ca.remove);
+                            leftover = modifyContainer(state, ca.itemStack, !ca.remove);
                         } catch (final Exception ex) {
                             throw new WorldEditorException(ex.getMessage(), block.getLocation());
                         }

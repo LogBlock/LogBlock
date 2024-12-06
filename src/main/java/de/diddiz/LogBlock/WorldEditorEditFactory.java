@@ -3,9 +3,8 @@ package de.diddiz.LogBlock;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-import org.bukkit.inventory.ItemStack;
-
 import de.diddiz.LogBlock.QueryParams.BlockChangeType;
+import de.diddiz.LogBlock.util.ItemStackAndAmount;
 import de.diddiz.LogBlock.util.Utils;
 
 public class WorldEditorEditFactory {
@@ -25,7 +24,7 @@ public class WorldEditorEditFactory {
             return;
         }
         ChestAccess chestaccess = null;
-        ItemStack stack = Utils.loadItemStack(rs.getBytes("item"));
+        ItemStackAndAmount stack = Utils.loadItemStack(rs.getBytes("item"));
         if (stack != null) {
             chestaccess = new ChestAccess(stack, rs.getBoolean("itemremove") == rollback, rs.getInt("itemtype"));
         }

@@ -231,20 +231,35 @@ public class Utils {
         return untrusted.replace("\\", "\\\\").replace("'", "\\'");
     }
 
-    public static ItemStack loadItemStack(byte[] data) {
+    public static ItemStackAndAmount loadItemStack(byte[] data) {
         if (data == null || data.length == 0) {
             return null;
         }
         YamlConfiguration conf = deserializeYamlConfiguration(data);
-        return conf == null ? null : conf.getItemStack("stack");
+        if (conf == null) {
+            return null;
+        }
+        ItemStack stack = conf.getItemStack("stack");
+        if (stack == null) {
+            return null;
+        }
+        int amount = conf.contains("amount") ? conf.getInt("amount") : stack.getAmount();
+        stack.setAmount(1);
+        return new ItemStackAndAmount(stack, amount);
     }
 
-    public static byte[] saveItemStack(ItemStack stack) {
-        if (stack == null || BukkitUtils.isEmpty(stack.getType())) {
+    public static byte[] saveItemStack(ItemStackAndAmount stack) {
+        if (stack == null || stack.stack() == null || BukkitUtils.isEmpty(stack.stack().getType())) {
             return null;
         }
         YamlConfiguration conf = new YamlConfiguration();
-        conf.set("stack", stack);
+        ItemStack itemStack = stack.stack();
+        if (itemStack.getAmount() > 1) {
+            itemStack = itemStack.clone();
+            itemStack.setAmount(1);
+        }
+        conf.set("stack", itemStack);
+        conf.set("amount", stack.amount());
         return serializeYamlConfiguration(conf);
     }
 

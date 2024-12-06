@@ -4,6 +4,7 @@ import de.diddiz.LogBlock.blockstate.BlockStateCodecSign;
 import de.diddiz.LogBlock.config.Config;
 import de.diddiz.LogBlock.config.WorldConfig;
 import de.diddiz.LogBlock.util.ComparableVersion;
+import de.diddiz.LogBlock.util.ItemStackAndAmount;
 import de.diddiz.LogBlock.util.UUIDFetcher;
 import de.diddiz.LogBlock.util.Utils;
 import org.bukkit.Bukkit;
@@ -534,7 +535,7 @@ class Updater {
                                 @SuppressWarnings("deprecation")
                                 ItemStack stack = weaponMaterial.getMaxDurability() > 0 ? new ItemStack(weaponMaterial, Math.abs(amount), (short) itemdata) : new ItemStack(weaponMaterial, Math.abs(amount));
                                 insertChestData.setLong(1, id);
-                                insertChestData.setBytes(2, Utils.saveItemStack(stack));
+                                insertChestData.setBytes(2, Utils.saveItemStack(ItemStackAndAmount.fromStack(stack)));
                                 insertChestData.setInt(3, amount >= 0 ? 0 : 1);
                                 insertChestData.setInt(4, MaterialConverter.getOrAddMaterialId(weaponMaterial));
                                 insertChestData.addBatch();

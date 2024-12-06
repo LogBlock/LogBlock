@@ -1,13 +1,13 @@
 package de.diddiz.LogBlock;
 
-import org.bukkit.inventory.ItemStack;
+import de.diddiz.LogBlock.util.ItemStackAndAmount;
 
 public class ChestAccess {
-    public final ItemStack itemStack;
+    public final ItemStackAndAmount itemStack;
     public final boolean remove;
     public final int itemType;
 
-    public ChestAccess(ItemStack itemStack, boolean remove, int itemType) {
+    public ChestAccess(ItemStackAndAmount itemStack, boolean remove, int itemType) {
         this.itemStack = itemStack;
         this.remove = remove;
         this.itemType = itemType;
