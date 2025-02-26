@@ -2,6 +2,7 @@ package de.diddiz.LogBlock.listeners;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
+import org.bukkit.NamespacedKey;
 import org.bukkit.block.BlockFace;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.ArmorStand;
@@ -201,7 +202,8 @@ public class AdvancedEntityLogging extends LoggingListener {
                 actor = Actor.actorFromEntity(entity.getKiller());
             }
             if (actor == null) {
-                actor = new Actor(event.getDamageSource().getDamageType().toString());
+                NamespacedKey key = event.getDamageSource().getDamageType().getKey();
+                actor = new Actor(key == null ? "unknown" : key.getKey().toUpperCase());
             }
             queueEntitySpawnOrKill(entity, actor, EntityChange.EntityChangeType.KILL);
         }

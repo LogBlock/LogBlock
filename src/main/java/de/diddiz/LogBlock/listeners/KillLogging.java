@@ -4,6 +4,7 @@ import de.diddiz.LogBlock.Actor;
 import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.LogBlock.Logging;
 import de.diddiz.LogBlock.config.Config.*;
+import org.bukkit.NamespacedKey;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Monster;
@@ -38,7 +39,10 @@ public class KillLogging extends LoggingListener {
                 } else if (logKillsLevel == LogKillsLevel.MONSTERS && !((victim instanceof Player || victim instanceof Monster))) {
                     return;
                 }
-                consumer.queueKill(new Actor(deathEvent.getDamageSource().getDamageType().toString()), victim);
+                NamespacedKey key = deathEvent.getDamageSource().getDamageType().getKey();
+                Actor actor = new Actor(key == null ? "unknown" : key.getKey().toUpperCase());
+
+                consumer.queueKill(actor, victim);
             }
         }
     }
