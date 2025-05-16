@@ -348,7 +348,8 @@ public class BukkitUtils {
         projectileItems.put(EntityType.FIREBALL, Material.FIRE_CHARGE); // Fire charge
         projectileItems.put(EntityType.FISHING_BOBBER, Material.FISHING_ROD);
         projectileItems.put(EntityType.SNOWBALL, Material.SNOWBALL);
-        projectileItems.put(EntityType.POTION, Material.SPLASH_POTION);
+        projectileItems.put(EntityType.SPLASH_POTION, Material.SPLASH_POTION);
+        projectileItems.put(EntityType.LINGERING_POTION, Material.LINGERING_POTION);
         projectileItems.put(EntityType.EXPERIENCE_BOTTLE, Material.EXPERIENCE_BOTTLE);
         projectileItems.put(EntityType.WITHER_SKULL, Material.WITHER_SKELETON_SKULL);
         projectileItems.put(EntityType.FIREWORK_ROCKET, Material.FIREWORK_ROCKET);
