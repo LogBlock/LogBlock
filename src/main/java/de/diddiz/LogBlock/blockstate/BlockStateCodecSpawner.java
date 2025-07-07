@@ -64,9 +64,12 @@ public class BlockStateCodecSpawner implements BlockStateCodec {
     @Override
     public BaseComponent getChangesAsComponent(YamlConfiguration conf, YamlConfiguration oldState) {
         if (conf != null) {
-            EntityType entity = EntityType.valueOf(conf.getString("spawnedType"));
-            if (entity != null) {
-                return new TextComponent("[" + entity.getKey().getKey() + "]");
+            String spawnedTypeString = conf.getString("spawnedType");
+            if (spawnedTypeString != null) {
+                EntityType entity = EntityType.valueOf(spawnedTypeString);
+                if (entity != null) {
+                    return new TextComponent("[" + entity.getKey().getKey() + "]");
+                }
             }
         }
         return null;
