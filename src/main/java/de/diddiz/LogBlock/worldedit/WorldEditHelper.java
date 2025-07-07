@@ -140,22 +140,25 @@ public class WorldEditHelper {
             com.sk89q.worldedit.entity.Entity weEntity = BukkitAdapter.adapt(entity);
             BaseEntity state = weEntity.getState();
             if (state != null) {
-                try {
-                    LinCompoundTag.Builder nbt = state.getNbt().toBuilder();
-                    nbt.putFloat("Health", 20.0f);
-                    nbt.put("Motion", LinListTag.builder(LinTagType.doubleTag()).add(LinDoubleTag.of(0)).add(LinDoubleTag.of(0)).add(LinDoubleTag.of(0)).build());
-                    nbt.putShort("Fire", (short) -20);
-                    nbt.putShort("HurtTime", (short) 0);
+                LinCompoundTag originalNbt = state.getNbt();
+                if (originalNbt != null) {
+                    try {
+                        LinCompoundTag.Builder nbt = originalNbt.toBuilder();
+                        nbt.putFloat("Health", 20.0f);
+                        nbt.put("Motion", LinListTag.builder(LinTagType.doubleTag()).add(LinDoubleTag.of(0)).add(LinDoubleTag.of(0)).add(LinDoubleTag.of(0)).build());
+                        nbt.putShort("Fire", (short) -20);
+                        nbt.putShort("HurtTime", (short) 0);
 
-                    LinRootEntry root = new LinRootEntry("entity", nbt.build());
+                        LinRootEntry root = new LinRootEntry("entity", nbt.build());
 
-                    ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                    try (DataOutputStream dos = new DataOutputStream(baos)) {
-                        LinBinaryIO.write(dos, root);
+                        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                        try (DataOutputStream dos = new DataOutputStream(baos)) {
+                            LinBinaryIO.write(dos, root);
+                        }
+                        return baos.toByteArray();
+                    } catch (IOException e) {
+                        throw new RuntimeException("This IOException should be impossible", e);
                     }
-                    return baos.toByteArray();
-                } catch (IOException e) {
-                    throw new RuntimeException("This IOException should be impossible", e);
                 }
             }
             return null;
