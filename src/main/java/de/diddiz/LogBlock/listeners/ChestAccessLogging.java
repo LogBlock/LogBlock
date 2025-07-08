@@ -210,7 +210,10 @@ public class ChestAccessLogging extends LoggingListener {
                         break;
                     case MOVE_TO_OTHER_INVENTORY: // shift + click
                         boolean removed = event.getRawSlot() < event.getView().getTopInventory().getSize();
-                        modifications.addModification(event.getCurrentItem(), event.getCurrentItem().getAmount() * (removed ? -1 : 1));
+                        int maxMove = getFreeSpace(event.getCurrentItem(), removed ? event.getView().getBottomInventory() : event.getView().getTopInventory());
+                        if (maxMove > 0) {
+                            modifications.addModification(event.getCurrentItem(), Math.min(event.getCurrentItem().getAmount(), maxMove) * (removed ? -1 : 1));
+                        }
                         break;
                     case COLLECT_TO_CURSOR: // double click
                         // server behaviour: first collect all with an amount != maxstacksize, then others, starting from slot 0 (container)
@@ -368,5 +371,26 @@ public class ChestAccessLogging extends LoggingListener {
                 }
             }
         }
+    }
+
+    private static int getFreeSpace(ItemStack item, Inventory inventory) {
+        int freeSpace = 0;
+        int maxStack = Math.max(item.getMaxStackSize(), 1);
+
+        ItemStack[] contents = inventory.getStorageContents();
+        for (int i = 0; i < contents.length; i++) {
+            ItemStack content = contents[i];
+
+            if (item.isSimilar(content)) {
+                freeSpace += Math.max(maxStack - content.getAmount(), 0);
+            } else if (content == null || content.getType() == Material.AIR) {
+                freeSpace += maxStack;
+            }
+            if (freeSpace >= item.getAmount()) {
+                return item.getAmount();
+            }
+        }
+
+        return freeSpace;
     }
 }
