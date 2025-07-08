@@ -3,10 +3,12 @@ package de.diddiz.LogBlock.listeners;
 import de.diddiz.LogBlock.Actor;
 import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.LogBlock.Logging;
+import de.diddiz.LogBlock.util.Fraction;
 import de.diddiz.LogBlock.util.ItemStackAndAmount;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.Tag;
+import org.bukkit.block.Beehive;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.DecoratedPot;
@@ -18,6 +20,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.inventory.ClickType;
+import org.bukkit.event.inventory.InventoryAction;
 import org.bukkit.event.inventory.InventoryClickEvent;
 import org.bukkit.event.inventory.InventoryCloseEvent;
 import org.bukkit.event.inventory.InventoryDragEvent;
@@ -27,9 +30,14 @@ import org.bukkit.inventory.EquipmentSlot;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.BlockStateMeta;
+import org.bukkit.inventory.meta.BundleMeta;
+import org.bukkit.inventory.meta.ItemMeta;
 import org.bukkit.util.Vector;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
@@ -37,15 +45,46 @@ import static de.diddiz.LogBlock.config.Config.isLogging;
 import static de.diddiz.LogBlock.util.BukkitUtils.*;
 
 public class ChestAccessLogging extends LoggingListener {
+    private static final InventoryAction PICKUP_ALL_INTO_BUNDLE;
+    private static final InventoryAction PICKUP_FROM_BUNDLE;
+    private static final InventoryAction PICKUP_SOME_INTO_BUNDLE;
+    private static final InventoryAction PLACE_ALL_INTO_BUNDLE;
+    private static final InventoryAction PLACE_FROM_BUNDLE;
+    private static final InventoryAction PLACE_SOME_INTO_BUNDLE;
+    static {
+        InventoryAction pickupAllIntoBundle = null;
+        InventoryAction pickupFromBundle = null;
+        InventoryAction pickupSomeIntoBundle = null;
+        InventoryAction placeAllIntoBundle = null;
+        InventoryAction placeFromBundle = null;
+        InventoryAction placeSomeIntoBundle = null;
+        try {
+            pickupAllIntoBundle = InventoryAction.valueOf("PICKUP_ALL_INTO_BUNDLE");
+            pickupFromBundle = InventoryAction.valueOf("PICKUP_FROM_BUNDLE");
+            pickupSomeIntoBundle = InventoryAction.valueOf("PICKUP_SOME_INTO_BUNDLE");
+            placeAllIntoBundle = InventoryAction.valueOf("PLACE_ALL_INTO_BUNDLE");
+            placeFromBundle = InventoryAction.valueOf("PLACE_FROM_BUNDLE");
+            placeSomeIntoBundle = InventoryAction.valueOf("PLACE_SOME_INTO_BUNDLE");
+        } catch (IllegalArgumentException e) {
+            // ignore
+        }
+        PICKUP_ALL_INTO_BUNDLE = pickupAllIntoBundle;
+        PICKUP_FROM_BUNDLE = pickupFromBundle;
+        PICKUP_SOME_INTO_BUNDLE = pickupSomeIntoBundle;
+        PLACE_ALL_INTO_BUNDLE = placeAllIntoBundle;
+        PLACE_FROM_BUNDLE = placeFromBundle;
+        PLACE_SOME_INTO_BUNDLE = placeSomeIntoBundle;
+    }
+
     private class PlayerActiveInventoryModifications {
         private final HumanEntity actor;
         private final Location location;
-        private final HashMap<ItemStack, Integer> modifications;
+        private final LinkedHashMap<ItemStack, Integer> modifications;
 
         public PlayerActiveInventoryModifications(HumanEntity actor, Location location) {
             this.actor = actor;
             this.location = location;
-            this.modifications = new HashMap<>();
+            this.modifications = new LinkedHashMap<>();
         }
 
         public void addModification(ItemStack stack, int amount) {
@@ -159,7 +198,8 @@ public class ChestAccessLogging extends LoggingListener {
         if (holder instanceof BlockState || holder instanceof DoubleChest) {
             final PlayerActiveInventoryModifications modifications = containersByOwner.get(player);
             if (modifications != null) {
-                switch (event.getAction()) {
+                InventoryAction action = event.getAction();
+                switch (action) {
                     case PICKUP_ONE:
                     case DROP_ONE_SLOT:
                         if (event.getRawSlot() < event.getView().getTopInventory().getSize()) {
@@ -283,8 +323,77 @@ public class ChestAccessLogging extends LoggingListener {
                         break;
                     case UNKNOWN:
                     default:
-                        // unable to log something we don't know
-                        consumer.getLogblock().getLogger().warning("Unknown inventory action by " + event.getWhoClicked().getName() + ": " + event.getAction() + " Slot: " + event.getSlot() + " Slot type: " + event.getSlotType());
+                        if (action == PICKUP_ALL_INTO_BUNDLE || action == PICKUP_SOME_INTO_BUNDLE) {
+                            // slot -> free space on cursor bundle
+                            if (event.getRawSlot() < event.getView().getTopInventory().getSize() && event.getCursor() != null && event.getCurrentItem() != null) {
+                                int amount = getMaxAmountToAdd(event.getCurrentItem(), event.getCursor());
+                                if (amount > 0) {
+                                    modifications.addModification(event.getCurrentItem(), -amount);
+                                }
+                            }
+                        } else if (action == PICKUP_FROM_BUNDLE) {
+                            // last stack from bundle in slot -> cursor (remove old bundle, add new bundle with lesser items)
+                            if (event.getRawSlot() < event.getView().getTopInventory().getSize() && event.getCurrentItem() != null) {
+                                ItemMeta meta = event.getCurrentItem().getItemMeta();
+                                if (meta != null && meta instanceof BundleMeta bundleMeta) {
+                                    ItemStack newBundleStack = event.getCurrentItem().clone();
+                                    ArrayList<ItemStack> bundleContent = new ArrayList<>(bundleMeta.getItems());
+                                    if (!bundleContent.isEmpty()) {
+                                        bundleContent.removeFirst();
+                                        bundleMeta = (BundleMeta) bundleMeta.clone();
+                                        bundleMeta.setItems(bundleContent);
+                                        newBundleStack.setItemMeta(bundleMeta);
+
+                                        modifications.addModification(event.getCurrentItem(), -event.getCurrentItem().getAmount());
+                                        modifications.addModification(newBundleStack, newBundleStack.getAmount());
+                                    }
+                                }
+                            }
+                        } else if (action == PLACE_ALL_INTO_BUNDLE || action == PLACE_SOME_INTO_BUNDLE) {
+                            // cursor -> bundle in slot (remove old bundle, add new bundle with added items)
+                            if (event.getRawSlot() < event.getView().getTopInventory().getSize() && event.getCursor() != null && event.getCurrentItem() != null) {
+                                ItemMeta meta = event.getCurrentItem().getItemMeta();
+                                if (meta != null && meta instanceof BundleMeta bundleMeta) {
+                                    int addable = getMaxAmountToAdd(event.getCursor(), event.getCurrentItem());
+                                    if (addable > 0) {
+                                        ItemStack addToBundle = event.getCursor().clone();
+                                        addToBundle.setAmount(addable);
+                                        ItemStack newBundleStack = event.getCurrentItem().clone();
+                                        ArrayList<ItemStack> bundleContent = new ArrayList<>(bundleMeta.getItems());
+                                        // if the bundle contains similar stack, remove that stack and add larger stack
+                                        for (int i = 0; i < bundleContent.size(); i++) {
+                                            if (bundleContent.get(i).isSimilar(addToBundle)) {
+                                                addToBundle.setAmount(addToBundle.getAmount() + bundleContent.get(i).getAmount());
+                                                bundleContent.remove(i);
+                                                break;
+                                            }
+                                        }
+                                        bundleContent.addFirst(addToBundle);
+                                        bundleMeta = (BundleMeta) bundleMeta.clone();
+                                        bundleMeta.setItems(bundleContent);
+                                        newBundleStack.setItemMeta(bundleMeta);
+
+                                        modifications.addModification(event.getCurrentItem(), -event.getCurrentItem().getAmount());
+                                        modifications.addModification(newBundleStack, newBundleStack.getAmount());
+                                    }
+                                }
+                            }
+                        } else if (action == PLACE_FROM_BUNDLE) {
+                            // last stack from bundle on cursor -> slot
+                            if (event.getRawSlot() < event.getView().getTopInventory().getSize() && event.getCursor() != null) {
+                                ItemMeta meta = event.getCursor().getItemMeta();
+                                if (meta != null && meta instanceof BundleMeta bundleMeta) {
+                                    List<ItemStack> items = bundleMeta.getItems();
+                                    if (!items.isEmpty()) {
+                                        ItemStack item = items.getFirst();
+                                        modifications.addModification(item, item.getAmount());
+                                    }
+                                }
+                            }
+                        } else {
+                            // unable to log something we don't know
+                            consumer.getLogblock().getLogger().warning("Unknown inventory action by " + event.getWhoClicked().getName() + ": " + event.getAction() + " Slot: " + event.getSlot() + " Slot type: " + event.getSlotType());
+                        }
                         break;
                 }
             }
@@ -392,5 +501,41 @@ public class ChestAccessLogging extends LoggingListener {
         }
 
         return freeSpace;
+    }
+
+    private static final Fraction BUNDLE_IN_BUNDLE_WEIGHT = Fraction.getFraction(1, 16);
+
+    private static Fraction computeContentWeight(List<ItemStack> content) {
+        Fraction sum = Fraction.ZERO;
+        for (ItemStack itemStack : content) {
+            sum = sum.add(getWeightOfOne(itemStack).multiplyBy(Fraction.getFraction(itemStack.getAmount(), 1)));
+        }
+        return sum;
+    }
+
+    private static Fraction getWeightOfOne(ItemStack stack) {
+        ItemMeta meta = stack.getItemMeta();
+        if (meta != null && meta instanceof BundleMeta bundleMeta) {
+            return BUNDLE_IN_BUNDLE_WEIGHT.add(computeContentWeight(bundleMeta.getItems()));
+        } else if (meta instanceof BlockStateMeta blockStateMeta) {
+            if (blockStateMeta.getBlockState() instanceof Beehive hive) {
+                int entityCount = hive.getEntityCount();
+                if (entityCount > 0) {
+                    return Fraction.ONE;
+                }
+            }
+        }
+        return Fraction.getFraction(1, stack.getMaxStackSize());
+    }
+
+    private static int getMaxAmountToAdd(ItemStack stackToAdd, ItemStack bundle) {
+        ItemMeta meta = bundle.getItemMeta();
+        if (meta == null || !(meta instanceof BundleMeta bundleMeta)) {
+            return 0;
+        }
+        Fraction weight = computeContentWeight(bundleMeta.getItems());
+
+        Fraction free = Fraction.ONE.subtract(weight);
+        return Math.min(stackToAdd.getAmount(), Math.max(free.divideBy(getWeightOfOne(stackToAdd)).intValue(), 0));
     }
 }
