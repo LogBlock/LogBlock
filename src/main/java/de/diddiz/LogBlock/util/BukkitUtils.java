@@ -3,6 +3,8 @@ package de.diddiz.LogBlock.util;
 import static de.diddiz.LogBlock.util.MessagingUtil.prettyMaterial;
 
 import de.diddiz.LogBlock.LogBlock;
+import de.diddiz.LogBlock.componentwrapper.Component;
+import de.diddiz.LogBlock.componentwrapper.Hover;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -15,13 +17,6 @@ import java.util.Map.Entry;
 import java.util.logging.Level;
 import java.util.Set;
 import java.util.UUID;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.HoverEvent;
-import net.md_5.bungee.api.chat.HoverEvent.Action;
-import net.md_5.bungee.api.chat.ItemTag;
-import net.md_5.bungee.api.chat.TextComponent;
-import net.md_5.bungee.api.chat.hover.content.Item;
-import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
@@ -658,21 +653,13 @@ public class BukkitUtils {
         return m == Material.AIR || m == Material.CAVE_AIR || m == Material.VOID_AIR;
     }
 
-    public static TextComponent toString(ItemStackAndAmount stack) {
+    public static Component toString(ItemStackAndAmount stack) {
         if (stack == null || stack.stack() == null || stack.amount() == 0 || isEmpty(stack.stack().getType())) {
             return prettyMaterial("nothing");
         }
-        TextComponent msg = MessagingUtil.createTextComponentWithColor(stack.amount() + "x ", TypeColor.DEFAULT.getColor());
-        msg.addExtra(prettyMaterial(stack.stack().getType()));
-
-        try {
-            String itemTag = stack.stack().getItemMeta().getAsString();
-            msg.setHoverEvent(new HoverEvent(Action.SHOW_ITEM, new Item(stack.stack().getType().getKey().toString(), 1, itemTag != null ? ItemTag.ofNbt(itemTag) : null)));
-        } catch (Exception e) {
-            LogBlock.getInstance().getLogger().log(Level.SEVERE, "Failed to convert Itemstack to JSON", e);
-            msg.setHoverEvent(new HoverEvent(Action.SHOW_TEXT, new Text(new BaseComponent[] { MessagingUtil.createTextComponentWithColor("Error", TypeColor.ERROR.getColor()) })));
-        }
-
+        Component msg = MessagingUtil.createTextComponentWithColor(stack.amount() + "x ", TypeColor.DEFAULT.getColor());
+        msg = msg.append(prettyMaterial(stack.stack().getType()));
+        msg = msg.hover(Hover.item(stack.stack()));
         return msg;
     }
 

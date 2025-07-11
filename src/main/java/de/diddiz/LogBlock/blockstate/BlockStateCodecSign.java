@@ -1,13 +1,11 @@
 package de.diddiz.LogBlock.blockstate;
 
+import de.diddiz.LogBlock.componentwrapper.Component;
+import de.diddiz.LogBlock.componentwrapper.Components;
 import de.diddiz.LogBlock.util.BukkitUtils;
-import java.awt.Color;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import net.md_5.bungee.api.ChatColor;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
@@ -133,14 +131,14 @@ public class BlockStateCodecSign implements BlockStateCodec {
     }
 
     @Override
-    public BaseComponent getChangesAsComponent(YamlConfiguration state, YamlConfiguration oldState) {
+    public Component getChangesAsComponent(YamlConfiguration state, YamlConfiguration oldState) {
         if (state != null) {
-            TextComponent tc = new TextComponent();
+            Component tc = Components.empty();
             // StringBuilder sb = new StringBuilder();
             boolean isWaxed = state.getBoolean("waxed");
             boolean oldWaxed = oldState != null && oldState.getBoolean("waxed");
             if (isWaxed != oldWaxed) {
-                tc.addExtra(isWaxed ? "(waxed)" : "(not waxed)");
+                tc = tc.append(isWaxed ? "(waxed)" : "(not waxed)");
             }
             for (Side side : Side.values()) {
                 boolean sideHeaderAdded = false;
@@ -175,38 +173,46 @@ public class BlockStateCodecSign implements BlockStateCodec {
                 }
 
                 if (!lines.equals(oldLines)) {
-                    sideHeaderAdded = addSideHeaderText(tc, side, sideHeaderAdded);
+                    if (!sideHeaderAdded) {
+                        tc = addSideHeaderText(tc, side);
+                        sideHeaderAdded = true;
+                    }
                     for (String line : lines) {
-                        if (tc.getExtra() != null && !tc.getExtra().isEmpty()) {
-                            tc.addExtra(" ");
+                        if (!tc.getChildren().isEmpty()) {
+                            tc = tc.append(Components.space());
                         }
-                        tc.addExtra("[");
+                        tc = tc.append("[");
                         if (line != null && !line.isEmpty()) {
-                            tc.addExtra(TextComponent.fromLegacy(line));
+                            tc = tc.append(Components.fromLegacy(line));
                         }
-                        tc.addExtra("]");
+                        tc = tc.append("]");
                     }
                 }
                 if (signColor != oldSignColor) {
-                    sideHeaderAdded = addSideHeaderText(tc, side, sideHeaderAdded);
-                    if (tc.getExtra() != null && !tc.getExtra().isEmpty()) {
-                        tc.addExtra(" ");
+                    if (!sideHeaderAdded) {
+                        tc = addSideHeaderText(tc, side);
+                        sideHeaderAdded = true;
                     }
-                    tc.addExtra("(color: ");
-                    TextComponent colorText = new TextComponent(signColor.name().toLowerCase());
-                    colorText.setColor(ChatColor.of(new Color(signColor.getColor().asARGB())));
-                    tc.addExtra(colorText);
-                    tc.addExtra(")");
+                    if (!tc.getChildren().isEmpty()) {
+                        tc = tc.append(Components.space());
+                    }
+                    tc = tc.append("(color: ");
+                    Component colorText = Components.text(signColor.name().toLowerCase(), de.diddiz.LogBlock.componentwrapper.ChatColor.from(signColor.getColor().asARGB()));
+                    tc = tc.append(colorText);
+                    tc = tc.append(")");
                 }
                 if (glowing != oldGlowing) {
-                    sideHeaderAdded = addSideHeaderText(tc, side, sideHeaderAdded);
-                    if (tc.getExtra() != null && !tc.getExtra().isEmpty()) {
-                        tc.addExtra(" ");
+                    if (!sideHeaderAdded) {
+                        tc = addSideHeaderText(tc, side);
+                        sideHeaderAdded = true;
+                    }
+                    if (!tc.getChildren().isEmpty()) {
+                        tc = tc.append(Components.space());
                     }
                     if (glowing) {
-                        tc.addExtra("(glowing)");
+                        tc = tc.append("(glowing)");
                     } else {
-                        tc.addExtra("(not glowing)");
+                        tc = tc.append("(not glowing)");
                     }
                 }
             }
@@ -215,13 +221,11 @@ public class BlockStateCodecSign implements BlockStateCodec {
         return null;
     }
 
-    private static boolean addSideHeaderText(TextComponent tc, Side side, boolean wasAdded) {
-        if (!wasAdded) {
-            if (tc.getExtra() != null && !tc.getExtra().isEmpty()) {
-                tc.addExtra(" ");
-            }
-            tc.addExtra(side.name() + ":");
+    private static Component addSideHeaderText(Component tc, Side side) {
+        if (!tc.getChildren().isEmpty()) {
+            tc = tc.append(Components.space());
         }
-        return true;
+        tc = tc.append(side.name() + ":");
+        return tc;
     }
 }

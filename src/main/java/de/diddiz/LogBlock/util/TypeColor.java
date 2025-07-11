@@ -1,6 +1,6 @@
 package de.diddiz.LogBlock.util;
 
-import net.md_5.bungee.api.ChatColor;
+import de.diddiz.LogBlock.componentwrapper.ChatColor;
 
 public enum TypeColor {
     DEFAULT(ChatColor.YELLOW),

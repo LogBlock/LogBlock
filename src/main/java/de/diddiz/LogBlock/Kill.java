@@ -5,12 +5,12 @@ import static de.diddiz.LogBlock.util.MessagingUtil.prettyDate;
 import static de.diddiz.LogBlock.util.MessagingUtil.prettyLocation;
 import static de.diddiz.LogBlock.util.MessagingUtil.prettyMaterial;
 
+import de.diddiz.LogBlock.componentwrapper.Component;
+import de.diddiz.LogBlock.componentwrapper.Components;
 import de.diddiz.LogBlock.util.BukkitUtils;
 import de.diddiz.LogBlock.util.MessagingUtil;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Location;
 import org.bukkit.Material;
 
@@ -40,7 +40,7 @@ public class Kill implements LookupCacheElement {
 
     @Override
     public String toString() {
-        return BaseComponent.toPlainText(getLogMessage());
+        return Components.toPlainText(getLogMessage());
     }
 
     @Override
@@ -49,26 +49,26 @@ public class Kill implements LookupCacheElement {
     }
 
     @Override
-    public BaseComponent getLogMessage(int entry) {
-        TextComponent msg = new TextComponent();
+    public Component getLogMessage(int entry) {
+        Component msg = Components.empty();
         if (date > 0) {
-            msg.addExtra(prettyDate(date));
-            msg.addExtra(" ");
+            msg = msg.append(prettyDate(date));
+            msg = msg.append(" ");
         }
-        msg.addExtra(MessagingUtil.createTextComponentWithColor(killerName + " killed ", DESTROY.getColor()));
-        msg.addExtra(new TextComponent(victimName));
+        msg = msg.append(MessagingUtil.createTextComponentWithColor(killerName + " killed ", DESTROY.getColor()));
+        msg = msg.append(Components.text(victimName));
         if (loc != null) {
-            msg.addExtra(" at ");
-            msg.addExtra(prettyLocation(loc, entry));
+            msg = msg.append(" at ");
+            msg = msg.append(prettyLocation(loc, entry));
         }
         if (weapon != 0) {
-            msg.addExtra(" with ");
-            msg.addExtra(prettyItemName(MaterialConverter.getMaterial(weapon)));
+            msg = msg.append(" with ");
+            msg = msg.append(prettyItemName(MaterialConverter.getMaterial(weapon)));
         }
         return msg;
     }
 
-    public TextComponent prettyItemName(Material t) {
+    public Component prettyItemName(Material t) {
         if (t == null || BukkitUtils.isEmpty(t)) {
             return prettyMaterial("fist");
         }

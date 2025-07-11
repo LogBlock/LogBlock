@@ -4,12 +4,13 @@ import static de.diddiz.LogBlock.util.LoggingUtil.checkText;
 import static de.diddiz.LogBlock.util.MessagingUtil.brackets;
 import static de.diddiz.LogBlock.util.MessagingUtil.prettyDate;
 
+import de.diddiz.LogBlock.componentwrapper.ChatColor;
+import de.diddiz.LogBlock.componentwrapper.Component;
+import de.diddiz.LogBlock.componentwrapper.Components;
 import de.diddiz.LogBlock.util.MessagingUtil;
 import de.diddiz.LogBlock.util.MessagingUtil.BracketType;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Location;
 
 public class ChatMessage implements LookupCacheElement {
@@ -39,18 +40,18 @@ public class ChatMessage implements LookupCacheElement {
     }
 
     @Override
-    public BaseComponent getLogMessage(int entry) {
-        TextComponent msg = new TextComponent();
+    public Component getLogMessage(int entry) {
+        Component msg = Components.empty();
         if (date > 0) {
-            msg.addExtra(prettyDate(date));
-            msg.addExtra(" ");
+            msg = msg.append(prettyDate(date));
+            msg = msg.append(" ");
         }
         if (playerName != null) {
-            msg.addExtra(brackets(BracketType.ANGLE, MessagingUtil.createTextComponentWithColor(playerName, net.md_5.bungee.api.ChatColor.WHITE)));
-            msg.addExtra(" ");
+            msg = msg.append(brackets(BracketType.ANGLE, MessagingUtil.createTextComponentWithColor(playerName, ChatColor.WHITE)));
+            msg = msg.append(" ");
         }
         if (message != null) {
-            msg.addExtra(TextComponent.fromLegacy(message));
+            msg = msg.append(Components.fromLegacy(message));
         }
         return msg;
     }

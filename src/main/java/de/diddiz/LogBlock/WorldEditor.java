@@ -29,6 +29,8 @@ import org.bukkit.inventory.ItemStack;
 
 import de.diddiz.LogBlock.QueryParams.Order;
 import de.diddiz.LogBlock.blockstate.BlockStateCodecs;
+import de.diddiz.LogBlock.componentwrapper.Component;
+import de.diddiz.LogBlock.componentwrapper.Components;
 import de.diddiz.LogBlock.util.BukkitUtils;
 import de.diddiz.LogBlock.util.Utils;
 import de.diddiz.LogBlock.worldedit.WorldEditHelper;
@@ -45,9 +47,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
-
 import static de.diddiz.LogBlock.config.Config.dontRollback;
 import static de.diddiz.LogBlock.config.Config.replaceAnyway;
 import static de.diddiz.LogBlock.util.BukkitUtils.*;
@@ -194,7 +193,7 @@ public class WorldEditor implements Runnable {
                     final File file = new File(errorDir, "WorldEditor-" + new SimpleDateFormat("yy-MM-dd-HH-mm-ss").format(System.currentTimeMillis()) + ".log");
                     final PrintWriter writer = new PrintWriter(file);
                     for (final WorldEditorException err : errorList) {
-                        writer.println(BaseComponent.toPlainText(err.getLogMessage()));
+                        writer.println(Components.toPlainText(err.getLogMessage()));
                         err.printStackTrace(writer);
                         writer.println();
                         writer.println();
@@ -493,8 +492,8 @@ public class WorldEditor implements Runnable {
         }
 
         @Override
-        public BaseComponent getLogMessage(int entry) {
-            return TextComponent.fromLegacy(getMessage());
+        public Component getLogMessage(int entry) {
+            return Components.fromLegacy(getMessage());
         }
     }
 }

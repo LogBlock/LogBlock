@@ -1,7 +1,7 @@
 package de.diddiz.LogBlock.blockstate;
 
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
+import de.diddiz.LogBlock.componentwrapper.Component;
+import de.diddiz.LogBlock.componentwrapper.Components;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.Lectern;
@@ -45,10 +45,10 @@ public class BlockStateCodecLectern implements BlockStateCodec {
     }
 
     @Override
-    public BaseComponent getChangesAsComponent(YamlConfiguration conf, YamlConfiguration oldState) {
+    public Component getChangesAsComponent(YamlConfiguration conf, YamlConfiguration oldState) {
         if (conf != null) {
-            return new TextComponent("[book]");
+            return Components.text("[book]");
         }
-        return new TextComponent("empty");
+        return Components.text("empty");
     }
 }

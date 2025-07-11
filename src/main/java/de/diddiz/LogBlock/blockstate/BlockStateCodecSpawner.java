@@ -1,8 +1,8 @@
 package de.diddiz.LogBlock.blockstate;
 
 import de.diddiz.LogBlock.LogBlock;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
+import de.diddiz.LogBlock.componentwrapper.Component;
+import de.diddiz.LogBlock.componentwrapper.Components;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.block.CreatureSpawner;
@@ -62,13 +62,13 @@ public class BlockStateCodecSpawner implements BlockStateCodec {
     }
 
     @Override
-    public BaseComponent getChangesAsComponent(YamlConfiguration conf, YamlConfiguration oldState) {
+    public Component getChangesAsComponent(YamlConfiguration conf, YamlConfiguration oldState) {
         if (conf != null) {
             String spawnedTypeString = conf.getString("spawnedType");
             if (spawnedTypeString != null) {
                 EntityType entity = EntityType.valueOf(spawnedTypeString);
                 if (entity != null) {
-                    return new TextComponent("[" + entity.getKey().getKey() + "]");
+                    return Components.text("[" + entity.getKey().getKey() + "]");
                 }
             }
         }

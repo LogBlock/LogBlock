@@ -9,12 +9,12 @@ import static de.diddiz.LogBlock.util.MessagingUtil.prettyEntityType;
 import static de.diddiz.LogBlock.util.MessagingUtil.prettyLocation;
 import static de.diddiz.LogBlock.util.MessagingUtil.prettyMaterial;
 
+import de.diddiz.LogBlock.componentwrapper.Component;
+import de.diddiz.LogBlock.componentwrapper.Components;
 import de.diddiz.LogBlock.util.Utils;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.UUID;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.Location;
 import org.bukkit.configuration.file.YamlConfiguration;
 import org.bukkit.entity.ArmorStand;
@@ -73,60 +73,60 @@ public class EntityChange implements LookupCacheElement {
 
     @Override
     public String toString() {
-        return BaseComponent.toPlainText(getLogMessage());
+        return Components.toPlainText(getLogMessage());
     }
 
     @Override
-    public BaseComponent getLogMessage(int entry) {
-        TextComponent msg = new TextComponent();
+    public Component getLogMessage(int entry) {
+        Component msg = Components.empty();
         if (date > 0) {
-            msg.addExtra(prettyDate(date));
-            msg.addExtra(" ");
+            msg = msg.append(prettyDate(date));
+            msg = msg.append(" ");
         }
         if (actor != null) {
-            msg.addExtra(actor.getName());
-            msg.addExtra(" ");
+            msg = msg.append(actor.getName());
+            msg = msg.append(" ");
         }
         if (changeType == EntityChangeType.CREATE) {
-            msg.addExtra(createTextComponentWithColor("created ", CREATE.getColor()));
+            msg = msg.append(createTextComponentWithColor("created ", CREATE.getColor()));
         } else if (changeType == EntityChangeType.KILL) {
             boolean living = type != null && LivingEntity.class.isAssignableFrom(type.getEntityClass()) && !ArmorStand.class.isAssignableFrom(type.getDeclaringClass());
-            msg.addExtra(createTextComponentWithColor(living ? "killed " : "destroyed ", DESTROY.getColor()));
+            msg = msg.append(createTextComponentWithColor(living ? "killed " : "destroyed ", DESTROY.getColor()));
         } else if (changeType == EntityChangeType.ADDEQUIP) {
             YamlConfiguration conf = Utils.deserializeYamlConfiguration(data);
             ItemStack stack = conf == null ? null : conf.getItemStack("item");
             if (stack == null) {
-                msg.addExtra(createTextComponentWithColor("added an item to ", CREATE.getColor()));
+                msg = msg.append(createTextComponentWithColor("added an item to ", CREATE.getColor()));
             } else {
-                msg.addExtra(createTextComponentWithColor("added ", CREATE.getColor()));
-                msg.addExtra(prettyMaterial(stack.getType()));
-                msg.addExtra(" to ");
+                msg = msg.append(createTextComponentWithColor("added ", CREATE.getColor()));
+                msg = msg.append(prettyMaterial(stack.getType()));
+                msg = msg.append(" to ");
             }
         } else if (changeType == EntityChangeType.REMOVEEQUIP) {
             YamlConfiguration conf = Utils.deserializeYamlConfiguration(data);
             ItemStack stack = conf == null ? null : conf.getItemStack("item");
             if (stack == null) {
-                msg.addExtra(createTextComponentWithColor("removed an item from ", DESTROY.getColor()));
+                msg = msg.append(createTextComponentWithColor("removed an item from ", DESTROY.getColor()));
             } else {
-                msg.addExtra(createTextComponentWithColor("removed ", DESTROY.getColor()));
-                msg.addExtra(prettyMaterial(stack.getType()));
-                msg.addExtra(" from ");
+                msg = msg.append(createTextComponentWithColor("removed ", DESTROY.getColor()));
+                msg = msg.append(prettyMaterial(stack.getType()));
+                msg = msg.append(" from ");
             }
         } else if (changeType == EntityChangeType.MODIFY) {
-            msg.addExtra(createTextComponentWithColor("modified ", INTERACT.getColor()));
+            msg = msg.append(createTextComponentWithColor("modified ", INTERACT.getColor()));
         } else if (changeType == EntityChangeType.GET_STUNG) {
-            msg.addExtra(createTextComponentWithColor("got stung by ", DESTROY.getColor()));
+            msg = msg.append(createTextComponentWithColor("got stung by ", DESTROY.getColor()));
         } else {
-            msg.addExtra(createTextComponentWithColor("did an unknown action to ", INTERACT.getColor()));
+            msg = msg.append(createTextComponentWithColor("did an unknown action to ", INTERACT.getColor()));
         }
         if (type != null) {
-            msg.addExtra(prettyEntityType(type));
+            msg = msg.append(prettyEntityType(type));
         } else {
-            msg.addExtra(prettyMaterial("an unknown entity"));
+            msg = msg.append(prettyMaterial("an unknown entity"));
         }
         if (loc != null) {
-            msg.addExtra(" at ");
-            msg.addExtra(prettyLocation(loc, entry));
+            msg = msg.append(" at ");
+            msg = msg.append(prettyLocation(loc, entry));
         }
         return msg;
     }

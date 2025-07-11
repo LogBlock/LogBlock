@@ -1,8 +1,8 @@
 package de.diddiz.LogBlock.blockstate;
 
+import de.diddiz.LogBlock.componentwrapper.Component;
 import java.util.HashMap;
 import java.util.Map;
-import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
 import org.bukkit.configuration.file.YamlConfiguration;
@@ -51,7 +51,7 @@ public class BlockStateCodecs {
         }
     }
 
-    public static BaseComponent getChangesAsComponent(Material material, YamlConfiguration state, YamlConfiguration oldState) {
+    public static Component getChangesAsComponent(Material material, YamlConfiguration state, YamlConfiguration oldState) {
         BlockStateCodec codec = codecs.get(material);
         if (codec != null) {
             return codec.getChangesAsComponent(state, oldState);

@@ -1,8 +1,8 @@
 package de.diddiz.LogBlock.blockstate;
 
+import de.diddiz.LogBlock.componentwrapper.Component;
 import java.util.List;
 import java.util.Locale;
-import net.md_5.bungee.api.chat.BaseComponent;
 import org.bukkit.DyeColor;
 import org.bukkit.Material;
 import org.bukkit.NamespacedKey;
@@ -75,7 +75,7 @@ public class BlockStateCodecBanner implements BlockStateCodec {
     }
 
     @Override
-    public BaseComponent getChangesAsComponent(YamlConfiguration conf, YamlConfiguration oldState) {
+    public Component getChangesAsComponent(YamlConfiguration conf, YamlConfiguration oldState) {
         return null;
     }
 }

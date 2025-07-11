@@ -25,6 +25,9 @@ import static de.diddiz.LogBlock.util.Utils.listing;
 import de.diddiz.LogBlock.QueryParams.BlockChangeType;
 import de.diddiz.LogBlock.QueryParams.Order;
 import de.diddiz.LogBlock.QueryParams.SummarizationMode;
+import de.diddiz.LogBlock.componentwrapper.Click;
+import de.diddiz.LogBlock.componentwrapper.Component;
+import de.diddiz.LogBlock.componentwrapper.Components;
 import de.diddiz.LogBlock.config.Config;
 import de.diddiz.LogBlock.config.WorldConfig;
 import de.diddiz.LogBlock.util.MessagingUtil;
@@ -44,9 +47,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
-import net.md_5.bungee.api.chat.BaseComponent;
-import net.md_5.bungee.api.chat.ClickEvent;
-import net.md_5.bungee.api.chat.TextComponent;
 import org.bukkit.ChatColor;
 import org.bukkit.GameMode;
 import org.bukkit.Location;
@@ -73,34 +73,34 @@ public class CommandsHandler implements CommandExecutor {
             if (args.length == 0) {
                 sender.sendMessage(ChatColor.YELLOW + "------------------[ " + ChatColor.WHITE + "LogBlock" + ChatColor.YELLOW + " ]-------------------");
                 sender.sendMessage(ChatColor.GOLD + "LogBlock " + ChatColor.WHITE + "v" + logblock.getDescription().getVersion() + ChatColor.GOLD + " by DiddiZ");
-                TextComponent message = MessagingUtil.createTextComponentWithColor("Type ", net.md_5.bungee.api.ChatColor.GOLD);
-                TextComponent clickable = MessagingUtil.createTextComponentWithColor("/lb help", net.md_5.bungee.api.ChatColor.WHITE);
-                clickable.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/lb help"));
-                message.addExtra(clickable);
-                message.addExtra(" for help");
-                sender.spigot().sendMessage(message);
+                Component message = MessagingUtil.createTextComponentWithColor("Type ", de.diddiz.LogBlock.componentwrapper.ChatColor.GOLD);
+                Component clickable = MessagingUtil.createTextComponentWithColor("/lb help", de.diddiz.LogBlock.componentwrapper.ChatColor.WHITE);
+                clickable = clickable.click(Click.run("/lb help"));
+                message = message.append(clickable);
+                message = message.append(" for help");
+                Components.sendTo(sender, message);
             } else {
                 final String command = args[0].toLowerCase();
                 if (command.equals("help")) {
                     sender.sendMessage(ChatColor.YELLOW + "----------------[ " + ChatColor.WHITE + "LogBlock Help" + ChatColor.YELLOW + " ]----------------");
 
-                    TextComponent message = MessagingUtil.createTextComponentWithColor("For the commands list type ", net.md_5.bungee.api.ChatColor.GOLD);
-                    TextComponent clickable = MessagingUtil.createTextComponentWithColor("/lb commands", net.md_5.bungee.api.ChatColor.WHITE);
-                    clickable.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/lb commands"));
-                    message.addExtra(clickable);
-                    sender.spigot().sendMessage(message);
+                    Component message = MessagingUtil.createTextComponentWithColor("For the commands list type ", de.diddiz.LogBlock.componentwrapper.ChatColor.GOLD);
+                    Component clickable = MessagingUtil.createTextComponentWithColor("/lb commands", de.diddiz.LogBlock.componentwrapper.ChatColor.WHITE);
+                    clickable = clickable.click(Click.run("/lb commands"));
+                    message = message.append(clickable);
+                    Components.sendTo(sender, message);
 
-                    message = MessagingUtil.createTextComponentWithColor("For the parameters list type ", net.md_5.bungee.api.ChatColor.GOLD);
-                    clickable = MessagingUtil.createTextComponentWithColor("/lb params", net.md_5.bungee.api.ChatColor.WHITE);
-                    clickable.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/lb params"));
-                    message.addExtra(clickable);
-                    sender.spigot().sendMessage(message);
+                    message = MessagingUtil.createTextComponentWithColor("For the parameters list type ", de.diddiz.LogBlock.componentwrapper.ChatColor.GOLD);
+                    clickable = MessagingUtil.createTextComponentWithColor("/lb params", de.diddiz.LogBlock.componentwrapper.ChatColor.WHITE);
+                    clickable = clickable.click(Click.run("/lb params"));
+                    message = message.append(clickable);
+                    Components.sendTo(sender, message);
 
-                    message = MessagingUtil.createTextComponentWithColor("For the list of permissions you got type ", net.md_5.bungee.api.ChatColor.GOLD);
-                    clickable = MessagingUtil.createTextComponentWithColor("/lb permissions", net.md_5.bungee.api.ChatColor.WHITE);
-                    clickable.setClickEvent(new ClickEvent(ClickEvent.Action.RUN_COMMAND, "/lb permissions"));
-                    message.addExtra(clickable);
-                    sender.spigot().sendMessage(message);
+                    message = MessagingUtil.createTextComponentWithColor("For the list of permissions you got type ", de.diddiz.LogBlock.componentwrapper.ChatColor.GOLD);
+                    clickable = MessagingUtil.createTextComponentWithColor("/lb permissions", de.diddiz.LogBlock.componentwrapper.ChatColor.WHITE);
+                    clickable = clickable.click(Click.run("/lb permissions"));
+                    message = message.append(clickable);
+                    Components.sendTo(sender, message);
                 } else if (command.equals("commands")) {
                     sender.sendMessage(ChatColor.YELLOW + "--------------[ " + ChatColor.WHITE + "LogBlock Commands" + ChatColor.YELLOW + " ]--------------");
                     sender.sendMessage(ChatColor.GOLD + "/lb tool " + ChatColor.WHITE + "-- Gives you the lb tool");
@@ -435,25 +435,24 @@ public class CommandsHandler implements CommandExecutor {
                 final int stoppos = startpos + linesPerPage >= lookupElements.length ? lookupElements.length - 1 : startpos + linesPerPage - 1;
                 final int numberOfPages = (int) Math.ceil(lookupElements.length / (double) linesPerPage);
                 if (numberOfPages != 1) {
-                    sender.sendMessage(HEADER + "Page " + page + "/" + numberOfPages);
+                    Components.sendTo(sender, Components.text("Page " + page + "/" + numberOfPages, HEADER.getColor()));
                 }
                 for (int i = startpos; i <= stoppos; i++) {
-                    TextComponent message = new TextComponent();
-                    message.setColor(DEFAULT.getColor());
+                    Component message = Components.text("", DEFAULT.getColor());
                     if (lookupElements[i].getLocation() != null) {
-                        message.addExtra(new TextComponent("(" + (i + 1) + ") "));
+                        message = message.append(Components.text("(" + (i + 1) + ") "));
                     }
-                    message.addExtra(lookupElements[i].getLogMessage(i + 1));
-                    sender.spigot().sendMessage(message);
+                    message = message.append(lookupElements[i].getLogMessage(i + 1));
+                    Components.sendTo(sender, message);
                 }
                 if (setSessionPage) {
                     getSession(sender).page = page;
                 }
             } else {
-                sender.sendMessage(ERROR + "There isn't a page '" + page + "'");
+                Components.sendTo(sender, Components.text("There isn't a page '" + page + "'", ERROR.getColor()));
             }
         } else {
-            sender.sendMessage(ERROR + "No blocks in lookup cache");
+            Components.sendTo(sender, Components.text("No blocks in lookup cache", ERROR.getColor()));
         }
     }
 
@@ -640,7 +639,7 @@ public class CommandsHandler implements CommandExecutor {
                 }
                 final LookupCacheElementFactory factory = new LookupCacheElementFactory(params, sender instanceof Player ? 2 / 3f : 1);
                 while (rs.next()) {
-                    writer.write(BaseComponent.toPlainText(factory.getLookupCacheElement(rs).getLogMessage()) + newline);
+                    writer.write(Components.toPlainText(factory.getLookupCacheElement(rs).getLogMessage()) + newline);
                     counter++;
                 }
                 writer.close();
