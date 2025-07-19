@@ -564,7 +564,12 @@ public class BukkitUtils {
         if (entity instanceof TNTPrimed) {
             return "TNT";
         }
-        return entity.getClass().getSimpleName().substring(5);
+
+        String simpleClassName = entity.getClass().getSimpleName();
+        if(simpleClassName.startsWith("Craft"))
+            return simpleClassName.substring(5);
+
+        return simpleClassName;
     }
 
     public static void giveTool(Player player, Material type) {
