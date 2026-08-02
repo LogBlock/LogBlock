@@ -44,7 +44,7 @@
         <dependency>
             <groupId>org.spigotmc</groupId>
             <artifactId>spigot-api</artifactId>
-            <version>[26.1.2.build,)</version>
+            <version>[26.2.build,26.3-alpha)</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
