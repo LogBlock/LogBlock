@@ -394,7 +394,7 @@ public class WorldEditor implements Runnable {
             }
             if (state instanceof Container && replacedBlock.getMaterial() != block.getType()) {
                 ((Container) state).getSnapshotInventory().clear();
-                state.update();
+                state.update(false, false);
             }
             block.setBlockData(replacedBlock);
             BlockData newData = block.getBlockData();
@@ -402,7 +402,7 @@ public class WorldEditor implements Runnable {
                 state = block.getState();
                 try {
                     BlockStateCodecs.deserialize(state, Utils.deserializeYamlConfiguration(replacedState));
-                    state.update();
+                    state.update(false, false);
                 } catch (Exception e) {
                     throw new WorldEditorException("Failed to restore blockstate of " + block.getType() + ": " + e, block.getLocation());
                 }
