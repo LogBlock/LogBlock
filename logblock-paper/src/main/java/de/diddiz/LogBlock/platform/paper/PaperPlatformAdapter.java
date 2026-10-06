@@ -8,6 +8,7 @@ import de.diddiz.LogBlock.componentwrapper.ItemHover;
 import de.diddiz.LogBlock.componentwrapper.RunCommandClick;
 import de.diddiz.LogBlock.componentwrapper.TextComponent;
 import de.diddiz.LogBlock.componentwrapper.TextHover;
+import de.diddiz.LogBlock.listeners.AdvancedEntityLogging;
 import de.diddiz.LogBlock.platform.PlatformAdapter;
 import de.diddiz.LogBlock.platform.ShelfSideChain;
 import de.diddiz.LogBlock.platform.DripstoneThickness;
@@ -25,6 +26,11 @@ import org.bukkit.command.CommandSender;
 
 public final class PaperPlatformAdapter implements PlatformAdapter {
     public PaperPlatformAdapter(LogBlock plugin) {
+    }
+
+    @Override
+    public void registerEntityLoggingListeners(LogBlock plugin, AdvancedEntityLogging logging) {
+        plugin.getServer().getPluginManager().registerEvents(new PaperEntityBreakLogging(logging), plugin);
     }
 
     @Override

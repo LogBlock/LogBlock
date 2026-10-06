@@ -221,14 +221,18 @@ public class AdvancedEntityLogging extends LoggingListener {
     @EventHandler(priority = EventPriority.MONITOR, ignoreCancelled = true)
     public void onHangingBreak(HangingBreakEvent event) {
         Entity entity = event.getEntity();
+        Actor actor;
+        if (event instanceof HangingBreakByEntityEvent) {
+            Entity damager = LoggingUtil.getRealDamager(((HangingBreakByEntityEvent) event).getRemover());
+            actor = Actor.actorFromEntity(damager);
+        } else {
+            actor = new Actor(event.getCause().toString());
+        }
+        logEntityBreak(entity, actor);
+    }
+
+    public void logEntityBreak(Entity entity, Actor actor) {
         if (Config.isLogging(entity.getWorld(), EntityLogging.DESTROY, entity)) {
-            Actor actor;
-            if (event instanceof HangingBreakByEntityEvent) {
-                Entity damager = LoggingUtil.getRealDamager(((HangingBreakByEntityEvent) event).getRemover());
-                actor = Actor.actorFromEntity(damager);
-            } else {
-                actor = new Actor(event.getCause().toString());
-            }
             queueEntitySpawnOrKill(entity, actor, EntityChange.EntityChangeType.KILL);
         }
     }

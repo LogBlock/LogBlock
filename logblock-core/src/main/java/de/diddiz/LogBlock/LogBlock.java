@@ -247,7 +247,9 @@ public class LogBlock extends JavaPlugin {
             if (!WorldEditHelper.hasFullWorldEdit()) {
                 getLogger().severe("No compatible WorldEdit found, entity logging will not work!");
             } else {
-                pm.registerEvents(new AdvancedEntityLogging(this), this);
+                AdvancedEntityLogging entityLogging = new AdvancedEntityLogging(this);
+                pm.registerEvents(entityLogging, this);
+                platformAdapter.registerEntityLoggingListeners(this, entityLogging);
                 getLogger().info("Entity logging enabled!");
             }
         }
