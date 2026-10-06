@@ -19,6 +19,8 @@ import net.md_5.bungee.api.chat.hover.content.Text;
 import org.bukkit.command.CommandSender;
 import org.bukkit.block.data.type.Shelf;
 import org.bukkit.block.data.type.PointedDripstone;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.inventory.ItemStack;
 
 public final class SpigotPlatformAdapter implements PlatformAdapter {
@@ -133,12 +135,17 @@ public final class SpigotPlatformAdapter implements PlatformAdapter {
     }
 
     @Override
-    public DripstoneThickness getDripstoneThickness(PointedDripstone dripstone) {
-        return DripstoneThickness.valueOf(dripstone.getThickness().name());
+    public DripstoneThickness getDripstoneThickness(BlockData dripstone) {
+        return DripstoneThickness.valueOf(((PointedDripstone) dripstone).getThickness().name());
     }
 
     @Override
-    public void setDripstoneThickness(PointedDripstone dripstone, DripstoneThickness thickness) {
-        dripstone.setThickness(PointedDripstone.Thickness.valueOf(thickness.name()));
+    public void setDripstoneThickness(BlockData dripstone, DripstoneThickness thickness) {
+        ((PointedDripstone) dripstone).setThickness(PointedDripstone.Thickness.valueOf(thickness.name()));
+    }
+
+    @Override
+    public BlockFace getDripstoneVerticalDirection(BlockData dripstone) {
+        return ((PointedDripstone) dripstone).getVerticalDirection();
     }
 }

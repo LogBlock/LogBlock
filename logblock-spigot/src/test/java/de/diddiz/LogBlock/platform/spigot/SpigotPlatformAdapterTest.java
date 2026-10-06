@@ -8,6 +8,7 @@ import de.diddiz.LogBlock.platform.ShelfSideChain;
 import de.diddiz.LogBlock.platform.DripstoneThickness;
 import java.lang.reflect.Proxy;
 import java.util.concurrent.atomic.AtomicReference;
+import org.bukkit.block.BlockFace;
 import net.md_5.bungee.api.chat.BaseComponent;
 import net.md_5.bungee.api.chat.hover.content.Item;
 import org.bukkit.Material;
@@ -54,18 +55,26 @@ public class SpigotPlatformAdapterTest {
     }
 
     @Test public void readsAndWritesEveryDripstoneThickness() {
-        for (PointedDripstone.Thickness thickness : PointedDripstone.Thickness.values()) {
-            AtomicReference<Object> written = new AtomicReference<>();
-            PointedDripstone dripstone = (PointedDripstone) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[] { PointedDripstone.class },
-                    (proxy, method, arguments) -> {
-                        if (method.getName().equals("getThickness")) return thickness;
-                        if (method.getName().equals("setThickness")) written.set(arguments[0]);
-                        return null;
-                    });
-            DripstoneThickness common = DripstoneThickness.valueOf(thickness.name());
-            assertEquals(common, adapter.getDripstoneThickness(dripstone));
-            adapter.setDripstoneThickness(dripstone, common);
-            assertEquals(thickness, written.get());
+        for (Material material : new Material[] { Material.POINTED_DRIPSTONE, Material.SULFUR_SPIKE }) {
+            for (BlockFace direction : new BlockFace[] { BlockFace.UP, BlockFace.DOWN }) {
+                for (PointedDripstone.Thickness thickness : PointedDripstone.Thickness.values()) {
+                    AtomicReference<Object> written = new AtomicReference<>();
+                    PointedDripstone dripstone = (PointedDripstone) Proxy.newProxyInstance(getClass().getClassLoader(), new Class<?>[] { PointedDripstone.class },
+                            (proxy, method, arguments) -> {
+                                if (method.getName().equals("getMaterial")) return material;
+                                if (method.getName().equals("getVerticalDirection")) return direction;
+                                if (method.getName().equals("getThickness")) return thickness;
+                                if (method.getName().equals("setThickness")) written.set(arguments[0]);
+                                return null;
+                            });
+                    DripstoneThickness common = DripstoneThickness.valueOf(thickness.name());
+                    assertEquals(common, adapter.getDripstoneThickness(dripstone));
+                    assertEquals(direction, adapter.getDripstoneVerticalDirection(dripstone));
+                    assertEquals(material, dripstone.getMaterial());
+                    adapter.setDripstoneThickness(dripstone, common);
+                    assertEquals(thickness, written.get());
+                }
+            }
         }
     }
 

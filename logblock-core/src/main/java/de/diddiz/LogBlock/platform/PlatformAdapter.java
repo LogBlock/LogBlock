@@ -1,8 +1,9 @@
 package de.diddiz.LogBlock.platform;
 
 import de.diddiz.LogBlock.componentwrapper.Component;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Shelf;
-import org.bukkit.block.data.type.PointedDripstone;
 import org.bukkit.command.CommandSender;
 
 /** Operations whose implementations depend on the server API. */
@@ -11,6 +12,7 @@ public interface PlatformAdapter {
     Component fromLegacy(String text);
     String toPlainText(Component component);
     ShelfSideChain getShelfSideChain(Shelf shelf);
-    DripstoneThickness getDripstoneThickness(PointedDripstone dripstone);
-    void setDripstoneThickness(PointedDripstone dripstone, DripstoneThickness thickness);
+    DripstoneThickness getDripstoneThickness(BlockData dripstone);
+    void setDripstoneThickness(BlockData dripstone, DripstoneThickness thickness);
+    BlockFace getDripstoneVerticalDirection(BlockData dripstone);
 }

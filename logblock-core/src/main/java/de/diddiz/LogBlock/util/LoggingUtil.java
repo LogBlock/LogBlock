@@ -1,11 +1,12 @@
 package de.diddiz.LogBlock.util;
 
-import de.diddiz.LogBlock.LogBlock;
-
 import de.diddiz.LogBlock.Actor;
 import de.diddiz.LogBlock.Consumer;
+import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.LogBlock.Logging;
 import de.diddiz.LogBlock.config.WorldConfig;
+import de.diddiz.LogBlock.platform.DripstoneThickness;
+import de.diddiz.LogBlock.platform.PlatformAdapter;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -16,8 +17,6 @@ import org.bukkit.block.data.Directional;
 import org.bukkit.block.data.type.Bell;
 import org.bukkit.block.data.type.Bell.Attachment;
 import org.bukkit.block.data.type.Lantern;
-import org.bukkit.block.data.type.PointedDripstone;
-import de.diddiz.LogBlock.platform.DripstoneThickness;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.TNTPrimed;
@@ -26,6 +25,7 @@ import java.util.List;
 
 import static de.diddiz.LogBlock.config.Config.getWorldConfig;
 import static de.diddiz.LogBlock.config.Config.mb4;
+import static de.diddiz.LogBlock.util.SpeleothemUtils.isSpeleothem;
 
 public class LoggingUtil {
 
@@ -203,17 +203,18 @@ public class LoggingUtil {
             if (bell.getAttachment() == Attachment.FLOOR) {
                 consumer.queueBlockBreak(actor, checkBlock.getState());
             }
-        } else if (typeAbove == Material.POINTED_DRIPSTONE) {
+        } else if (isSpeleothem(typeAbove)) {
+            PlatformAdapter adapter = LogBlock.getInstance().getPlatformAdapter();
             Block dripStoneBlock = checkBlock;
             while (true) {
-                if (dripStoneBlock.getType() != Material.POINTED_DRIPSTONE) {
+                if (dripStoneBlock.getType() != typeAbove) {
                     break;
                 }
-                PointedDripstone dripstone = (PointedDripstone) dripStoneBlock.getBlockData();
-                if (dripstone.getVerticalDirection() != BlockFace.UP) {
-                    if (LogBlock.getInstance().getPlatformAdapter().getDripstoneThickness(dripstone) == DripstoneThickness.TIP_MERGE) {
-                        PointedDripstone newDripstone = (PointedDripstone) dripstone.clone();
-                        LogBlock.getInstance().getPlatformAdapter().setDripstoneThickness(newDripstone, DripstoneThickness.TIP);
+                BlockData dripstone = dripStoneBlock.getBlockData();
+                if (adapter.getDripstoneVerticalDirection(dripstone) != BlockFace.UP) {
+                    if (adapter.getDripstoneThickness(dripstone) == DripstoneThickness.TIP_MERGE) {
+                        BlockData newDripstone = dripstone.clone();
+                        adapter.setDripstoneThickness(newDripstone, DripstoneThickness.TIP);
                         consumer.queueBlockReplace(actor, dripStoneBlock.getState(), newDripstone);
                     }
                     break;
@@ -257,17 +258,18 @@ public class LoggingUtil {
                 checkBlock = checkBlock.getRelative(BlockFace.DOWN);
                 typeBelow = checkBlock.getType();
             }
-        } else if (typeBelow == Material.POINTED_DRIPSTONE) {
+        } else if (isSpeleothem(typeBelow)) {
+            PlatformAdapter adapter = LogBlock.getInstance().getPlatformAdapter();
             Block dripStoneBlock = checkBlock;
             while (true) {
-                if (dripStoneBlock.getType() != Material.POINTED_DRIPSTONE) {
+                if (dripStoneBlock.getType() != typeBelow) {
                     break;
                 }
-                PointedDripstone dripstone = (PointedDripstone) dripStoneBlock.getBlockData();
-                if (dripstone.getVerticalDirection() != BlockFace.DOWN) {
-                    if (LogBlock.getInstance().getPlatformAdapter().getDripstoneThickness(dripstone) == DripstoneThickness.TIP_MERGE) {
-                        PointedDripstone newDripstone = (PointedDripstone) dripstone.clone();
-                        LogBlock.getInstance().getPlatformAdapter().setDripstoneThickness(newDripstone, DripstoneThickness.TIP);
+                BlockData dripstone = dripStoneBlock.getBlockData();
+                if (adapter.getDripstoneVerticalDirection(dripstone) != BlockFace.DOWN) {
+                    if (adapter.getDripstoneThickness(dripstone) == DripstoneThickness.TIP_MERGE) {
+                        BlockData newDripstone = dripstone.clone();
+                        adapter.setDripstoneThickness(newDripstone, DripstoneThickness.TIP);
                         consumer.queueBlockReplace(actor, dripStoneBlock.getState(), newDripstone);
                     }
                     break;

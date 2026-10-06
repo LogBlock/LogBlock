@@ -3,17 +3,19 @@ package de.diddiz.LogBlock.listeners;
 import de.diddiz.LogBlock.Actor;
 import de.diddiz.LogBlock.LogBlock;
 import de.diddiz.LogBlock.Logging;
+import de.diddiz.LogBlock.platform.DripstoneThickness;
+import de.diddiz.LogBlock.platform.PlatformAdapter;
 import org.bukkit.Material;
 import org.bukkit.World;
 import org.bukkit.block.Block;
 import org.bukkit.block.BlockFace;
-import org.bukkit.block.data.type.PointedDripstone;
-import de.diddiz.LogBlock.platform.DripstoneThickness;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.block.BlockSpreadEvent;
 
 import static de.diddiz.LogBlock.config.Config.isLogging;
+import static de.diddiz.LogBlock.util.SpeleothemUtils.isSpeleothem;
 
 public class BlockSpreadLogging extends LoggingListener {
 
@@ -58,32 +60,33 @@ public class BlockSpreadLogging extends LoggingListener {
                 // bamboo sapling gets replaced by bamboo
                 consumer.queueBlockReplace(new Actor(name), event.getSource().getState(), Material.BAMBOO.createBlockData());
             }
-        } else if (type == Material.POINTED_DRIPSTONE) {
+        } else if (isSpeleothem(type)) {
             if (!isLogging(world, Logging.DRIPSTONEGROWTH)) {
                 return;
             }
             name = "DripstoneGrowth";
-            PointedDripstone pointed = (PointedDripstone) event.getNewState().getBlockData();
-            if (LogBlock.getInstance().getPlatformAdapter().getDripstoneThickness(pointed) != DripstoneThickness.TIP_MERGE) {
-                BlockFace direction = pointed.getVerticalDirection();
+            PlatformAdapter adapter = LogBlock.getInstance().getPlatformAdapter();
+            BlockData pointed = event.getNewState().getBlockData();
+            if (adapter.getDripstoneThickness(pointed) != DripstoneThickness.TIP_MERGE) {
+                BlockFace direction = adapter.getDripstoneVerticalDirection(pointed);
                 Block previousPart = event.getBlock().getRelative(direction.getOppositeFace());
-                if (previousPart.getType() == Material.POINTED_DRIPSTONE) {
-                    PointedDripstone newBelow = (PointedDripstone) previousPart.getBlockData();
-                    LogBlock.getInstance().getPlatformAdapter().setDripstoneThickness(newBelow, DripstoneThickness.FRUSTUM);
+                if (previousPart.getType() == type) {
+                    BlockData newBelow = previousPart.getBlockData();
+                    adapter.setDripstoneThickness(newBelow, DripstoneThickness.FRUSTUM);
                     consumer.queueBlockReplace(new Actor(name), previousPart.getState(), newBelow);
 
                     previousPart = previousPart.getRelative(direction.getOppositeFace());
-                    if (previousPart.getType() == Material.POINTED_DRIPSTONE) {
+                    if (previousPart.getType() == type) {
                         Block evenMorePrevious = previousPart.getRelative(direction.getOppositeFace());
-                        newBelow = (PointedDripstone) previousPart.getBlockData();
-                        LogBlock.getInstance().getPlatformAdapter().setDripstoneThickness(newBelow, evenMorePrevious.getType() == Material.POINTED_DRIPSTONE ? DripstoneThickness.MIDDLE : DripstoneThickness.BASE);
+                        newBelow = previousPart.getBlockData();
+                        adapter.setDripstoneThickness(newBelow, evenMorePrevious.getType() == type ? DripstoneThickness.MIDDLE : DripstoneThickness.BASE);
                         consumer.queueBlockReplace(new Actor(name), previousPart.getState(), newBelow);
                     }
                 }
             } else {
                 // special case because the old state is already changed (for one half)
-                PointedDripstone oldState = (PointedDripstone) event.getNewState().getBlockData();
-                LogBlock.getInstance().getPlatformAdapter().setDripstoneThickness(oldState, DripstoneThickness.TIP);
+                BlockData oldState = pointed.clone();
+                adapter.setDripstoneThickness(oldState, DripstoneThickness.TIP);
                 consumer.queueBlockReplace(new Actor(name), oldState, event.getNewState());
                 return;
             }

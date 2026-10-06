@@ -18,7 +18,8 @@ import net.kyori.adventure.text.format.TextColor;
 import net.kyori.adventure.text.serializer.legacy.LegacyComponentSerializer;
 import net.kyori.adventure.text.serializer.plain.PlainTextComponentSerializer;
 import org.bukkit.block.data.type.Shelf;
-import org.bukkit.block.data.type.PointedDripstone;
+import org.bukkit.block.BlockFace;
+import org.bukkit.block.data.BlockData;
 import org.bukkit.block.data.type.Speleothem;
 import org.bukkit.command.CommandSender;
 
@@ -100,12 +101,17 @@ public final class PaperPlatformAdapter implements PlatformAdapter {
     }
 
     @Override
-    public DripstoneThickness getDripstoneThickness(PointedDripstone dripstone) {
-        return DripstoneThickness.valueOf(dripstone.getThickness().name());
+    public DripstoneThickness getDripstoneThickness(BlockData dripstone) {
+        return DripstoneThickness.valueOf(((Speleothem) dripstone).getThickness().name());
     }
 
     @Override
-    public void setDripstoneThickness(PointedDripstone dripstone, DripstoneThickness thickness) {
-        dripstone.setThickness(Speleothem.Thickness.valueOf(thickness.name()));
+    public void setDripstoneThickness(BlockData dripstone, DripstoneThickness thickness) {
+        ((Speleothem) dripstone).setThickness(Speleothem.Thickness.valueOf(thickness.name()));
+    }
+
+    @Override
+    public BlockFace getDripstoneVerticalDirection(BlockData dripstone) {
+        return ((Speleothem) dripstone).getVerticalDirection();
     }
 }
