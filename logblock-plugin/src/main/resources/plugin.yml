@@ -1,0 +1,52 @@
+name: ${project.name}
+version: '${minecraft.plugin.version}'
+author: DiddiZ
+authors: [md_5, ammar2, frymaster]
+website: http://dev.bukkit.org/server-mods/logblock/
+main: de.diddiz.LogBlock.LogBlock
+description: ${project.description}
+softdepend: [WorldEdit, WorldGuard]
+api-version: '26.3'
+commands:
+  lb:
+    description: 'LogBlock plugin commands'
+    usage: 'Usage: /<command> help'
+    aliases: [logblock]
+permissions:
+  logblock.*:
+    description: Gives access to all LogBlock commands
+    children:
+      logblock.lookup: true
+      logblock.rollback: true
+      logblock.clearlog: true
+      logblock.hide: true
+      logblock.tp: true
+      logblock.me: true
+      logblock.ignoreRestrictions: true
+      logblock.spawnTools: true
+      logblock.tools.toolblock: true
+      logblock.tools.tool: true
+  logblock.lookup:
+    description: 'Grants access to /lb lookup commands and allows defining custom tool queries'
+    default: op
+  logblock.rollback:
+    description: 'Allows rollback, redo and writing of logfiles'
+    default: op
+  logblock.clearlog:
+     description: 'Allows clearing of the logs via /lb clearlog'
+     default: op
+  logblock.hide:
+    description: 'Allows hiding players from logging'
+    default: op
+  logblock.tp:
+    description: 'Allows the use of /lb tp'
+    default: op
+  logblock.me:
+    description: 'Allows seeing of your own stats with /lb me'
+    default: true
+  logblock.ignoreRestrictions:
+    description: 'Allows to ignore the rollback restrictions rollback.maxTime and rollback.maxArea'
+    default: op
+  logblock.spawnTools:
+    description: 'Allows lookup tools to be spawned'
+    default: true

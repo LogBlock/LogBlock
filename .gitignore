@@ -1,7 +1,7 @@
 # Eclipse stuff
-/.classpath
-/.project
-/.settings
+.classpath
+.project
+.settings
 
 # netbeans
 /nb-configuration.xml
@@ -12,7 +12,7 @@
 /build.xml
 
 # maven
-/target
+target/
 dependency-reduced-pom.xml
 
 # vim
@@ -34,3 +34,4 @@ dependency-reduced-pom.xml
 *.ipr
 *.iws
 .idea/
+

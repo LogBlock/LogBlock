@@ -1,5 +1,6 @@
 language: java
 jdk:
-  - openjdk8
+  - openjdk25
+script: mvn --batch-mode clean verify
 notifications:
   email: false
