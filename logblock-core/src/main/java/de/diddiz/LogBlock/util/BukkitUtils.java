@@ -14,9 +14,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.logging.Level;
 import java.util.Set;
 import java.util.UUID;
+import java.util.logging.Level;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.Chunk;
@@ -66,6 +66,8 @@ public class BukkitUtils {
     private static final Set<Material> relativeBreakable;
     private static final Set<Material> relativeTopBreakable;
     private static final Set<Material> singleBlockPlants;
+
+    private static final Set<Material> gravityBlocks;
 
     private static final Tag<Material> allSigns;
     private static final Tag<Material> bedBlocks;
@@ -413,6 +415,32 @@ public class BukkitUtils {
         dyes.put(Material.RED_DYE, DyeColor.RED);
         dyes.put(Material.WHITE_DYE, DyeColor.WHITE);
         dyes.put(Material.YELLOW_DYE, DyeColor.YELLOW);
+
+        gravityBlocks = Set.of(
+                Material.GRAVEL,
+                Material.SAND,
+                Material.RED_SAND,
+                Material.DRAGON_EGG,
+                Material.ANVIL,
+                Material.CHIPPED_ANVIL,
+                Material.DAMAGED_ANVIL,
+                Material.SCAFFOLDING,
+                Material.BLACK_CONCRETE_POWDER,
+                Material.BLUE_CONCRETE_POWDER,
+                Material.LIGHT_GRAY_CONCRETE_POWDER,
+                Material.BROWN_CONCRETE_POWDER,
+                Material.CYAN_CONCRETE_POWDER,
+                Material.GRAY_CONCRETE_POWDER,
+                Material.GREEN_CONCRETE_POWDER,
+                Material.LIGHT_BLUE_CONCRETE_POWDER,
+                Material.MAGENTA_CONCRETE_POWDER,
+                Material.LIME_CONCRETE_POWDER,
+                Material.ORANGE_CONCRETE_POWDER,
+                Material.PINK_CONCRETE_POWDER,
+                Material.PURPLE_CONCRETE_POWDER,
+                Material.RED_CONCRETE_POWDER,
+                Material.WHITE_CONCRETE_POWDER,
+                Material.YELLOW_CONCRETE_POWDER);
     }
 
     private static final BlockFace[] relativeBlockFaces = new BlockFace[] {
@@ -422,8 +450,10 @@ public class BukkitUtils {
     /**
      * Returns a list of block locations around the block that are of the type specified by the integer list parameter
      *
-     * @param block The central block to get the blocks around
-     * @param type The type of blocks around the center block to return
+     * @param block
+     *            The central block to get the blocks around
+     * @param type
+     *            The type of blocks around the center block to return
      * @return List of block locations around the block that are of the type specified by the integer list parameter
      */
     public static List<Location> getBlocksNearby(org.bukkit.block.Block block, Set<Material> type) {
@@ -975,6 +1005,10 @@ public class BukkitUtils {
 
     public static boolean isSign(Material m) {
         return allSigns.isTagged(m);
+    }
+
+    public static boolean isGravityBlock(Material m) {
+        return gravityBlocks.contains(m);
     }
 
     public static Side getFacingSignSide(Entity entity, Block sign) {

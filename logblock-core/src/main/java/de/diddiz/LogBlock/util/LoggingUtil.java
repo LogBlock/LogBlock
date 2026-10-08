@@ -1,5 +1,9 @@
 package de.diddiz.LogBlock.util;
 
+import static de.diddiz.LogBlock.config.Config.getWorldConfig;
+import static de.diddiz.LogBlock.config.Config.mb4;
+import static de.diddiz.LogBlock.util.SpeleothemUtils.isSpeleothem;
+
 import de.diddiz.LogBlock.Actor;
 import de.diddiz.LogBlock.Consumer;
 import de.diddiz.LogBlock.LogBlock;
@@ -7,6 +11,7 @@ import de.diddiz.LogBlock.Logging;
 import de.diddiz.LogBlock.config.WorldConfig;
 import de.diddiz.LogBlock.platform.DripstoneThickness;
 import de.diddiz.LogBlock.platform.PlatformAdapter;
+import java.util.List;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -21,18 +26,13 @@ import org.bukkit.entity.Entity;
 import org.bukkit.entity.Projectile;
 import org.bukkit.entity.TNTPrimed;
 import org.bukkit.projectiles.ProjectileSource;
-import java.util.List;
-
-import static de.diddiz.LogBlock.config.Config.getWorldConfig;
-import static de.diddiz.LogBlock.config.Config.mb4;
-import static de.diddiz.LogBlock.util.SpeleothemUtils.isSpeleothem;
 
 public class LoggingUtil {
 
     public static void smartLogBlockPlace(Consumer consumer, Actor actor, BlockState replaced, BlockState placed) {
         Location loc = replaced.getLocation();
         Material placedType = placed.getType();
-        if (!placedType.hasGravity() || !BukkitUtils.canDirectlyFallIn(replaced.getBlock().getRelative(BlockFace.DOWN).getType())) {
+        if (!BukkitUtils.isGravityBlock(placedType) || !BukkitUtils.canDirectlyFallIn(replaced.getBlock().getRelative(BlockFace.DOWN).getType())) {
             if (placedType == Material.TWISTING_VINES) {
                 Block below = placed.getBlock().getRelative(BlockFace.DOWN);
                 if (below.getType() == Material.TWISTING_VINES) {
@@ -84,11 +84,11 @@ public class LoggingUtil {
             return;
         }
 
-        //Handle falling blocks
+        // Handle falling blocks
         Block checkBlock = origin.getRelative(BlockFace.UP);
         int up = 0;
         final int highestBlock = checkBlock.getWorld().getHighestBlockYAt(checkBlock.getLocation());
-        while (checkBlock.getType().hasGravity()) {
+        while (BukkitUtils.isGravityBlock(checkBlock.getType())) {
 
             // Record this block as falling
             consumer.queueBlockBreak(actor, checkBlock.getState());
