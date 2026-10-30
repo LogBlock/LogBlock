@@ -45,7 +45,7 @@ public class BlockPlaceLogging extends LoggingListener {
                 if (!clickedWaterlogged.isWaterlogged()) {
                     Waterlogged clickedWaterloggedWithWater = (Waterlogged) clickedWaterlogged.clone();
                     clickedWaterloggedWithWater.setWaterlogged(true);
-                    consumer.queueBlockReplace(Actor.actorFromEntity(event.getPlayer()), event.getBlockClicked().getLocation(), clickedWaterlogged, clickedWaterloggedWithWater);
+                    LoggingUtil.logBlockDataChange(consumer, Actor.actorFromEntity(event.getPlayer()), event.getBlockClicked(), clickedWaterloggedWithWater);
                     return;
                 }
             }
@@ -57,9 +57,9 @@ public class BlockPlaceLogging extends LoggingListener {
                 if (placedAtBlock instanceof Waterlogged && !(((Waterlogged) placedAtBlock).isWaterlogged())) {
                     Waterlogged clickedWaterloggedWithWater = (Waterlogged) placedAtBlock.clone();
                     clickedWaterloggedWithWater.setWaterlogged(true);
-                    consumer.queueBlockReplace(Actor.actorFromEntity(event.getPlayer()), placedAt.getLocation(), placedAtBlock, clickedWaterloggedWithWater);
+                    LoggingUtil.logBlockDataChange(consumer, Actor.actorFromEntity(event.getPlayer()), placedAt, clickedWaterloggedWithWater);
                 } else {
-                    consumer.queueBlockReplace(Actor.actorFromEntity(event.getPlayer()), placedAt.getLocation(), placedAtBlock, placedMaterial.createBlockData());
+                    consumer.queueBlockReplace(Actor.actorFromEntity(event.getPlayer()), placedAt.getState(), placedMaterial.createBlockData());
                 }
             }
         }

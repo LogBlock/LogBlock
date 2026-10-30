@@ -398,7 +398,7 @@ public class WorldEditor implements Runnable {
             }
             block.setBlockData(replacedBlock);
             BlockData newData = block.getBlockData();
-            if (BlockStateCodecs.hasCodec(replacedBlock.getMaterial())) {
+            if (replacedState != null || BlockStateCodecs.hasCodec(replacedBlock.getMaterial())) {
                 state = block.getState();
                 try {
                     BlockStateCodecs.deserialize(state, Utils.deserializeYamlConfiguration(replacedState));

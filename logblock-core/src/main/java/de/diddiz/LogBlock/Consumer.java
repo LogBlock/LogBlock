@@ -9,6 +9,14 @@ import static de.diddiz.LogBlock.util.BukkitUtils.compressInventory;
 import static de.diddiz.LogBlock.util.BukkitUtils.itemIDfromProjectileEntity;
 import static de.diddiz.LogBlock.util.Utils.mysqlTextEscape;
 
+import de.diddiz.LogBlock.EntityChange.EntityChangeType;
+import de.diddiz.LogBlock.blockstate.BlockStateCodecs;
+import de.diddiz.LogBlock.config.Config;
+import de.diddiz.LogBlock.events.BlockChangePreLogEvent;
+import de.diddiz.LogBlock.events.EntityChangePreLogEvent;
+import de.diddiz.LogBlock.util.BukkitUtils;
+import de.diddiz.LogBlock.util.ItemStackAndAmount;
+import de.diddiz.LogBlock.util.Utils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
@@ -29,7 +37,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
-
 import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.Material;
@@ -46,15 +53,6 @@ import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.InventoryHolder;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.projectiles.ProjectileSource;
-
-import de.diddiz.LogBlock.EntityChange.EntityChangeType;
-import de.diddiz.LogBlock.blockstate.BlockStateCodecs;
-import de.diddiz.LogBlock.config.Config;
-import de.diddiz.LogBlock.events.BlockChangePreLogEvent;
-import de.diddiz.LogBlock.events.EntityChangePreLogEvent;
-import de.diddiz.LogBlock.util.BukkitUtils;
-import de.diddiz.LogBlock.util.ItemStackAndAmount;
-import de.diddiz.LogBlock.util.Utils;
 
 public class Consumer extends Thread {
     private static final int MAX_SHUTDOWN_TIME_MILLIS = 20000;
@@ -247,7 +245,8 @@ public class Consumer extends Thread {
         if (!(container instanceof InventoryHolder)) {
             return;
         }
-        queueContainerBreak(actor, new Location(container.getWorld(), container.getX(), container.getY(), container.getZ()), container.getBlockData(), ((InventoryHolder) container).getInventory());
+        queueContainerContents(actor, container.getLocation(), container.getBlockData(), ((InventoryHolder) container).getInventory());
+        queueBlockBreak(actor, container);
     }
 
     /**
@@ -263,11 +262,15 @@ public class Consumer extends Thread {
      *            The inventory of the container block
      */
     public void queueContainerBreak(Actor actor, Location loc, BlockData type, Inventory inv) {
+        queueContainerContents(actor, loc, type, inv);
+        queueBlockBreak(actor, loc, type);
+    }
+
+    private void queueContainerContents(Actor actor, Location loc, BlockData type, Inventory inv) {
         final Collection<ItemStackAndAmount> items = compressInventory(inv.getContents());
         for (final ItemStackAndAmount item : items) {
             queueChestAccess(actor, loc, type, item, true);
         }
-        queueBlockBreak(actor, loc, type);
     }
 
     /**
@@ -534,7 +537,8 @@ public class Consumer extends Thread {
             for (final Actor actor : r.getActors()) {
                 if (!playerIds.containsKey(actor) && !insertedPlayers.contains(actor)) {
                     // Odd query contruction is to work around innodb auto increment behaviour - bug #492
-                    writer.println("INSERT IGNORE INTO `lb-players` (playername,UUID) SELECT '" + mysqlTextEscape(actor.getName()) + "','" + mysqlTextEscape(actor.getUUID()) + "' FROM `lb-players` WHERE NOT EXISTS (SELECT NULL FROM `lb-players` WHERE UUID = '" + mysqlTextEscape(actor.getUUID()) + "') LIMIT 1;");
+                    writer.println("INSERT IGNORE INTO `lb-players` (playername,UUID) SELECT '" + mysqlTextEscape(actor.getName()) + "','" + mysqlTextEscape(actor.getUUID()) + "' FROM `lb-players` WHERE NOT EXISTS (SELECT NULL FROM `lb-players` WHERE UUID = '" + mysqlTextEscape(actor.getUUID())
+                            + "') LIMIT 1;");
                     insertedPlayers.add(actor);
                 }
             }
@@ -745,9 +749,12 @@ public class Consumer extends Thread {
      * Change the UUID that is stored for an entity in the database. This is needed when an entity is respawned
      * and now has a different UUID.
      *
-     * @param world the world that contains the entity
-     * @param entityId the database id of the entity
-     * @param entityUUID the new UUID of the entity
+     * @param world
+     *            the world that contains the entity
+     * @param entityId
+     *            the database id of the entity
+     * @param entityUUID
+     *            the new UUID of the entity
      */
     public void queueEntityUUIDChange(World world, int entityId, UUID entityUUID) {
         addQueueLast(new EntityUUIDChange(world, entityId, entityUUID));
@@ -1054,9 +1061,11 @@ public class Consumer extends Thread {
             final String table = getWorldConfig(loc.getWorld()).table;
             final String[] inserts = new String[2];
 
-            inserts[0] = "INSERT IGNORE INTO `" + table + "-entityids` (entityuuid) SELECT '" + mysqlTextEscape(entityUUID.toString()) + "' FROM `" + table + "-entityids` WHERE NOT EXISTS (SELECT NULL FROM `" + table + "-entityids` WHERE entityuuid = '" + mysqlTextEscape(entityUUID.toString()) + "') LIMIT 1";
+            inserts[0] = "INSERT IGNORE INTO `" + table + "-entityids` (entityuuid) SELECT '" + mysqlTextEscape(entityUUID.toString()) + "' FROM `" + table + "-entityids` WHERE NOT EXISTS (SELECT NULL FROM `" + table + "-entityids` WHERE entityuuid = '" + mysqlTextEscape(entityUUID.toString())
+                    + "') LIMIT 1";
             int entityTypeId = EntityTypeConverter.getOrAddEntityTypeId(type);
-            inserts[1] = "INSERT INTO `" + table + "-entities` (date, playerid, entityid, entitytypeid, x, y, z, action, data) VALUES (FROM_UNIXTIME(" + date + "), " + playerID(actor) + ", " + "(SELECT entityid FROM `" + table + "-entityids` WHERE entityuuid = '" + mysqlTextEscape(entityUUID.toString()) + "')"
+            inserts[1] = "INSERT INTO `" + table + "-entities` (date, playerid, entityid, entitytypeid, x, y, z, action, data) VALUES (FROM_UNIXTIME(" + date + "), " + playerID(actor) + ", " + "(SELECT entityid FROM `" + table + "-entityids` WHERE entityuuid = '"
+                    + mysqlTextEscape(entityUUID.toString()) + "')"
                     + ", " + entityTypeId + ", '" + loc.getBlockX() + "', " + safeY(loc) + ", '" + loc.getBlockZ() + "', " + changeType.ordinal() + ", " + Utils.mysqlPrepareBytesForInsertAllowNull(data) + ");";
             return inserts;
         }

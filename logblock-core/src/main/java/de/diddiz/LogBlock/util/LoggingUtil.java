@@ -29,6 +29,14 @@ import org.bukkit.projectiles.ProjectileSource;
 
 public class LoggingUtil {
 
+    /** Logs a predicted data change for the same material while retaining its tile state. */
+    public static void logBlockDataChange(Consumer consumer, Actor actor, Block block, BlockData dataAfter) {
+        BlockState before = block.getState();
+        BlockState after = block.getState();
+        after.setBlockData(dataAfter);
+        consumer.queueBlockReplace(actor, before, after);
+    }
+
     public static void smartLogBlockPlace(Consumer consumer, Actor actor, BlockState replaced, BlockState placed) {
         Location loc = replaced.getLocation();
         Material placedType = placed.getType();

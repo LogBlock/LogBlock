@@ -22,6 +22,7 @@ import static de.diddiz.LogBlock.config.Config.isLogging;
 import static de.diddiz.LogBlock.util.LoggingUtil.smartLogBlockBreak;
 import static de.diddiz.LogBlock.util.LoggingUtil.smartLogBlockReplace;
 import static de.diddiz.LogBlock.util.LoggingUtil.smartLogFallables;
+import static de.diddiz.LogBlock.util.LoggingUtil.logBlockDataChange;
 
 public class BlockBreakLogging extends LoggingListener {
     public BlockBreakLogging(LogBlock lb) {
@@ -65,7 +66,7 @@ public class BlockBreakLogging extends LoggingListener {
                 if (clickedWaterlogged.isWaterlogged()) {
                     Waterlogged clickedWaterloggedWithoutWater = (Waterlogged) clickedWaterlogged.clone();
                     clickedWaterloggedWithoutWater.setWaterlogged(false);
-                    consumer.queueBlockReplace(Actor.actorFromEntity(event.getPlayer()), event.getBlockClicked().getLocation(), clickedWaterlogged, clickedWaterloggedWithoutWater);
+                    logBlockDataChange(consumer, Actor.actorFromEntity(event.getPlayer()), event.getBlockClicked(), clickedWaterloggedWithoutWater);
                 }
             } else {
                 consumer.queueBlockBreak(Actor.actorFromEntity(event.getPlayer()), event.getBlockClicked().getState());

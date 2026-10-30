@@ -42,6 +42,7 @@ import org.bukkit.event.world.GenericGameEvent;
 import org.bukkit.inventory.ItemStack;
 
 import static de.diddiz.LogBlock.config.Config.getWorldConfig;
+import static de.diddiz.LogBlock.util.LoggingUtil.logBlockDataChange;
 
 public class InteractLogging extends LoggingListener {
     public InteractLogging(LogBlock lb) {
@@ -160,13 +161,13 @@ public class InteractLogging extends LoggingListener {
                 if (wcfg.isLogging(Logging.COMPARATORINTERACT) && event.getAction() == Action.RIGHT_CLICK_BLOCK) {
                     Comparator newBlockData = (Comparator) blockData.clone();
                     newBlockData.setMode(newBlockData.getMode() == Mode.COMPARE ? Mode.SUBTRACT : Mode.COMPARE);
-                    consumer.queueBlock(Actor.actorFromEntity(player), loc, blockData, newBlockData);
+                    logBlockDataChange(consumer, Actor.actorFromEntity(player), clicked, newBlockData);
                 }
             } else if (type == Material.DAYLIGHT_DETECTOR) {
                 if (wcfg.isLogging(Logging.DAYLIGHTDETECTORINTERACT) && event.getAction() == Action.RIGHT_CLICK_BLOCK) {
                     DaylightDetector newBlockData = (DaylightDetector) blockData.clone();
                     newBlockData.setInverted(!newBlockData.isInverted());
-                    consumer.queueBlock(Actor.actorFromEntity(player), loc, blockData, newBlockData);
+                    logBlockDataChange(consumer, Actor.actorFromEntity(player), clicked, newBlockData);
                 }
             } else if (type == Material.TRIPWIRE) {
                 if (wcfg.isLogging(Logging.TRIPWIREINTERACT) && event.getAction() == Action.PHYSICAL) {

@@ -5,7 +5,9 @@ import java.util.HashMap;
 import java.util.Map;
 import org.bukkit.Material;
 import org.bukkit.block.BlockState;
+import org.bukkit.block.TileState;
 import org.bukkit.configuration.file.YamlConfiguration;
+import org.bukkit.persistence.PersistentDataContainer;
 
 public class BlockStateCodecs {
     private static Map<Material, BlockStateCodec> codecs = new HashMap<>();
@@ -35,19 +37,26 @@ public class BlockStateCodecs {
 
     public static YamlConfiguration serialize(BlockState state) {
         BlockStateCodec codec = codecs.get(state.getType());
-        if (codec != null) {
-            YamlConfiguration serialized = codec.serialize(state);
-            if (serialized != null && !serialized.getKeys(false).isEmpty()) {
-                return serialized;
+        YamlConfiguration serialized = codec == null ? null : codec.serialize(state);
+        if (state instanceof TileState tile) {
+            PersistentDataContainer pdc = tile.getPersistentDataContainer();
+            if (!pdc.isEmpty()) {
+                if (serialized == null) {
+                    serialized = new YamlConfiguration();
+                }
+                serialized.set(PersistentDataContainerCodec.KEY, PersistentDataContainerCodec.serialize(pdc));
             }
         }
-        return null;
+        return serialized == null || serialized.getKeys(false).isEmpty() ? null : serialized;
     }
 
     public static void deserialize(BlockState block, YamlConfiguration state) {
         BlockStateCodec codec = codecs.get(block.getType());
         if (codec != null) {
             codec.deserialize(block, state);
+        }
+        if (block instanceof TileState tile && state != null && state.contains(PersistentDataContainerCodec.KEY)) {
+            PersistentDataContainerCodec.deserialize(tile.getPersistentDataContainer(), state.get(PersistentDataContainerCodec.KEY));
         }
     }
 
